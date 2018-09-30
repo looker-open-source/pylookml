@@ -334,6 +334,18 @@ class View(writeable):
         self.addField(dim)
         return self
 
+    def sum(self,f):
+        ''' A Synonym for addSum '''
+        return self.addSum(f)
+
+    def count(self):
+        ''' A Synonym for addCount'''
+        return self.addCout()
+
+    def countDistinct(self,f):
+        ''' A Synonym for addCountDistinct'''
+        return self.addCountDistinct(f)
+
     def addCount(self):
         '''Add a count measure to the view, returns self'''
         measure = Measure(
