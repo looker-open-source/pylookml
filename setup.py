@@ -5,13 +5,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="lookml",
-    version="0.0.2",
+    version="0.0.3",
     author="Russell Garner",
     author_email="russelljgarner@gmail.com",
     description="A pythonic api for programatically manipulating LookML",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/pypa/sampleproject",
+    url="https://github.com/llooker/lookml",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

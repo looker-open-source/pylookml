@@ -1,8 +1,13 @@
 import re
-NONUNIQUE_PROPERTIES = {'include','link', 'filters', 'bind_filters', 'data_groups', 'named_value_format', 'sets'}
+NONUNIQUE_PROPERTIES = {'include','link', 'filters', 'bind_filters', 'data_groups', 'named_value_format', 'sets', 'column'}
+TIMEFRAMES = ['raw', 'year', 'quarter', 'month', 'week', 'date', 'day_of_week', 'hour', 'hour_of_day', 'minute', 'time', 'time_of_day']
 DB_FIELD_DELIMITER_START = '`' 
 DB_FIELD_DELIMITER_END = '`'
 OUTPUT_DIR = ''
+INDENT = ' '*4
+NEWLINE = '\n'
+NEWLINEINDENT = ''.join([NEWLINE,INDENT])
+
 
 def snakeCase(string):
     str1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', string)
@@ -16,6 +21,39 @@ def removeSpace(string):  # removing special character / [|]<>,.?}{+=~!$%^&*()-
 
 def lookCase(string):
     return removeSpace(snakeCase(string))
+
+# class Project(object):
+#     def __init__(self):
+#         pass
+
+
+class ndt(object):
+    def __init__(self,explore_source):
+        self._columns = {}
+        self._dcolumns = {}
+
+        if isinstance(explore_source,Explore):
+            self._explore_source = explore_source.identifier
+        else:
+            self._explore_source = explore_source
+
+    def addColumn(self,name,field):
+        self._columns.update({name:field})
+        return self
+
+    def addDerivedColumn(self,name,field):
+        self._dcolumns.update({name:field})
+        return self
+
+    def __str__(self):
+        return splice(
+            'derived_table: {\n',
+            'explore_source: ' + self._explore_source + ' ' , ' {',NEWLINEINDENT
+             ,NEWLINEINDENT.join(['column: ' + k + ' { field: ' + v + '}' for k,v in self._columns.items()]),NEWLINEINDENT
+             ,NEWLINEINDENT.join(['derived_column: ' + k + ' { sql: ' + v + ';; }' for k,v in self._dcolumns.items()])
+            ,NEWLINEINDENT,'}',NEWLINE,'}'
+        )
+
 
 class writeable(object):
     def __init__(self, *args, **kwargs):
@@ -42,7 +80,6 @@ class writeable(object):
         self.outputFolder = folder
         return self
 
-
     def setName(self, identifier):
         ''' create a synonym with identifier'''
         self.identifier = identifier
@@ -66,7 +103,19 @@ class writeable(object):
                     opened_file.write(self.__str__())
 
 class View(writeable):
-    __slots__ = ['sql_table_name','derived_table','tableSource','message','fields','primaryKey','schema','properties','children','parent','fileName']
+    __slots__ = [
+             'sql_table_name'
+            ,'derived_table'
+            ,'tableSource'
+            ,'message'
+            ,'fields'
+            ,'primaryKey'
+            ,'schema'
+            ,'properties'
+            ,'children'
+            ,'parent'
+            ,'fileName'
+            ]
     def __init__(self, *args, **kwargs):
         super(View, self).__init__(self, *args, **kwargs)
         if 'sql_table_name' in kwargs.keys():
@@ -89,16 +138,15 @@ class View(writeable):
             self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
         else:
             self.path = self.fileName
-        
 
     def __str__(self):
         return splice(
-                        splice('#',self.message,'\n') if self.message else '', 
+                        splice('#',self.message,NEWLINE) if self.message else '', 
                         'view: ', self.identifier, ' {', 
-                        '\n',self.source(),'\n', 
-                        '\n'.join([str(p) for p in self.properties.getProperties()]), 
-                        '\n    '.join([str(field) for field in self.getFieldsSorted()]), 
-                        '\n}\n',
+                        NEWLINE,self.source(),NEWLINE, 
+                        NEWLINE.join([str(p) for p in self.properties.getProperties()]), 
+                        NEWLINEINDENT.join([str(field) for field in self.getFieldsSorted()]), 
+                        splice(NEWLINE,'}',NEWLINE),
                         *[str(child) for child in self.children.values()] if self.children else ''
                         )
 
@@ -179,6 +227,13 @@ class View(writeable):
             return self
         else:
             object.__setattr__(self, name, value)
+
+    # def __iter__(self):
+        
+
+    # def __next__(self):
+
+
 
     def source(self):
         if self.tableSource == None:
@@ -453,15 +508,29 @@ class Join(object):
         self._from = kwargs.get('from', None)
         self.to = kwargs.get('to', None)
 
+
     def __str__(self):
         return splice(
-                         '\njoin: ', self.identifier, ' {\n    ',
-                         '\n    '.join([str(p) for p in self.properties.getProperties()]),
-                         '\n}\n'
+                         NEWLINE,'join: ', self.identifier, ' {',NEWLINE,'    ',
+                         NEWLINEINDENT.join([str(p) for p in self.properties.getProperties()]),
+                         NEWLINE,'}',NEWLINE
                           )
 
     def setName(self, identifier):
         self.identifier = identifier
+        return self
+
+    def setFrom(self,f):
+        pass
+    
+    def setTo(self,t):
+        if isinstance(t,View):
+            self.to = t
+        return self
+
+    def on(self,left,operand,right):
+        statement = splice(left.ref ,operand, right.ref)
+        self.setOn(statement)
         return self
 
     def setOn(self,sql_on):
@@ -472,6 +541,31 @@ class Join(object):
         assert joinType in ['left_outer','full_outer','inner','cross']
         self.properties.addProperty('type',joinType)
         return self
+
+    def setRelationship(self,rel):
+        assert rel in ['one_to_many','many_to_one','one_to_one','many_to_many']
+        self.properties.addProperty('relationship',rel)
+        return self
+
+    def __getattr__(self, key):
+        if key == self.__dict__['to'].name:
+            return self.to.name.__getattr__(key)
+        else:
+            pass
+        # if key in self.__dict__.keys():
+        #     return self.__dict__[key]            
+        # else:
+        #     return self.__getitem__(key)
+
+    # def __setattr__(self, name, value):
+    #     # print(self.__dict__.keys())
+    #     if name in self.__dict__.keys():
+    #         self.__dict__[name] = value
+    #     else:
+    #         object.__setattr__(self, name, value)
+
+    def __getitem__(self,identifier):
+        return self.getJoin(identifier)
 
 class Explore(object):
     ''' Represents an explore object in LookML'''
@@ -490,6 +584,7 @@ class Explore(object):
                     self.setName(args[0])
                 elif isinstance(args[0],View):
                     self.setName(args[0].name)
+                    self.base_view = args[0]
 
 
         self.view = kwargs.get('view', '')
@@ -509,6 +604,44 @@ class Explore(object):
             pass
         return self
 
+    def __getattr__(self, key):
+        # print(self.__dict__.keys())
+        # if key in self.__dict__.keys():
+        #     return self.__dict__[key]
+        
+        if key == self.base_view.name:
+        # elif key == 'order_items':
+            return self.base_view
+        elif key in self.joins.keys():
+            return self.joins[key]
+        else:
+            return self.__getitem__(key)
+
+    def __setattr__(self, name, value):
+        if name in self.__dict__.keys():
+            self.__dict__[name] = value
+        else:
+            object.__setattr__(self, name, value)
+
+    def __getitem__(self,identifier):
+        return self.getJoin(identifier)
+
+    def createNDT(self,explore_source='', name='',fields=[]):
+        if name:
+            tmpView = View(name)
+        else:
+            tmpView = View(self.identifier + 'ndt')
+
+        tmpndt = ndt(explore_source)
+
+        for field in fields: 
+            tmpndt.addColumn(field.ref_raw_short,field.ref_raw)
+            tmpView + field.ref_raw_short
+    
+        tmpView.derived_table = tmpndt
+        tmpView.tableSource = False
+        return tmpView
+
     def setName(self,name):
         self.identifier = name
         return self
@@ -517,7 +650,19 @@ class Explore(object):
         self.properties.addProperty('view_name',view)
 
     def addJoin(self, join):
-        self.joins.update({join.identifier, join})
+        if isinstance(join,Join):
+            self.joins.update({join.identifier : join})
+            return join
+        elif isinstance(join,View):
+            tmpjoin = Join(View)
+            tmpjoin.setName(join.name)
+            tmpjoin.setTo(join)
+            self.joins.update({tmpjoin.identifier : tmpjoin})
+            return tmpjoin
+        
+
+    def join(self,join):
+        return self.addJoin(join)
 
     def getJoins(self):
         for field, literal in self.joins.items():
@@ -538,12 +683,23 @@ class Model(writeable):
         else:
             self.path = self.fileName       
         
-
     def __str__(self):
         return splice(
                         '\n'.join([str(p) for p in self.properties.getProperties()]), 
                         '\n' * 5, '\n'.join([str(e) for e in self.getExplores()])
                         )
+
+    def __getattr__(self, key):
+        # print(self.__dict__.keys())
+        if key in self.__dict__.keys():
+            return self.__dict__[key]
+        elif key in self.explores.keys():
+        # elif key == 'order_items':
+            return self.explores[key]
+        else:
+            return self.__getitem__(key)
+
+
     def setConnection(self,value):
         self.properties.addProperty('connection',value)
         return self
@@ -581,6 +737,8 @@ class Property(object):
             self.value = Properties(value)
         elif isinstance(value, list):
             self.value = [Property(name, i) for i in value]
+        # elif isinstance(value,Properties):
+        #     self.value = [Property(name, i) for i in value]
         else:
             raise Exception('not a dict, list or string')
 
@@ -595,6 +753,8 @@ class Property(object):
             return splice(self.name, ': [', str(self.value), ']')
         elif self.name.startswith('filters'):
             return splice(self.name,str(self.value))
+        elif self.name.startswith('explore_source'):
+            return splice(self.name, str(self.value))
         else:
             return splice(self.name , ': ' , str(self.value))
 
@@ -671,9 +831,9 @@ class Field(object):
         
     def __str__(self):
         return splice(
-                        self.identifier, ' {\n    ', 
-                            '\n    '.join([str(n) for n in self.properties.getProperties()]),
-                            '\n}\n'
+                        self.identifier, splice(' {',NEWLINEINDENT), 
+                            NEWLINEINDENT.join([str(n) for n in self.properties.getProperties()]),
+                            splice(NEWLINE,'}',NEWLINE)
                          )
 
     def __getattr__(self, key):
@@ -684,6 +844,12 @@ class Field(object):
         elif key == 'ref':
             if self.view:
                 return splice('${' , self.view.identifier , '.' , self.identifier , '}')
+        elif key == 'ref_raw':
+            if self.view:
+                return splice(self.view.identifier , '.' , self.identifier)
+        elif key == 'ref_raw_short':
+            if self.view:
+                return splice(self.identifier)
         elif key == 'ref_short':
             return splice('${' , self.identifier , '}')
         else:
@@ -698,6 +864,9 @@ class Field(object):
             return self
         else:
             object.__setattr__(self, name, value)
+
+    def setDescription(self,value):
+        return self.setProperty('description', value)
 
     def setView(self, view):
         ''''''
@@ -798,7 +967,7 @@ class Dimension(Field):
 
     def __str__(self):
         return splice(
-                        '\ndimension: ', 
+                        NEWLINE,'dimension: ', 
                         super(Dimension, self).__str__()
                         )
 
@@ -806,7 +975,7 @@ class DimensionGroup(Field):
     def __init__(self, *args, **kwargs):
         super(DimensionGroup, self).__init__(self, *args, **kwargs)
         if not self.properties.isMember('timeframes'):
-            self.properties.addProperty('timeframes', '[raw, year, quarter, month, week, date, day_of_week, hour, hour_of_day, minute, time, time_of_day]')
+            self.properties.addProperty('timeframes', splice('[','{},'.format(NEWLINEINDENT).join(TIMEFRAMES),']'))
         if not self.properties.isMember('type'):
             self.properties.addProperty('type', 'time')
         if not self.properties.isMember('sql'):
@@ -822,7 +991,7 @@ class DimensionGroup(Field):
 
     def __str__(self):
         return splice(
-                        '\ndimension_group: ', 
+                        NEWLINE,'dimension_group: ', 
                         super(DimensionGroup, self).__str__()
                         )
 
@@ -832,7 +1001,7 @@ class Measure(Field):
 
     def __str__(self):
         return splice(
-                        '\nmeasure: ', 
+                        NEWLINE,'measure: ', 
                         super(Measure, self).__str__()
                         )
 
@@ -842,7 +1011,7 @@ class Filter(Field):
 
     def __str__(self):
         return splice(
-                        '\nfilter: ', 
+                        NEWLINE,'filter: ', 
                         super(Filter, self).__str__()
                         )
 
@@ -852,6 +1021,6 @@ class Parameter(Field):
 
     def __str__(self):
         return splice(
-                        '\nparameter: ', 
+                        NEWLINE,'parameter: ', 
                         super(Parameter, self).__str__()
                         )
