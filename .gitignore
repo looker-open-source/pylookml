@@ -9,7 +9,7 @@ output/*
 run.py
 msi_run.py
 *.lkml
-
+testclient.py
 ############## Generic Python Gitignore configurations ##############
 # Byte-compiled / optimized / DLL files
 __pycache__/
