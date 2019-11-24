@@ -57,7 +57,6 @@ class ndt(object):
 
 class writeable(object):
     def __init__(self, *args, **kwargs):
-        print(self.__class__)
         self.identifier = kwargs.get('identifier', None)
         if not self.identifier:
             self.identifier = kwargs.get('name', None)
@@ -70,7 +69,6 @@ class writeable(object):
         self.extension = kwargs.get('extension', '.lkml')
         self.fileName = self.identifier + self.extension     
         self.outputFolder = kwargs.get('output_dir',OUTPUT_DIR)
-        print("outputFolder: %s"  % (OUTPUT_DIR))
         if self.outputFolder:
             self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
         else:
