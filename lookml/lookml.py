@@ -1051,6 +1051,10 @@ class Measure(Field):
     def __init__(self, *args, **kwargs):
         super(Measure, self).__init__(self, *args, **kwargs)
 
+    def setSql(self, sql):
+        self.setProperty('sql', sql)
+        return self
+
     def __str__(self):
         return splice(
                         NEWLINE,'measure: ', 
