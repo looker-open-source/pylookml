@@ -919,6 +919,10 @@ class Field(object):
         self.properties.delProperty(name)
         return self
 
+    def setSql(self, sql):
+        self.setProperty('sql', sql)
+        return self
+
     def getProperty(self, identifier):
         ''''''
         return self.properties.getProperty(identifier)
@@ -978,10 +982,6 @@ class Dimension(Field):
         self.setProperty('sql', splice('${TABLE}.' , DB_FIELD_DELIMITER_START , self.db_column , DB_FIELD_DELIMITER_END))
         if changeIdentifier:
             self.identifier =lookCase(self.db_column)
-        return self
-
-    def setSql(self, sql):
-        self.setProperty('sql', sql)
         return self
 
     def setAllLabels(self, group: None, item: None, label: None):
@@ -1050,10 +1050,6 @@ class DimensionGroup(Field):
 class Measure(Field):
     def __init__(self, *args, **kwargs):
         super(Measure, self).__init__(self, *args, **kwargs)
-
-    def setSql(self, sql):
-        self.setProperty('sql', sql)
-        return self
 
     def __str__(self):
         return splice(
