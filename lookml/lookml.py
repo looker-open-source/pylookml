@@ -980,6 +980,19 @@ class Dimension(Field):
             self.identifier =lookCase(self.db_column)
         return self
 
+    def setSql(self, sql):
+        self.setProperty('sql', sql)
+        return self
+
+    def setAllLabels(self, group: None, item: None, label: None):
+        if group:
+            self.setProperty('group_label', group)
+        if item:
+            self.setProperty('group_item_label', item)
+        if label:
+            self.setProperty('label', label)
+        return self
+
     def setPrimaryKey(self):
         self.setProperty('primary_key', 'yes')
         # self.view.setPrimaryKey(self.identifier, callFromChild=True)
