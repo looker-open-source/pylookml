@@ -69,10 +69,10 @@ class writeable(object):
         self.extension = kwargs.get('extension', '.lkml')
         self.fileName = self.identifier + self.extension     
         self.outputFolder = kwargs.get('output_dir',OUTPUT_DIR)
-        # if self.outputFolder:
-        #     self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
-        # else:
-        #     self.path = self.fileName
+        if self.outputFolder:
+            self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
+        else:
+            self.path = self.fileName
 
         # super(writeable, self).__init__(self, *args, **kwargs)
 
@@ -88,7 +88,7 @@ class writeable(object):
 
     def write(self,overWriteExisting=True):
         ''' Checks to see if the file exists before writing'''
-        print(self.path)
+        print("Writing to: %s" % (self.path) )
         if overWriteExisting:
             with open(self.path, 'w') as opened_file:
                 try:
@@ -536,6 +536,11 @@ class Join(object):
 
     def setFrom(self,f):
         pass
+
+    def setProperty(self, name, value):
+        ''''''
+        self.properties.addProperty(name, value)
+        return self
     
     def setTo(self,t):
         if isinstance(t,View):
@@ -549,6 +554,10 @@ class Join(object):
 
     def setOn(self,sql_on):
         self.properties.addProperty('sql_on', sql_on )
+        return self
+
+    def setSql(self,sql):
+        self.setProperty('sql', sql)
         return self
 
     def setType(self, joinType):
@@ -910,6 +919,10 @@ class Field(object):
         self.properties.delProperty(name)
         return self
 
+    def setSql(self, sql):
+        self.setProperty('sql', sql)
+        return self
+
     def getProperty(self, identifier):
         ''''''
         return self.properties.getProperty(identifier)
@@ -969,6 +982,15 @@ class Dimension(Field):
         self.setProperty('sql', splice('${TABLE}.' , DB_FIELD_DELIMITER_START , self.db_column , DB_FIELD_DELIMITER_END))
         if changeIdentifier:
             self.identifier =lookCase(self.db_column)
+        return self
+
+    def setAllLabels(self, group: None, item: None, label: None):
+        if group:
+            self.setProperty('group_label', group)
+        if item:
+            self.setProperty('group_item_label', item)
+        if label:
+            self.setProperty('label', label)
         return self
 
     def setPrimaryKey(self):
