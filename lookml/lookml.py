@@ -597,6 +597,7 @@ class Explore(object):
         # self.identifier = kwargs.get('identifier', kwargs.get('view', 'error_view_not_set'))
         self.joins = dict()
         self.base_view = kwargs.get('view',None)
+        self.fileName = self.identifier + '.explore.lkml'
 
         self.identifier = kwargs.get('identifier', None)
         if not self.identifier:
