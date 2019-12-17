@@ -590,7 +590,7 @@ class Join(object):
     def __getitem__(self,identifier):
         return self.getJoin(identifier)
 
-class Explore(object):
+class Explore(writeable):
     ''' Represents an explore object in LookML'''
     def __init__(self, *args, **kwargs):
         self.properties = Properties(kwargs.get('schema', {}))
@@ -598,6 +598,10 @@ class Explore(object):
         self.joins = dict()
         self.base_view = kwargs.get('view',None)
         self.fileName = self.identifier + '.explore.lkml'
+        if self.outputFolder:
+            self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
+        else:
+            self.path = self.fileName
 
         self.identifier = kwargs.get('identifier', None)
         if not self.identifier:
