@@ -626,9 +626,13 @@ class Explore(writeable):
         self.view = kwargs.get('view', '')
 
     def __str__(self):
+        # filter(lambda dim: isinstance(dim, Dimension), self.fields.values())
+        # filter(lambda prop: prop.name == 'include', self.properties.getProperties())
         return splice(
+                
+                    '\n'.join([str(p) for p in filter(lambda prop: prop.name == 'include', self.properties.getProperties())]), 
                     '\nexplore: ', self.identifier, ' {\n    ', 
-                    '\n    '.join([str(p) for p in self.properties.getProperties()]), 
+                    '\n    '.join([str(p) for p in filter(lambda prop: prop.name != 'include', self.properties.getProperties())]), 
                     '\n    '.join([str(join) for join in self.getJoins()]),
                      '\n}\n'
                      )
