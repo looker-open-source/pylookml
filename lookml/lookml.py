@@ -638,8 +638,9 @@ class Explore(writeable):
         # if key in self.__dict__.keys():
         #     return self.__dict__[key]
         
-        if key == self.base_view.name:
-        # elif key == 'order_items':
+        if ('name' in self.base_view) and (key == self.base_view.name):
+            return self.base_view
+        elif key == self.base_view:
             return self.base_view
         elif key in self.joins.keys():
             return self.joins[key]
