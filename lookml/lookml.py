@@ -597,11 +597,6 @@ class Explore(writeable):
         # self.identifier = kwargs.get('identifier', kwargs.get('view', 'error_view_not_set'))
         self.joins = dict()
         self.base_view = kwargs.get('view',None)
-        self.fileName = self.identifier + '.explore.lkml'
-        if self.outputFolder:
-            self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
-        else:
-            self.path = self.fileName
 
         self.identifier = kwargs.get('identifier', None)
         if not self.identifier:
@@ -615,6 +610,11 @@ class Explore(writeable):
                     self.setName(args[0].name)
                     self.base_view = args[0]
 
+        self.fileName = self.identifier + '.explore.lkml'
+        if self.outputFolder:
+            self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
+        else:
+            self.path = self.fileName
 
         self.view = kwargs.get('view', '')
 
