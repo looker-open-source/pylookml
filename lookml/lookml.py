@@ -610,6 +610,7 @@ class Explore(writeable):
             if len(args) >= 1:
                 if isinstance(args[0],str):
                     self.setName(args[0])
+                    self.base_view = args[0]
                 elif isinstance(args[0],View):
                     self.setName(args[0].name)
                     self.base_view = args[0]
