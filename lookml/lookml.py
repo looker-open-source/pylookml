@@ -86,6 +86,13 @@ class writeable(object):
         self.identifier = identifier
         return self
 
+    def include(self,file):
+        if isinstance(file,writeable):
+            self.properties.addProperty('include',file.fileName)
+        else:
+            self.properties.addProperty('include',file) 
+        return self 
+
     def write(self,overWriteExisting=True):
         ''' Checks to see if the file exists before writing'''
         print("Writing to: %s" % (self.path) )
@@ -735,13 +742,6 @@ class Model(writeable):
     def setConnection(self,value):
         self.properties.addProperty('connection',value)
         return self
-
-    def include(self,file):
-        if isinstance(file,writeable):
-            self.properties.addProperty('include',file.fileName)
-        else:
-            self.properties.addProperty('include',file) 
-        return self 
 
     def addAccessGrant(self, access_grant):
         self.access_grants.update({access_grant.identifier: access_grant})
