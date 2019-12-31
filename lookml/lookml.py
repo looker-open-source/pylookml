@@ -69,15 +69,16 @@ class writeable(object):
         self.extension = kwargs.get('extension', '.lkml')
         self.fileName = self.identifier + self.extension     
         self.outputFolder = kwargs.get('output_dir',OUTPUT_DIR)
-        # if self.outputFolder:
-        #     self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
-        # else:
-        #     self.path = self.fileName
+        if self.outputFolder:
+            self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
+        else:
+            self.path = self.fileName
 
         # super(writeable, self).__init__(self, *args, **kwargs)
 
     def setFolder(self,folder):
         self.outputFolder = folder
+        self.path = self.outputFolder + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
         return self
 
     def setName(self, identifier):
@@ -87,7 +88,7 @@ class writeable(object):
 
     def write(self,overWriteExisting=True):
         ''' Checks to see if the file exists before writing'''
-        print(self.path)
+        print("Writing to: %s" % (self.path) )
         if overWriteExisting:
             with open(self.path, 'w') as opened_file:
                 try:
@@ -423,7 +424,7 @@ class View(writeable):
         return self
 
     def addSum(self, f):
-        '''Add a count distinct to the view based on a field object or field name/identifier. returns self'''
+        '''Add a sum to the view based on a field object or field name/identifier. returns self'''
         if isinstance(f, Field):
             field = f
         else:
@@ -432,6 +433,19 @@ class View(writeable):
             identifier=''.join(['total_', field.identifier]), schema={'sql': field.ref_short}
         )
         measure.setType('sum')
+        self.addField(measure)
+        return self
+
+    def addAverage(self, f):
+        '''Add a average to the view based on a field object or field name/identifier. returns self'''
+        if isinstance(f, Field):
+            field = f
+        else:
+            field = self.getField(f)
+        measure = Measure(
+            identifier=''.join(['average_', field.identifier]), schema={'sql': field.ref_short}
+        )
+        measure.setType('average')
         self.addField(measure)
         return self
 
@@ -522,6 +536,11 @@ class Join(object):
 
     def setFrom(self,f):
         pass
+
+    def setProperty(self, name, value):
+        ''''''
+        self.properties.addProperty(name, value)
+        return self
     
     def setTo(self,t):
         if isinstance(t,View):
@@ -535,6 +554,10 @@ class Join(object):
 
     def setOn(self,sql_on):
         self.properties.addProperty('sql_on', sql_on )
+        return self
+
+    def setSql(self,sql):
+        self.setProperty('sql', sql)
         return self
 
     def setType(self, joinType):
@@ -677,6 +700,7 @@ class Model(writeable):
         self.schema = kwargs.get('schema', {})
         self.properties = Properties(self.schema)
         self.explores = {}
+        self.access_grants = {}
         self.fileName = self.identifier + '.model.lkml'
         if self.outputFolder:
             self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
@@ -686,7 +710,8 @@ class Model(writeable):
     def __str__(self):
         return splice(
                         '\n'.join([str(p) for p in self.properties.getProperties()]), 
-                        '\n' * 5, '\n'.join([str(e) for e in self.getExplores()])
+                        '\n' * 5, '\n'.join([str(e) for e in self.getExplores()]),
+                        '\n' * 5, '\n'.join([str(e) for e in self.getAccessGrants()])
                         )
 
     def __getattr__(self, key):
@@ -710,6 +735,13 @@ class Model(writeable):
         else:
             self.properties.addProperty('include',file) 
         return self 
+
+    def addAccessGrant(self, access_grant):
+        self.access_grants.update({access_grant.identifier: access_grant})
+
+    def getAccessGrants(self):
+        for field, literal in self.access_grants.items():
+            yield literal
 
     def setName(self, name):
        self.setIdentifier(name)
@@ -887,6 +919,10 @@ class Field(object):
         self.properties.delProperty(name)
         return self
 
+    def setSql(self, sql):
+        self.setProperty('sql', sql)
+        return self
+
     def getProperty(self, identifier):
         ''''''
         return self.properties.getProperty(identifier)
@@ -922,6 +958,13 @@ class Field(object):
         self.properties.delProperty('hidden')
         return self
 
+    def set_Field_Level_Permission(self, access_grant):
+        if isinstance(access_grant,str):
+            self.setProperty('required_access_grants', '[' + ','.join([access_grant]) + ']')
+        elif isinstance(access_grant,list):
+            self.setProperty('required_access_grants', '[' + ','.join(access_grant) + ']')
+        return self
+
 class Dimension(Field):
     def __init__(self, *args, **kwargs):
         super(Dimension, self).__init__(self, *args, **kwargs)
@@ -941,9 +984,18 @@ class Dimension(Field):
             self.identifier =lookCase(self.db_column)
         return self
 
+    def setAllLabels(self, group: None, item: None, label: None):
+        if group:
+            self.setProperty('group_label', group)
+        if item:
+            self.setProperty('group_item_label', item)
+        if label:
+            self.setProperty('label', label)
+        return self
+
     def setPrimaryKey(self):
         self.setProperty('primary_key', 'yes')
-        self.view.setPrimaryKey(self.identifier, callFromChild=True)
+        # self.view.setPrimaryKey(self.identifier, callFromChild=True)
         return self
 
     def unSetPrimaryKey(self):
@@ -1024,3 +1076,20 @@ class Parameter(Field):
                         NEWLINE,'parameter: ', 
                         super(Parameter, self).__str__()
                         )
+
+class Field_Level_Permissions(Field):
+    def __init__(self, *args, **kwargs):
+        super(Field_Level_Permissions, self).__init__(self, *args, **kwargs)
+
+    def __str__(self):
+        return splice(
+                        '\naccess_grant: ', 
+                        super(Field_Level_Permissions, self).__str__()
+                        )
+    
+    def set_User_Attribute(self, user_attribute):
+        return self.setProperty('user_attribute', user_attribute)
+         
+    def set_Allowed_Value(self, allowed_value):
+        return self.setProperty('allowed_values', '["%s"]' %allowed_value)                        
+
