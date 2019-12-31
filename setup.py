@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="lookml",
-    version="0.0.3",
+    version="0.0.4",
     author="Russell Garner",
     author_email="russelljgarner@gmail.com",
     description="A pythonic api for programatically manipulating LookML",
