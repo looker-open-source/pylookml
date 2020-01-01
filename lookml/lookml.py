@@ -630,9 +630,10 @@ class Explore(writeable):
         if isinstance(other,View):
             pass 
         elif isinstance(other,Join):
-            pass
+            self.addJoin(Join)
         return self
-
+    def __radd__(self,other):
+        return self.__add__(other)
     def __getattr__(self, key):
         # print(self.__dict__.keys())
         # if key in self.__dict__.keys():

@@ -29,6 +29,12 @@ class testView(unittest.TestCase):
     #     with self.assertRaises(TypeError):
     #         s.split(2)
 
+    def test_false_addition(self):
+        # Check that the view complains if incorrect object is added
+        with self.assertRaises(Exception):
+            explore = lookml.Explore('order_items')
+            self.view + explore
+
 class testExplore(unittest.TestCase):
     def setUp(self):
         self.order_items = lookml.View('order_items')
