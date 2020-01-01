@@ -64,6 +64,8 @@ class writeable(object):
             if len(args) > 1:
                 if isinstance(args[1],str):
                     self.identifier = args[1]
+                elif isinstance(args[1],View):
+                    self.identifier = args[1].identifier
             else:
                 self.identifier = ''        
         self.extension = kwargs.get('extension', '.lkml')
@@ -590,9 +592,10 @@ class Join(object):
     def __getitem__(self,identifier):
         return self.getJoin(identifier)
 
-class Explore(object):
+class Explore(writeable):
     ''' Represents an explore object in LookML'''
     def __init__(self, *args, **kwargs):
+        super(Explore, self).__init__(self, *args, **kwargs)
         self.properties = Properties(kwargs.get('schema', {}))
         # self.identifier = kwargs.get('identifier', kwargs.get('view', 'error_view_not_set'))
         self.joins = dict()
@@ -611,6 +614,9 @@ class Explore(object):
 
 
         self.view = kwargs.get('view', '')
+
+    def __len__(self):
+        return len(self.joins)
 
     def __str__(self):
         return splice(
@@ -885,7 +891,7 @@ class Field(object):
         elif key == 'ref_short':
             return splice('${' , self.identifier , '}')
         else:
-            pass
+            return self.properties.getProperty(key)
 
     def __setattr__(self, name, value):
         if name == 'label':
