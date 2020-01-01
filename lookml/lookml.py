@@ -1,13 +1,5 @@
 import re
-NONUNIQUE_PROPERTIES = {'include','link', 'filters', 'bind_filters', 'data_groups', 'named_value_format', 'sets', 'column'}
-TIMEFRAMES = ['raw', 'year', 'quarter', 'month', 'week', 'date', 'day_of_week', 'hour', 'hour_of_day', 'minute', 'time', 'time_of_day']
-DB_FIELD_DELIMITER_START = '`' 
-DB_FIELD_DELIMITER_END = '`'
-OUTPUT_DIR = ''
-INDENT = ' '*4
-NEWLINE = '\n'
-NEWLINEINDENT = ''.join([NEWLINE,INDENT])
-
+import lookml.config as conf
 
 def snakeCase(string):
     str1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', string)
@@ -27,32 +19,7 @@ def lookCase(string):
 #         pass
 
 
-class ndt(object):
-    def __init__(self,explore_source):
-        self._columns = {}
-        self._dcolumns = {}
 
-        if isinstance(explore_source,Explore):
-            self._explore_source = explore_source.identifier
-        else:
-            self._explore_source = explore_source
-
-    def addColumn(self,name,field):
-        self._columns.update({name:field})
-        return self
-
-    def addDerivedColumn(self,name,field):
-        self._dcolumns.update({name:field})
-        return self
-
-    def __str__(self):
-        return splice(
-            'derived_table: {\n',
-            'explore_source: ' + self._explore_source + ' ' , ' {',NEWLINEINDENT
-             ,NEWLINEINDENT.join(['column: ' + k + ' { field: ' + v + '}' for k,v in self._columns.items()]),NEWLINEINDENT
-             ,NEWLINEINDENT.join(['derived_column: ' + k + ' { sql: ' + v + ';; }' for k,v in self._dcolumns.items()])
-            ,NEWLINEINDENT,'}',NEWLINE,'}'
-        )
 
 
 class writeable(object):
@@ -70,7 +37,7 @@ class writeable(object):
                 self.identifier = ''        
         self.extension = kwargs.get('extension', '.lkml')
         self.fileName = self.identifier + self.extension     
-        self.outputFolder = kwargs.get('output_dir',OUTPUT_DIR)
+        self.outputFolder = kwargs.get('output_dir',conf.OUTPUT_DIR)
         if self.outputFolder:
             self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
         else:
@@ -144,12 +111,12 @@ class View(writeable):
 
     def __str__(self):
         return splice(
-                        splice('#',self.message,NEWLINE) if self.message else '', 
+                        splice('#',self.message,conf.NEWLINE) if self.message else '', 
                         'view: ', self.identifier, ' {', 
-                        NEWLINE,self.source(),NEWLINE, 
-                        NEWLINE.join([str(p) for p in self.properties.getProperties()]), 
-                        NEWLINEINDENT.join([str(field) for field in self.getFieldsSorted()]), 
-                        splice(NEWLINE,'}',NEWLINE),
+                        conf.NEWLINE,self.source(),conf.NEWLINE, 
+                        conf.NEWLINE.join([str(p) for p in self.properties.getProperties()]), 
+                        conf.NEWLINEINDENT.join([str(field) for field in self.getFieldsSorted()]), 
+                        splice(conf.NEWLINE,'}',conf.NEWLINE),
                         *[str(child) for child in self.children.values()] if self.children else ''
                         )
 
@@ -250,12 +217,12 @@ class View(writeable):
         ''' Set the sql table name, returns self'''
         if schema:
             tmp = splice(
-                    DB_FIELD_DELIMITER_START, schema , DB_FIELD_DELIMITER_END,'.', 
-                    DB_FIELD_DELIMITER_START, sql_table_name ,DB_FIELD_DELIMITER_END
+                    conf.DB_FIELD_DELIMITER_START, schema , conf.DB_FIELD_DELIMITER_END,'.', 
+                    conf.DB_FIELD_DELIMITER_START, sql_table_name ,conf.DB_FIELD_DELIMITER_END
                     )
         else:
             tmp = splice(
-                    DB_FIELD_DELIMITER_START, sql_table_name ,DB_FIELD_DELIMITER_END
+                    conf.DB_FIELD_DELIMITER_START, sql_table_name ,conf.DB_FIELD_DELIMITER_END
                     )
         self.sql_table_name = Property('sql_table_name',tmp)
         self.tableSource = True
@@ -514,6 +481,34 @@ class View(writeable):
             self.children.update({child.identifier: child})
         return child
 
+class ndt(View):
+    def __init__(self,explore_source, *args, **kwargs):
+        super(ndt, self).__init__(self, *args, **kwargs)
+        self._columns = {}
+        self._dcolumns = {}
+
+        if isinstance(explore_source,Explore):
+            self._explore_source = explore_source.identifier
+        else:
+            self._explore_source = explore_source
+
+    def addColumn(self,name,field):
+        self._columns.update({name:field})
+        return self
+
+    def addDerivedColumn(self,name,field):
+        self._dcolumns.update({name:field})
+        return self
+
+    def __str__(self):
+        return splice(
+            'derived_table: {\n',
+            'explore_source: ' + self._explore_source + ' ' , ' {',conf.NEWLINEINDENT
+             ,conf.NEWLINEINDENT.join(['column: ' + k + ' { field: ' + v + '}' for k,v in self._columns.items()]),conf.NEWLINEINDENT
+             ,conf.NEWLINEINDENT.join(['derived_column: ' + k + ' { sql: ' + v + ';; }' for k,v in self._dcolumns.items()])
+            ,conf.NEWLINEINDENT,'}',conf.NEWLINE,'}'
+        )
+
 class Join(object):
     ''' Instantiates a LookML join object... '''
     __slots__ = ['properties', 'identifier','_from','to']
@@ -527,9 +522,9 @@ class Join(object):
 
     def __str__(self):
         return splice(
-                         NEWLINE,'join: ', self.identifier, ' {',NEWLINE,'    ',
-                         NEWLINEINDENT.join([str(p) for p in self.properties.getProperties()]),
-                         NEWLINE,'}',NEWLINE
+                         conf.NEWLINE,'join: ', self.identifier, ' {',conf.NEWLINE,'    ',
+                         conf.NEWLINEINDENT.join([str(p) for p in self.properties.getProperties()]),
+                         conf.NEWLINE,'}',conf.NEWLINE
                           )
 
     def setName(self, identifier):
@@ -676,7 +671,7 @@ class Explore(writeable):
         tmpView.tableSource = False
         return tmpView
 
-    def setName(self,name):
+    def setName(self,name): 
         self.identifier = name
         return self
 
@@ -827,14 +822,14 @@ class Properties(object):
 
     def getProperties(self):
         for k, v in self.schema.items():
-            if k in NONUNIQUE_PROPERTIES:
+            if k in conf.NONUNIQUE_PROPERTIES:
                 for n in v:
                     yield Property(k, n)
             else:
                 yield Property(k, v)
 
     def addProperty(self, name, value):
-        if name in NONUNIQUE_PROPERTIES:
+        if name in conf.NONUNIQUE_PROPERTIES:
             index = self.schema.get(name,[])
             index.append(value)
             self.schema.update(
@@ -874,9 +869,9 @@ class Field(object):
         
     def __str__(self):
         return splice(
-                        self.identifier, splice(' {',NEWLINEINDENT), 
-                            NEWLINEINDENT.join([str(n) for n in self.properties.getProperties()]),
-                            splice(NEWLINE,'}',NEWLINE)
+                        self.identifier, splice(' {',conf.NEWLINEINDENT), 
+                            conf.NEWLINEINDENT.join([str(n) for n in self.properties.getProperties()]),
+                            splice(conf.NEWLINE,'}',conf.NEWLINE)
                          )
 
     def __getattr__(self, key):
@@ -990,7 +985,7 @@ class Dimension(Field):
     def setDBColumn(self, dbColumn, changeIdentifier=True):
         ''''''
         self.db_column = dbColumn
-        self.setProperty('sql', splice('${TABLE}.' , DB_FIELD_DELIMITER_START , self.db_column , DB_FIELD_DELIMITER_END))
+        self.setProperty('sql', splice('${TABLE}.' , conf.DB_FIELD_DELIMITER_START , self.db_column , conf.DB_FIELD_DELIMITER_END))
         if changeIdentifier:
             self.identifier =lookCase(self.db_column)
         return self
@@ -1030,7 +1025,7 @@ class Dimension(Field):
 
     def __str__(self):
         return splice(
-                        NEWLINE,'dimension: ', 
+                        conf.NEWLINE,'dimension: ', 
                         super(Dimension, self).__str__()
                         )
 
@@ -1038,23 +1033,23 @@ class DimensionGroup(Field):
     def __init__(self, *args, **kwargs):
         super(DimensionGroup, self).__init__(self, *args, **kwargs)
         if not self.properties.isMember('timeframes'):
-            self.properties.addProperty('timeframes', splice('[','{},'.format(NEWLINEINDENT).join(TIMEFRAMES),']'))
+            self.properties.addProperty('timeframes', splice('[','{},'.format(conf.NEWLINEINDENT).join(conf.TIMEFRAMES),']'))
         if not self.properties.isMember('type'):
             self.properties.addProperty('type', 'time')
         if not self.properties.isMember('sql'):
-            self.properties.addProperty('sql', splice('${TABLE}.' , DB_FIELD_DELIMITER_START , self.db_column , DB_FIELD_DELIMITER_END))
+            self.properties.addProperty('sql', splice('${TABLE}.' , conf.DB_FIELD_DELIMITER_START , self.db_column , conf.DB_FIELD_DELIMITER_END))
 
     def setDBColumn(self, dbColumn, changeIdentifier=True):
         ''''''
         self.db_column = dbColumn
-        self.setProperty('sql', splice('${TABLE}.' , DB_FIELD_DELIMITER_START , self.db_column , DB_FIELD_DELIMITER_END))
+        self.setProperty('sql', splice('${TABLE}.' , conf.DB_FIELD_DELIMITER_START , self.db_column , conf.DB_FIELD_DELIMITER_END))
         if changeIdentifier:
             self.identifier = lookCase(self.db_column)
         return self
 
     def __str__(self):
         return splice(
-                        NEWLINE,'dimension_group: ', 
+                        conf.NEWLINE,'dimension_group: ', 
                         super(DimensionGroup, self).__str__()
                         )
 
@@ -1064,7 +1059,7 @@ class Measure(Field):
 
     def __str__(self):
         return splice(
-                        NEWLINE,'measure: ', 
+                        conf.NEWLINE,'measure: ', 
                         super(Measure, self).__str__()
                         )
 
@@ -1074,7 +1069,7 @@ class Filter(Field):
 
     def __str__(self):
         return splice(
-                        NEWLINE,'filter: ', 
+                        conf.NEWLINE,'filter: ', 
                         super(Filter, self).__str__()
                         )
 
@@ -1084,7 +1079,7 @@ class Parameter(Field):
 
     def __str__(self):
         return splice(
-                        NEWLINE,'parameter: ', 
+                        conf.NEWLINE,'parameter: ', 
                         super(Parameter, self).__str__()
                         )
 
