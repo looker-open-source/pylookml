@@ -1,6 +1,17 @@
 import unittest
 import lookml
 
+class testField(unittest.TestCase):
+    def setUp(self):
+        self.order_items = lookml.View('order_items')
+        self.order_items + 'inventory_item_id' + 'id' 
+        lookml.config.PRE_FIELD_BUFFER = ''
+        lookml.config.POST_FIELD_BUFFER = ''
+
+    # def test_print(self):
+    #     print(self.order_items)
+
+
 class testView(unittest.TestCase):
     def setUp(self):
         self.view = lookml.View('order_items')
@@ -22,13 +33,10 @@ class testView(unittest.TestCase):
     def test_correct_name(self):
         self.assertEqual(self.view.name,'order_items')
 
-    # def test_split(self):
-    #     s = 'hello world'
-    #     self.assertEqual(s.split(), ['hello', 'world'])
-    #     # check that s.split fails when the separator is not a string
-    #     with self.assertRaises(TypeError):
-    #         s.split(2)
-
+    def test_calling_non_existent_field(self):
+        with self.assertRaises(KeyError):
+            self.view.getField('fake_field')
+            
     def test_false_addition(self):
         # Check that the view complains if incorrect object is added
         with self.assertRaises(Exception):
@@ -52,10 +60,11 @@ class testExplore(unittest.TestCase):
         '''' tests the addition of joins '''
         self.order_items_explore.addJoin(self.inventory_items).on(self.order_items.inventory_item_id , ' = ', self.inventory_items.id).setType('left_outer').setRelationship('one_to_one')
         self.order_items_explore.addJoin(self.products).on(self.inventory_items.product_id , ' = ', self.products.id).setType('left_outer').setRelationship('many_to_one')
-        print(len(self.order_items_explore))
+        self.assertEqual(len(self.order_items_explore),2)
         #print(self.order_items_explore)
 
-    
+
+
 
 
 

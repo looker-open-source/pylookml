@@ -14,13 +14,14 @@ def removeSpace(string):  # removing special character / [|]<>,.?}{+=~!$%^&*()-
 def lookCase(string):
     return removeSpace(snakeCase(string))
 
-# class Project(object):
-#     def __init__(self):
-#         pass
-
-
-
-
+def ws_buffer(item):
+    def wrapper(*args,**kwargs):
+        return splice(
+                conf.PRE_FIELD_BUFFER,
+                item(*args,**kwargs),
+                conf.POST_FIELD_BUFFER
+                )
+    return wrapper
 
 class writeable(object):
     def __init__(self, *args, **kwargs):
@@ -42,8 +43,6 @@ class writeable(object):
             self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
         else:
             self.path = self.fileName
-
-        # super(writeable, self).__init__(self, *args, **kwargs)
 
     def setFolder(self,folder):
         self.outputFolder = folder
@@ -115,7 +114,7 @@ class View(writeable):
                         'view: ', self.identifier, ' {', 
                         conf.NEWLINE,self.source(),conf.NEWLINE, 
                         conf.NEWLINE.join([str(p) for p in self.properties.getProperties()]), 
-                        conf.NEWLINEINDENT.join([str(field) for field in self.getFieldsSorted()]), 
+                        conf.NEWLINE.join([str(field) for field in self.getFieldsSorted()]), 
                         splice(conf.NEWLINE,'}',conf.NEWLINE),
                         *[str(child) for child in self.children.values()] if self.children else ''
                         )
@@ -203,8 +202,6 @@ class View(writeable):
 
     # def __next__(self):
 
-
-
     def source(self):
         if self.tableSource == None:
             return ''
@@ -261,7 +258,10 @@ class View(writeable):
 
     def getField(self, identifier):
         ''' Returns a specific field based on identifier/string lookup'''
-        return self.fields.get(identifier, Field(identifier='Not Found'))
+        try:
+            return self.fields[identifier]
+        except KeyError:
+            raise KeyError
 
     def getFieldByDBColumn(self, dbColumn):
         ''' Converts the db column to lookCase for identifier lookup.....'''
@@ -866,12 +866,12 @@ class Field(object):
                 self.identifier = ''
 
         self.view = kwargs.get('view', '')
-        
+    
     def __str__(self):
         return splice(
                         self.identifier, splice(' {',conf.NEWLINEINDENT), 
                             conf.NEWLINEINDENT.join([str(n) for n in self.properties.getProperties()]),
-                            splice(conf.NEWLINE,'}',conf.NEWLINE)
+                            splice(conf.NEWLINE,'}')
                          )
 
     def __getattr__(self, key):
@@ -1023,9 +1023,10 @@ class Dimension(Field):
         })
         return self
 
+    @ws_buffer
     def __str__(self):
         return splice(
-                        conf.NEWLINE,'dimension: ', 
+                        'dimension: ', 
                         super(Dimension, self).__str__()
                         )
 
@@ -1046,10 +1047,11 @@ class DimensionGroup(Field):
         if changeIdentifier:
             self.identifier = lookCase(self.db_column)
         return self
-
+    
+    @ws_buffer
     def __str__(self):
         return splice(
-                        conf.NEWLINE,'dimension_group: ', 
+                        'dimension_group: ', 
                         super(DimensionGroup, self).__str__()
                         )
 
@@ -1057,9 +1059,10 @@ class Measure(Field):
     def __init__(self, *args, **kwargs):
         super(Measure, self).__init__(self, *args, **kwargs)
 
+    @ws_buffer
     def __str__(self):
         return splice(
-                        conf.NEWLINE,'measure: ', 
+                        'measure: ', 
                         super(Measure, self).__str__()
                         )
 
@@ -1067,19 +1070,21 @@ class Filter(Field):
     def __init__(self, *args, **kwargs):
         super(Filter, self).__init__(self, *args, **kwargs)
 
+    @ws_buffer
     def __str__(self):
         return splice(
-                        conf.NEWLINE,'filter: ', 
+                        'filter: ', 
                         super(Filter, self).__str__()
                         )
 
 class Parameter(Field):
     def __init__(self, *args, **kwargs):
         super(Parameter, self).__init__(self, *args, **kwargs)
-
+    
+    @ws_buffer
     def __str__(self):
         return splice(
-                        conf.NEWLINE,'parameter: ', 
+                        'parameter: ', 
                         super(Parameter, self).__str__()
                         )
 
@@ -1087,6 +1092,7 @@ class Field_Level_Permissions(Field):
     def __init__(self, *args, **kwargs):
         super(Field_Level_Permissions, self).__init__(self, *args, **kwargs)
 
+    @ws_buffer
     def __str__(self):
         return splice(
                         '\naccess_grant: ', 
