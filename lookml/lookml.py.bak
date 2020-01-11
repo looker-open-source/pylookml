@@ -25,9 +25,9 @@ def ws_buffer(item):
 
 class writeable(object):
     def __init__(self, *args, **kwargs):
-        self.identifier = kwargs.get('identifier', '')
+        self.identifier = kwargs.get('identifier', None)
         if not self.identifier:
-            self.identifier = kwargs.get('name', '')
+            self.identifier = kwargs.get('name', None)
         if not self.identifier:
             if len(args) > 1:
                 if isinstance(args[1],str):
@@ -109,19 +109,19 @@ class View(writeable):
     #     else:
     #         self.path = self.fileName
 ##################### Preservation before large compatibility modification #####################
-    __slots__ = [
-             'sql_table_name'
-            ,'derived_table'
-            ,'tableSource'
-            ,'message'
-            ,'fields'
-            ,'primaryKey'
-            ,'schema'
-            ,'properties'
-            ,'children'
-            ,'parent'
-            ,'fileName'
-            ]
+    # __slots__ = [
+    #          'sql_table_name'
+    #         ,'derived_table'
+    #         ,'tableSource'
+    #         ,'message'
+    #         ,'fields'
+    #         ,'primaryKey'
+    #         ,'schema'
+    #         ,'properties'
+    #         ,'children'
+    #         ,'parent'
+    #         ,'fileName'
+    #         ]
     def __init__(self, *args, **kwargs):
         super(View, self).__init__(self, *args, **kwargs)
         if 'sql_table_name' in kwargs.keys():
@@ -134,24 +134,11 @@ class View(writeable):
             self.tableSource = None
         self.message = kwargs.get('message', '')
 
-        #At Some Point may want to refactor the internal data structures
-        # self.dimension_groups = dict()
-        # self.dimensions = dict()
-        # self.measures = dict()
-        # self.filters = dict()
-        # self.sets = dict()
-        
         self.fields = {}
         self.schema = kwargs.get('schema', {})
         self.properties = Properties(self.schema)
+
         self.primaryKey = ''
-
-        #If passed a dictionary it is assumed to be the LKML schema
-        if len(args) >= 1:
-            # print(args)
-            if isinstance(args[0],dict):
-                self.bind_lkml(args[0])
-
         self.children = {}
         self.parent = None
         self.fileName = self.identifier + '.view.lkml'
@@ -159,17 +146,6 @@ class View(writeable):
             self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
         else:
             self.path = self.fileName
-
-    def bind_lkml(self,jsonDict):
-        self.setName(jsonDict.pop('name'))
-        for dim in jsonDict['dimensions']:
-            self + Dimension(dim)
-        for measure in jsonDict['measures']:
-            self + Measure(measure)
-        for flter in jsonDict['filters']:
-            self + Filter(flter)
-        for dim in jsonDict['dimension_groups']:
-            self + DimensionGroup(dim)
 
     #TODO define iteration
     # def __iter__(self):
@@ -321,7 +297,6 @@ class View(writeable):
     def getField(self, identifier):
         ''' Returns a specific field based on identifier/string lookup'''
         try:
-            # print(identifier)
             return self.fields[identifier]
         except KeyError:
             raise KeyError
@@ -339,14 +314,13 @@ class View(writeable):
         # If a primary key is added it will overwrite the existing primary key....
         if isinstance(field, Dimension):
             if field.isPrimaryKey():
-                # field.setPrimaryKey()
                 self.setPrimaryKey(field.identifier)
         return self
     
     def removeField(self,field):
         '''Removes a field, either by object or by string of identifier, safely checks and de-refs primary key'''
         def pk(k):
-            if k.isPrimaryKey():
+            if k.isPrimaryKey:
                 self.unSetPrimaryKey()
         if isinstance(field,Field):
             if isinstance(field,Dimension):
@@ -844,6 +818,7 @@ class Property(object):
         #     self.value = [Property(name, i) for i in value]
         else:
             raise Exception('not a dict, list or string')
+
     def __str__(self):
         if self.name.startswith('sql') or self.name == 'html':
             return splice(self.name, ': ', str(self.value), ' ;;')
@@ -859,29 +834,6 @@ class Property(object):
             return splice(self.name, str(self.value))
         else:
             return splice(self.name , ': ' , str(self.value))
-
-    # def __str__(self):
-    #     if self.name.startswith('sql') or self.name == 'html':
-    #         return splice(self.name, ': ', str(self.value), ' ;;')
-    #     elif self.name in ['include', 'connection', 'description','value']:
-    #         return splice(self.name, ': "', str(self.value), '"')
-    #     elif self.name.endswith('url') or self.name.endswith('label') or self.name.endswith('format') or self.name.endswith('persist_for'):
-    #         return splice(self.name, ': "', str(self.value), '"')
-    #     elif self.name == 'extends':
-    #         return splice(self.name, ': [', str(self.value), ']')
-    #     elif self.name.startswith('filters'):
-    #         return splice(self.name,': ',str(self.value))
-    #     elif self.name.startswith('explore_source'):
-    #         return splice(self.name, str(self.value))
-    #     elif self.name in conf.MULTIVALUE_PROPERTIES:
-    #         return ''
-    #         # return splice(self.name , ': [' ,  *[str(prop) for prop in self.value], ']')
-    #     #         # return splice(self.name,' | ',self.value)
-    #     #         # return splice(self.name,*[prop.__str__() for prop in self.value])
-    #     #         return splice(self.name,': ',str(self.value))
-        # else:
-        #     print(self.value)
-            # return splice(self.name , ': ' , self.value)
 
 class Properties(object):
     '''
@@ -953,18 +905,7 @@ class Field(object):
                 self.identifier = ''
 
         self.view = kwargs.get('view', '')
-        #If passed a dictionary it is assumed to be the LKML schema
-        if len(args) > 1:
-            # print(args)
-            if isinstance(args[1],dict):
-                self.bind_lkml(args[1])
-
-    def bind_lkml(self, lkmldict):
-            self.setName(lkmldict.pop('name'))
-            for k,v in lkmldict.items():
-                self.setProperty(k,v) 
-
-
+    
     def __str__(self):
         return splice(
                         self.identifier, splice(' {',conf.NEWLINEINDENT), 
@@ -1072,8 +1013,7 @@ class Field(object):
 class Dimension(Field):
     def __init__(self, *args, **kwargs):
         super(Dimension, self).__init__(self, *args, **kwargs)
-        # self.setDBColumn(self.db_column,changeIdentifier=False)
-
+        self.setDBColumn(self.db_column,changeIdentifier=False)
 
     def isPrimaryKey(self):
         if self.properties.isMember('primary_key') and self.properties.getProperty('primary_key').value == 'yes':
@@ -1157,7 +1097,6 @@ class DimensionGroup(Field):
 class Measure(Field):
     def __init__(self, *args, **kwargs):
         super(Measure, self).__init__(self, *args, **kwargs)
-
 
     @ws_buffer
     def __str__(self):

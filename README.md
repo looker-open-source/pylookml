@@ -72,3 +72,14 @@ inventory_items.write()
 
 
 
+Extending a View:
+```
+order_items = lookml.View('order_items')
+order_items + 'my_field'
+order_items_extended = order_items.extend()
+
+order_items_extended + 'my_field'
+order_items_extended.my_field.hide()
+
+print(order_items)
+```
