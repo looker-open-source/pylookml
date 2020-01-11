@@ -1,5 +1,5 @@
 import unittest
-import lookml
+import lookml,lkml
 
 class testField(unittest.TestCase):
     def setUp(self):
@@ -43,27 +43,53 @@ class testView(unittest.TestCase):
             explore = lookml.Explore('order_items')
             self.view + explore
 
-class testExplore(unittest.TestCase):
+    def test_extension(self):
+        extended_view = self.view.extend(sameFile=False,required=True)
+        self.assertIsInstance(extended_view,lookml.View)
+        self.view + 'id'
+        # print(self.view)
+        # self.view.write()
+        
+        extended_view + 'id'
+        extended_view.id.hide()
+        # print(extended_view)
+        # extended_view.write()
+
+# class testExplore(unittest.TestCase):
+#     def setUp(self):
+#         self.order_items = lookml.View('order_items')
+#         self.order_items + 'inventory_item_id' + 'id' 
+#         self.inventory_items = lookml.View('inventory_items')
+#         self.inventory_items + 'id' + 'product_id'
+#         self.products = lookml.View('products')
+#         self.products + 'id' + 'name'
+#         self.order_items_explore = lookml.Explore(self.order_items)
+
+#     def test_existance(self):
+#         self.assertTrue(isinstance(self.order_items_explore,lookml.Explore))
+
+#     def test_addition_of_joins(self):
+#         '''' tests the addition of joins '''
+#         self.order_items_explore.addJoin(self.inventory_items).on(self.order_items.inventory_item_id , ' = ', self.inventory_items.id).setType('left_outer').setRelationship('one_to_one')
+#         self.order_items_explore.addJoin(self.products).on(self.inventory_items.product_id , ' = ', self.products.id).setType('left_outer').setRelationship('many_to_one')
+#         self.assertEqual(len(self.order_items_explore),2)
+#         #print(self.order_items_explore)
+
+#     def test_create_ndt(self):
+#         pass
+
+
+class testParserBinding(unittest.TestCase):
     def setUp(self):
-        self.order_items = lookml.View('order_items')
-        self.order_items + 'inventory_item_id' + 'id' 
-        self.inventory_items = lookml.View('inventory_items')
-        self.inventory_items + 'id' + 'product_id'
-        self.products = lookml.View('products')
-        self.products + 'id' + 'name'
-        self.order_items_explore = lookml.Explore(self.order_items)
+        with open('order_items.view.lkml', 'r') as file:
+            self.parsed = lkml.load(file)
 
-    def test_existance(self):
-        self.assertTrue(isinstance(self.order_items_explore,lookml.Explore))
-
-    def test_addition_of_joins(self):
-        '''' tests the addition of joins '''
-        self.order_items_explore.addJoin(self.inventory_items).on(self.order_items.inventory_item_id , ' = ', self.inventory_items.id).setType('left_outer').setRelationship('one_to_one')
-        self.order_items_explore.addJoin(self.products).on(self.inventory_items.product_id , ' = ', self.products.id).setType('left_outer').setRelationship('many_to_one')
-        self.assertEqual(len(self.order_items_explore),2)
-        #print(self.order_items_explore)
-
-
+    def test_print_file(self):
+        if 'views' in self.parsed.keys():
+        # f = list()
+            for view in self.parsed['views']:
+                tmpView = lookml.View(view)
+            print(tmpView)
 
 
 
