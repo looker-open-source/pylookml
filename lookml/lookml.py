@@ -1,5 +1,6 @@
 import re
 import lookml.config as conf
+# import config as conf
 
 def snakeCase(string):
     str1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', string)
@@ -857,6 +858,8 @@ class Property(object):
             return splice(self.name,str(self.value))
         elif self.name.startswith('explore_source'):
             return splice(self.name, str(self.value))
+        elif self.name in conf.MULTIVALUE_PROPERTIES:
+            return splice(self.name, ': ', str(self.value))
         else:
             return splice(self.name , ': ' , str(self.value))
 

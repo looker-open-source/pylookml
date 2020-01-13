@@ -19,7 +19,7 @@ class testView(unittest.TestCase):
     def test_field_addition(self):
         self.view + 'id'
         field2 = lookml.Dimension('cool')
-        
+
         self.view + field2
         self.view.cool.setType('number')
 
@@ -81,7 +81,10 @@ class testView(unittest.TestCase):
 
 class testParserBinding(unittest.TestCase):
     def setUp(self):
-        with open('order_items.view.lkml', 'r') as file:
+        # import os
+        # cwd = os.getcwd()
+        # print(cwd)
+        with open('lookml/tests/thelook/order_items.view.lkml', 'r') as file:
             self.parsed = lkml.load(file)
 
     def test_print_file(self):
@@ -89,7 +92,7 @@ class testParserBinding(unittest.TestCase):
         # f = list()
             for view in self.parsed['views']:
                 tmpView = lookml.View(view)
-            print(tmpView)
+                pass
 
 
 
