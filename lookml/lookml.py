@@ -24,6 +24,82 @@ def ws_buffer(item):
                 )
     return wrapper
 
+
+class dispatcher():
+
+    def __init__(self, infilepath):
+        '''parse the LookML infilepath, convert to JSON, and then read into JSON object
+
+        Args:
+            infilepath (str): path to input LookML file
+
+        Returns:
+            JSON object of LookML
+
+        '''
+        if not os.path.exists(infilepath):
+            raise IOError("Filename does not exist: %s" % infilepath)
+
+        self.infilepath = infilepath
+        if infilepath.endswith(".model.lkml"):
+            self.filetype = 'model'
+        elif infilepath.endswith(".view.lkml"):
+            self.filetype = 'view'
+        elif infilepath.endswith(".explore.lkml"):
+            self.filetype = 'explore'
+        else:
+            raise Exception("Unsupported filename " + infilepath)
+        self.base_filename = os.path.basename(infilepath)
+        self.base_name = self.base_filename.replace(".model.lkml", "").replace(".explore.lkml", "").replace(".view.lkml", "")        
+
+        with open(infilepath, 'r') as file:
+            self.json_data = lkml.load(file)
+
+    def views(self):
+        """get views (if any) from the LookML
+
+        Returns:
+            views (list) if any, None otherwise
+
+        """
+        if 'views' in self.json_data:
+            return self.json_data['views']
+        return None
+
+    def has_views(self):
+        """does this have one or more views?
+
+        Returns:
+            bool, whether this has views
+
+        """
+        vs = self.views()
+        return (vs and len(vs) > 0)
+
+    def explores(self):
+        """get explores (if any) from the LookML
+
+        Returns:
+            explores (list) if any, None otherwise
+
+        """
+        if 'explores' in self.json_data:
+            return self.json_data['explores']
+        return None
+
+    def has_explores(self):
+        """does this have one or more explores?
+
+        Returns:
+            bool, whether this has explores
+
+        """
+        es = self.explores()
+        return (es and len(es) > 0)
+
+
+
+
 class writeable(object):
     def __init__(self, *args, **kwargs):
         self.identifier = kwargs.get('identifier', '')
@@ -755,7 +831,6 @@ class Explore(writeable):
             self.joins.update({tmpjoin.identifier : tmpjoin})
             return tmpjoin
         
-
     def join(self,join):
         return self.addJoin(join)
 
@@ -837,14 +912,20 @@ class Property(object):
         self.name = name
         if isinstance(value, str):
             self.value = value
-        elif isinstance(value, dict):
+        elif name in ('links','filters'):
+            self.value = Properties(value, multiValueSpecialHandling=name)
+
+        elif isinstance(value, dict) or isinstance(value, list):
             self.value = Properties(value)
-        elif isinstance(value, list):
-            self.value = [Property(name, i) for i in value]
+        
+        # elif isinstance(value, list):
+        #     self.value = Properties(value)
+            # self.value = [Property(name + '_member', i) for i in value]
         # elif isinstance(value,Properties):
         #     self.value = [Property(name, i) for i in value]
         else:
             raise Exception('not a dict, list or string')
+
     def __str__(self):
         if self.name.startswith('sql') or self.name == 'html':
             return splice(self.name, ': ', str(self.value), ' ;;')
@@ -854,37 +935,19 @@ class Property(object):
             return splice(self.name, ': "', str(self.value), '"')
         elif self.name == 'extends':
             return splice(self.name, ': [', str(self.value), ']')
-        elif self.name.startswith('filters'):
-            return splice(self.name,str(self.value))
         elif self.name.startswith('explore_source'):
             return splice(self.name, str(self.value))
         elif self.name in conf.MULTIVALUE_PROPERTIES:
-            return splice(self.name, ': ', str(self.value))
+            return splice(self.name , ': ' , str(self.value))
+        elif self.name in ('links','filters'):
+            return str(self.value)
+        elif self.name == ('list_member') and isinstance(self.value,str):
+            return splice(str(self.value),',')
+        elif self.name == ('list_member') and not isinstance(self.value,str):
+            return splice(str(self.value))
         else:
             return splice(self.name , ': ' , str(self.value))
 
-    # def __str__(self):
-    #     if self.name.startswith('sql') or self.name == 'html':
-    #         return splice(self.name, ': ', str(self.value), ' ;;')
-    #     elif self.name in ['include', 'connection', 'description','value']:
-    #         return splice(self.name, ': "', str(self.value), '"')
-    #     elif self.name.endswith('url') or self.name.endswith('label') or self.name.endswith('format') or self.name.endswith('persist_for'):
-    #         return splice(self.name, ': "', str(self.value), '"')
-    #     elif self.name == 'extends':
-    #         return splice(self.name, ': [', str(self.value), ']')
-    #     elif self.name.startswith('filters'):
-    #         return splice(self.name,': ',str(self.value))
-    #     elif self.name.startswith('explore_source'):
-    #         return splice(self.name, str(self.value))
-    #     elif self.name in conf.MULTIVALUE_PROPERTIES:
-    #         return ''
-    #         # return splice(self.name , ': [' ,  *[str(prop) for prop in self.value], ']')
-    #     #         # return splice(self.name,' | ',self.value)
-    #     #         # return splice(self.name,*[prop.__str__() for prop in self.value])
-    #     #         return splice(self.name,': ',str(self.value))
-        # else:
-        #     print(self.value)
-            # return splice(self.name , ': ' , self.value)
 
 class Properties(object):
     '''
@@ -894,30 +957,63 @@ class Properties(object):
     Things that should be their own class:
     data_groups, named_value_format, sets
     '''
-    __slots__ = ['schema']
+    __slots__ = ['schema','multiValueSpecialHandling']
 
-    def __init__(self, schema):
-        assert isinstance(schema, dict)
+    def __init__(self, schema, multiValueSpecialHandling=False):
         self.schema = schema
+        self.multiValueSpecialHandling = multiValueSpecialHandling
 
+    #TODO: Rewrite for list schema type
     def __str__(self):
-        return splice(
-                        '{\n    ' , 
-                        '\n    '.join([str(p) for p in self.getProperties()]) ,
-                         '\n    }' 
-                         )
+        if isinstance(self.schema, dict):
+            return splice(
+                            '{\n    ' , 
+                            '\n    '.join([str(p) for p in self.getProperties()]) ,
+                            '\n    }' 
+                            )
+        elif isinstance(self.schema, list) and not self.multiValueSpecialHandling:
+            return splice(
+                            '[\n    ' , 
+                            '\n    '.join([str(p) for p in self.getProperties()]) ,
+                            '\n    ]' 
+                            )
+        elif self.multiValueSpecialHandling == 'filters':
+            return splice('filters: ','\n filters: '.join([str(p) for p in self.getProperties()]))
+        elif self.multiValueSpecialHandling == 'links':
+            return splice('link: ','link: \n'.join([str(p) for p in self.getProperties()]))
+        else:
+            pass
+            # raise TypeError
 
+#TODO: Rewrite for list schema type
     def getProperty(self, identifier):
-        return Property(identifier, self.schema.get(identifier, None))
+        
+        if isinstance(self.schema, dict):
+            return Property(identifier, self.schema.get(identifier, None))
+        elif isinstance(self.schema, list):
+            return Property(identifier, self.schema.get(identifier, None))   
 
+#TODO: Rewrite for list schema type
     def getProperties(self):
-        for k, v in self.schema.items():
-            if k in conf.NONUNIQUE_PROPERTIES:
-                for n in v:
-                    yield Property(k, n)
-            else:
-                yield Property(k, v)
+        if isinstance(self.schema, dict):
+            for k, v in self.schema.items():
+                if k in conf.NONUNIQUE_PROPERTIES:
+                    for n in v:
+                        yield Property(k, n)
+                else:
+                    yield Property(k, v)
+        elif isinstance(self.schema, list):
+            for item in self.schema:
+                yield Property('list_member',item)
 
+    # def getProperties(self):
+    #     for k, v in self.schema.items():
+    #         if k in conf.NONUNIQUE_PROPERTIES:
+    #             for n in v:
+    #                 yield Property(k, n)
+    #         else:
+    #             yield Property(k, v)
+#TODO: Rewrite for list schema type
     def addProperty(self, name, value):
         if name in conf.NONUNIQUE_PROPERTIES:
             index = self.schema.get(name,[])
@@ -927,10 +1023,10 @@ class Properties(object):
             )
         else:
             self.schema.update({name: value})
-
+#TODO: Rewrite for list schema type
     def delProperty(self, identifier):
         self.schema.pop(identifier, None)
-
+#TODO: Rewrite for list schema type
     def isMember(self, property):
         return property in self.schema.keys()
 
