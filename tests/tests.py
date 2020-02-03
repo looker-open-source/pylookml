@@ -84,15 +84,17 @@ class testParserBinding(unittest.TestCase):
         # import os
         # cwd = os.getcwd()
         # print(cwd)
-        with open('lookml/tests/thelook/order_items.view.lkml', 'r') as file:
+        with open('lookml/tests/thelook/test.lkml', 'r') as file:
+        # with open('lookml/tests/thelook/order_items.view.lkml', 'r') as file:
             self.parsed = lkml.load(file)
+            pass
 
     def test_print_file(self):
         if 'views' in self.parsed.keys():
         # f = list()
             for view in self.parsed['views']:
                 tmpView = lookml.View(view)
-                pass
+                print(tmpView)
 
 
 
