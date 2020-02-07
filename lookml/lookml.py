@@ -912,7 +912,7 @@ class Property(object):
         self.name = name
         if isinstance(value, str):
             self.value = value
-        elif name in ('links','filters'):
+        elif name in ('links','filters','tags','suggestions'):
             self.value = Properties(value, multiValueSpecialHandling=name)
 
         elif isinstance(value, dict) or isinstance(value, list):
@@ -943,8 +943,10 @@ class Property(object):
             return str(self.value)
         elif self.name == ('list_member') and isinstance(self.value,str):
             return splice(str(self.value),',')
-        elif self.name == ('list_member') and not isinstance(self.value,str):
+        elif self.name == 'list_member':
             return splice(str(self.value))
+        elif self.name == 'list_member_quoted':
+            return str(self.value)
         else:
             return splice(self.name , ': ' , str(self.value))
 
@@ -977,6 +979,12 @@ class Properties(object):
                             '\n    '.join([str(p) for p in self.getProperties()]) ,
                             '\n    ]' 
                             )
+        elif isinstance(self.schema, list) and self.multiValueSpecialHandling in ('tags','suggestions'):
+            return splice(
+                            '[\n    ' , 
+                            '\n    '.join(['"' + str(p) + '",' for p in self.getProperties()]) ,
+                            '\n    ]' 
+                            )
         elif self.multiValueSpecialHandling == 'filters':
             return splice('filters: ','\n filters: '.join([str(p) for p in self.getProperties()]))
         elif self.multiValueSpecialHandling == 'links':
@@ -1004,7 +1012,10 @@ class Properties(object):
                     yield Property(k, v)
         elif isinstance(self.schema, list):
             for item in self.schema:
-                yield Property('list_member',item)
+                if self.multiValueSpecialHandling in ('suggestions','tags'):
+                    yield Property('list_member_quoted',item)
+                else:
+                    yield Property('list_member',item)
 
     # def getProperties(self):
     #     for k, v in self.schema.items():
@@ -1097,11 +1108,20 @@ class Field(object):
         elif name == 'name':
             self.setName(value)
             return self
+        elif name == 'sql':
+            return self.setProperty(name,value)
+
         else:
             object.__setattr__(self, name, value)
 
     def setDescription(self,value):
         return self.setProperty('description', value)
+
+    def addTag(self,tag):
+        if self.properties.isMember('tags'):
+            pass
+        else:
+            self.setProperty('tags',[tag])
 
     def setView(self, view):
         ''''''
