@@ -8,9 +8,6 @@ class testField(unittest.TestCase):
         lookml.config.PRE_FIELD_BUFFER = ''
         lookml.config.POST_FIELD_BUFFER = ''
 
-    # def test_print(self):
-    #     print(self.order_items)
-
 
 class testView(unittest.TestCase):
     def setUp(self):
@@ -85,17 +82,76 @@ class testParserBinding(unittest.TestCase):
         # cwd = os.getcwd()
         # print(cwd)
         with open('lookml/tests/thelook/test.lkml', 'r') as file:
-        # with open('lookml/tests/thelook/order_items.view.lkml', 'r') as file:
             self.parsed = lkml.load(file)
             pass
-
-    def test_print_file(self):
         if 'views' in self.parsed.keys():
         # f = list()
             for view in self.parsed['views']:
-                tmpView = lookml.View(view)
-                print(tmpView)
+                self.tmpView = lookml.View(view)
+                # self.tmpView.hidden_first_purchase_visualization_link.addTag("Generated Code")        
 
+    # def test_print_file(self):
+    #     if 'views' in self.parsed.keys():
+    #     # f = list()
+    #         for view in self.parsed['views']:
+    #             self.tmpView = lookml.View(view)
+    #             self.tmpView.hidden_first_purchase_visualization_link.addTag("Generated Code")
+                
+
+    # def test_write_file(self):
+    #     f =  open('lookml/tests/thelook/test.out.lkml', 'w')
+    #     f.write(str(self.tmpView))
+    #     f.close()
+    #     pass
+    #     with open('lookml/tests/thelook/test.out.lkml', 'r') as file:
+    #         self.parsed = lkml.load(file)
+    #         pass
+    #     if 'views' in self.parsed.keys():
+    #         for view in self.parsed['views']:
+    #             self.tmpView = lookml.View(view)
+    #             self.tmpView.hidden_first_purchase_visualization_link.addTag("Generated Code")
+    #     f =  open('lookml/tests/thelook/test.out2.lkml', 'w')
+    #     f.write(str(self.tmpView))
+    #     f.close()
+
+    def test_write_file(self):
+        file1 = open('lookml/tests/thelook/test.lkml', 'r')
+        file2 = open('lookml/tests/thelook/test.out.lkml', 'w')
+        file3 = open('lookml/tests/thelook/test.out2.lkml', 'w')
+        lkmljson = lkml.load(file1)
+        v = None
+        if 'views' in lkmljson.keys():
+                for view in lkmljson['views']:
+                    v = lookml.View(view)
+        v + 'id'
+        v.id.sql = "COALESCE(${TABLE}.id,0)"
+        v.id.addTag('Generated Code')
+        file2.write(v.__str__())
+        file2.close()
+        file2 = open('lookml/tests/thelook/test.out.lkml', 'r')
+        v2 = None
+        lkmljson2 = lkml.load(file2)
+        if 'views' in lkmljson2.keys():
+                for view in lkmljson2['views']:
+                    v2 = lookml.View(view)
+        v2 - 'id'
+        v2 + lookml.Measure('count_of_total')
+        v2.count_of_total.setType('sum')
+        v2.count_of_total.sql = '${id}'
+        file3.write(str(v2))
+        file3.close()
+        
+
+        # with open('lookml/tests/thelook/test.lkml', 'rw') as file:
+        #     self.parsed = lkml.load(file)
+        #     if 'views' in self.parsed.keys():
+        #         for view in self.parsed['views']:
+        #             self.tmpView = lookml.View(view)
+        #             # self.tmpView.hidden_first_purchase_visualization_link.addTag("Generated Code")
+        #     file.write(str(self.tmpView))
+        # f =  open('lookml/tests/thelook/test.out2.lkml', 'w')
+        # f.write(str(self.tmpView))
+        # f.close()
 
 
 
