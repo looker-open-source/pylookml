@@ -1,6 +1,6 @@
 import re
 import lookml.config as conf
-# import config as conf
+import lkml
 
 def snakeCase(string):
     str1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', string)
@@ -26,7 +26,6 @@ def ws_buffer(item):
 
 
 class dispatcher():
-
     def __init__(self, infilepath):
         '''parse the LookML infilepath, convert to JSON, and then read into JSON object
 
@@ -98,8 +97,6 @@ class dispatcher():
         return (es and len(es) > 0)
 
 
-
-
 class writeable(object):
     def __init__(self, *args, **kwargs):
         self.identifier = kwargs.get('identifier', '')
@@ -111,6 +108,8 @@ class writeable(object):
                     self.identifier = args[1]
                 elif isinstance(args[1],View):
                     self.identifier = args[1].identifier
+                elif isinstance(args[0],dict):
+                        self.bind_lkml(args[0])
             else:
                 self.identifier = ''        
         self.extension = kwargs.get('extension', '.lkml')
@@ -120,6 +119,12 @@ class writeable(object):
             self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
         else:
             self.path = self.fileName
+        
+    def bind_lkml(self,lkmldict):
+        '''Writable is never used, it's only a base class for extension
+            Each class inheriting from this must implement bind_lkml
+        '''
+        pass
 
     def setFolder(self,folder):
         self.outputFolder = folder
@@ -149,43 +154,6 @@ class writeable(object):
                     opened_file.write(self.__str__())
 
 class View(writeable):
-##################### Preservation before large compatibility modification #####################
-    # __slots__ = [
-    #          'sql_table_name'
-    #         ,'derived_table'
-    #         ,'tableSource'
-    #         ,'message'
-    #         ,'fields'
-    #         ,'primaryKey'
-    #         ,'schema'
-    #         ,'properties'
-    #         ,'children'
-    #         ,'parent'
-    #         ,'fileName'
-    #         ]
-    # def __init__(self, *args, **kwargs):
-    #     super(View, self).__init__(self, *args, **kwargs)
-    #     if 'sql_table_name' in kwargs.keys():
-    #         self.sql_table_name = Property('sql_table_name', kwargs.get('sql_table_name', 'view'))
-    #         self.tableSource = True
-    #     elif 'derived_table' in kwargs.keys():
-    #         self.derived_table = Property('derived_table', kwargs.get('derived_table', 'view'))
-    #         self.tableSource = False
-    #     else:
-    #         self.tableSource = None
-    #     self.message = kwargs.get('message', '')
-    #     self.fields = {}
-    #     self.primaryKey = ''
-    #     self.schema = kwargs.get('schema', {})
-    #     self.properties = Properties(self.schema)
-    #     self.children = {}
-    #     self.parent = None
-    #     self.fileName = self.identifier + '.view.lkml'
-    #     if self.outputFolder:
-    #         self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
-    #     else:
-    #         self.path = self.fileName
-##################### Preservation before large compatibility modification #####################
     __slots__ = [
              'sql_table_name'
             ,'derived_table'
@@ -408,7 +376,7 @@ class View(writeable):
         #TODO: re-implement this to actually use the DB column as a key (keep in mind that doesn't need to be unique...)
         #TODO: Raise a not found exception here instead of silently failing with a notfound key
         return self.fields.get(lookCase(dbColumn), Field(identifier='Not Found'))
-
+    
     def addField(self, field):
         '''Takes a field object as an argument and adds it to the view, if the field is a dimension and primary key it will be set as the view primary key'''
         # uses the 'setView' method on field which returns self so that field can fully qualify itself and so that field can be a member of view
@@ -660,7 +628,15 @@ class Join(object):
         self.identifier = kwargs.get('identifier', kwargs.get('view', 'error_view_not_set'))
         self._from = kwargs.get('from', None)
         self.to = kwargs.get('to', None)
+        if len(args) >= 1:
+            
+            if isinstance(args[0],dict):
+                self.bind_lkml(args[0])
 
+    def bind_lkml(self, lkmldict):
+            self.setName(lkmldict.pop('name'))
+            for k,v in lkmldict.items():
+                self.setProperty(k,v) 
 
     def __str__(self):
         return splice(
@@ -709,11 +685,14 @@ class Join(object):
         self.properties.addProperty('relationship',rel)
         return self
 
-    def __getattr__(self, key):
-        if key == self.__dict__['to'].name:
-            return self.to.name.__getattr__(key)
-        else:
-            pass
+    # def __getattr__(self, key): #__getattr__
+    #     # return self.properties.getProperty(key)
+    #     if key == '_from':
+    #         return self._from
+    #     if key == 'to':
+    #         return self.to
+    #     else:
+    #         return self.properties.getProperty(key)
         # if key in self.__dict__.keys():
         #     return self.__dict__[key]            
         # else:
@@ -736,11 +715,11 @@ class Explore(writeable):
         self.properties = Properties(kwargs.get('schema', {}))
         # self.identifier = kwargs.get('identifier', kwargs.get('view', 'error_view_not_set'))
         self.joins = dict()
-        self.base_view = kwargs.get('view',None)
-
-        self.identifier = kwargs.get('identifier', None)
+        
+        self.identifier = kwargs.get('identifier', '')
+        self.base_view = kwargs.get('view',View(self.identifier))
         if not self.identifier:
-            self.identifier = kwargs.get('name', None)
+            self.identifier = kwargs.get('name', '')
         if not self.identifier:
             if len(args) >= 1:
                 if isinstance(args[0],str):
@@ -748,13 +727,26 @@ class Explore(writeable):
                 elif isinstance(args[0],View):
                     self.setName(args[0].name)
                     self.base_view = args[0]
+                elif isinstance(args[0],dict):
+                    self.bind_lkml(args[0])
+        
         self.fileName = self.identifier + '.explore.lkml'
         if self.outputFolder:
             self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
         else:
             self.path = self.fileName
 
+        
+
         self.view = kwargs.get('view', '')
+
+    def bind_lkml(self,jsonDict):
+        self.setName(jsonDict.pop('name'))
+        for k,v in jsonDict.items():
+            self.setProperty(k,v) 
+        # for join in jsonDict['joins']:
+        #     pass
+        #     self.addJoin(join)
 
     def __len__(self):
         return len(self.joins)
@@ -780,7 +772,7 @@ class Explore(writeable):
         # if key in self.__dict__.keys():
         #     return self.__dict__[key]
         
-        if key == self.base_view.name:
+        if key == self.base_view.name and self.base_view:
         # elif key == 'order_items':
             return self.base_view
         elif key in self.joins.keys():
@@ -950,7 +942,6 @@ class Property(object):
         else:
             return splice(self.name , ': ' , str(self.value))
 
-
 class Properties(object):
     '''
     Treats the collection of properties as a recursive dicitionary
@@ -1043,11 +1034,12 @@ class Properties(object):
 
 class Field(object):
     ''' Base class for fields in LookML, only derived/child types should be instantiated '''
-    __slots__ = ['schema', 'properties','db_column','identifier','view']
+    __slots__ = ['schema', 'properties','db_column','identifier','view','message']
     def __init__(self, *args, **kwargs):
         self.schema = kwargs.get('schema', {})
         self.properties = Properties(self.schema)
         self.db_column = kwargs.get('dbColumn', '')
+        self.message = kwargs.get('message', '')
 
         self.identifier = kwargs.get('identifier', None)
         if not self.identifier:
@@ -1073,6 +1065,17 @@ class Field(object):
             self.setName(lkmldict.pop('name'))
             for k,v in lkmldict.items():
                 self.setProperty(k,v) 
+
+    def setMessage(self,message):
+        self.message = message
+        return self
+
+    def getMessage(self):
+        if self.message:
+            return splice('#',self.message,conf.NEWLINE)
+        else:
+            return ''
+    
 
 
     def __str__(self):
@@ -1243,7 +1246,7 @@ class Dimension(Field):
 
     @ws_buffer
     def __str__(self):
-        return splice(
+        return splice( self.getMessage(),
                         'dimension: ', 
                         super(Dimension, self).__str__()
                         )
@@ -1268,7 +1271,7 @@ class DimensionGroup(Field):
     
     @ws_buffer
     def __str__(self):
-        return splice(
+        return splice(self.getMessage(),
                         'dimension_group: ', 
                         super(DimensionGroup, self).__str__()
                         )
@@ -1280,7 +1283,7 @@ class Measure(Field):
 
     @ws_buffer
     def __str__(self):
-        return splice(
+        return splice(self.getMessage(),
                         'measure: ', 
                         super(Measure, self).__str__()
                         )
@@ -1291,7 +1294,7 @@ class Filter(Field):
 
     @ws_buffer
     def __str__(self):
-        return splice(
+        return splice(self.getMessage(),
                         'filter: ', 
                         super(Filter, self).__str__()
                         )
@@ -1302,7 +1305,7 @@ class Parameter(Field):
     
     @ws_buffer
     def __str__(self):
-        return splice(
+        return splice(self.getMessage(),
                         'parameter: ', 
                         super(Parameter, self).__str__()
                         )
@@ -1313,7 +1316,7 @@ class Field_Level_Permissions(Field):
 
     @ws_buffer
     def __str__(self):
-        return splice(
+        return splice(self.getMessage(),
                         '\naccess_grant: ', 
                         super(Field_Level_Permissions, self).__str__()
                         )
