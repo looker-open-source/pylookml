@@ -8,7 +8,6 @@ class testField(unittest.TestCase):
         lookml.config.PRE_FIELD_BUFFER = ''
         lookml.config.POST_FIELD_BUFFER = ''
 
-
 class testView(unittest.TestCase):
     def setUp(self):
         self.view = lookml.View('order_items')
@@ -30,15 +29,16 @@ class testView(unittest.TestCase):
     def test_correct_name(self):
         self.assertEqual(self.view.name,'order_items')
 
-    def test_calling_non_existent_field(self):
-        with self.assertRaises(KeyError):
-            self.view.getField('fake_field')
+#Re-enable later when debugging less. These get caught in the debugger "raised exceptions"
+    # def test_calling_non_existent_field(self):
+    #     with self.assertRaises(KeyError):
+    #         self.view.getField('fake_field')
             
-    def test_false_addition(self):
-        # Check that the view complains if incorrect object is added
-        with self.assertRaises(Exception):
-            explore = lookml.Explore('order_items')
-            self.view + explore
+    # def test_false_addition(self):
+    #     # Check that the view complains if incorrect object is added
+    #     with self.assertRaises(Exception):
+    #         explore = lookml.Explore('order_items')
+    #         self.view + explore
 
     def test_extension(self):
         extended_view = self.view.extend(sameFile=False,required=True)
@@ -52,69 +52,58 @@ class testView(unittest.TestCase):
         # print(extended_view)
         # extended_view.write()
 
-# class testExplore(unittest.TestCase):
-#     def setUp(self):
-#         self.order_items = lookml.View('order_items')
-#         self.order_items + 'inventory_item_id' + 'id' 
-#         self.inventory_items = lookml.View('inventory_items')
-#         self.inventory_items + 'id' + 'product_id'
-#         self.products = lookml.View('products')
-#         self.products + 'id' + 'name'
-#         self.order_items_explore = lookml.Explore(self.order_items)
+class testExplore(unittest.TestCase):
+    def setUp(self):
+        # Pure Generation
+        # self.order_items = lookml.View('order_items')
+        # self.order_items + 'inventory_item_id' + 'id' 
+        # self.inventory_items = lookml.View('inventory_items')
+        # self.inventory_items + 'id' + 'product_id'
+        # self.products = lookml.View('products')
+        # self.products + 'id' + 'name'
+        # self.order_items_explore = lookml.Explore(self.order_items)
+        
+        # Parsed from a file
+        with open('lookml/tests/thelook/thelook_test.model.lkml', 'r') as file:
+            self.parsed = lkml.load(file)
+            pass
+    
+        if 'explores' in self.parsed.keys():
+            for explore in self.parsed['explores']:
+                self.parsedExplore = lookml.Explore(explore)
+                x = lookml.Join({
+                        'name': 'order_facts', 
+                        'relationship': 'many_to_one', 
+                        'sql_on': 'foo', 
+                        'type': 'left_outer', 
+                        'view_label': 'Orders'
+                        })
+                pass
 
-#     def test_existance(self):
-#         self.assertTrue(isinstance(self.order_items_explore,lookml.Explore))
+    # def test_existance(self):
+    #     self.assertTrue(isinstance(self.order_items_explore,lookml.Explore))
+    #     # self.assertTrue(isinstance(self.parsedExplore,lookml.Explore))
 
-#     def test_addition_of_joins(self):
-#         '''' tests the addition of joins '''
-#         self.order_items_explore.addJoin(self.inventory_items).on(self.order_items.inventory_item_id , ' = ', self.inventory_items.id).setType('left_outer').setRelationship('one_to_one')
-#         self.order_items_explore.addJoin(self.products).on(self.inventory_items.product_id , ' = ', self.products.id).setType('left_outer').setRelationship('many_to_one')
-#         self.assertEqual(len(self.order_items_explore),2)
-#         #print(self.order_items_explore)
+    # def test_addition_of_joins(self):
+    #     '''' tests the addition of joins '''
+    #     self.order_items_explore.addJoin(self.inventory_items).on(self.order_items.inventory_item_id , ' = ', self.inventory_items.id).setType('left_outer').setRelationship('one_to_one')
+    #     self.order_items_explore.addJoin(self.products).on(self.inventory_items.product_id , ' = ', self.products.id).setType('left_outer').setRelationship('many_to_one')
+    #     self.assertEqual(len(self.order_items_explore),2)
 
-#     def test_create_ndt(self):
-#         pass
+    # def test_create_ndt(self):
+    #     pass
 
 
 class testParserBinding(unittest.TestCase):
     def setUp(self):
-        # import os
-        # cwd = os.getcwd()
-        # print(cwd)
         with open('lookml/tests/thelook/test.lkml', 'r') as file:
             self.parsed = lkml.load(file)
             pass
         if 'views' in self.parsed.keys():
-        # f = list()
             for view in self.parsed['views']:
                 self.tmpView = lookml.View(view)
-                # self.tmpView.hidden_first_purchase_visualization_link.addTag("Generated Code")        
 
-    # def test_print_file(self):
-    #     if 'views' in self.parsed.keys():
-    #     # f = list()
-    #         for view in self.parsed['views']:
-    #             self.tmpView = lookml.View(view)
-    #             self.tmpView.hidden_first_purchase_visualization_link.addTag("Generated Code")
-                
-
-    # def test_write_file(self):
-    #     f =  open('lookml/tests/thelook/test.out.lkml', 'w')
-    #     f.write(str(self.tmpView))
-    #     f.close()
-    #     pass
-    #     with open('lookml/tests/thelook/test.out.lkml', 'r') as file:
-    #         self.parsed = lkml.load(file)
-    #         pass
-    #     if 'views' in self.parsed.keys():
-    #         for view in self.parsed['views']:
-    #             self.tmpView = lookml.View(view)
-    #             self.tmpView.hidden_first_purchase_visualization_link.addTag("Generated Code")
-    #     f =  open('lookml/tests/thelook/test.out2.lkml', 'w')
-    #     f.write(str(self.tmpView))
-    #     f.close()
-
-    def test_write_file(self):
+    def test_loop(self):
         file1 = open('lookml/tests/thelook/test.lkml', 'r')
         file2 = open('lookml/tests/thelook/test.out.lkml', 'w')
         file3 = open('lookml/tests/thelook/test.out2.lkml', 'w')
@@ -126,6 +115,11 @@ class testParserBinding(unittest.TestCase):
         v + 'id'
         v.id.sql = "COALESCE(${TABLE}.id,0)"
         v.id.addTag('Generated Code')
+        v.foo.sql = "COALESCE(${TABLE}.id,0)"
+        # v.jake_is_here.addTag("WHOA")
+        v.foo.addTag('Generated Code')
+        v.bar.setMessage('this is bar')
+        v.id.setMessage('Auto Generated -- Dont touch')
         file2.write(v.__str__())
         file2.close()
         file2 = open('lookml/tests/thelook/test.out.lkml', 'r')
@@ -135,6 +129,7 @@ class testParserBinding(unittest.TestCase):
                 for view in lkmljson2['views']:
                     v2 = lookml.View(view)
         v2 - 'id'
+        v2.tst.addTag('foo')
         v2 + lookml.Measure('count_of_total')
         v2.count_of_total.setType('sum')
         v2.count_of_total.sql = '${id}'
@@ -152,6 +147,16 @@ class testParserBinding(unittest.TestCase):
         # f =  open('lookml/tests/thelook/test.out2.lkml', 'w')
         # f.write(str(self.tmpView))
         # f.close()
+
+    def test_dispatch(self):
+        pass
+        '''
+        1) Grab an arbirary file and create an index of all the stuff inside
+        2) Ensure that there is a namespacing mechanism from the "file" point of view
+        ? File Class?
+        ? This might make sense in anothr test case....
+        '''
+
 
 
 
