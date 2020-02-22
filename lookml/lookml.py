@@ -204,17 +204,36 @@ class View(writeable):
             self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
         else:
             self.path = self.fileName
+    
+    
 
     def bind_lkml(self,jsonDict):
         self.setName(jsonDict.pop('name'))
-        for dim in jsonDict['dimensions']:
-            self + Dimension(dim)
-        for measure in jsonDict['measures']:
-            self + Measure(measure)
-        for flter in jsonDict['filters']:
-            self + Filter(flter)
-        for dim in jsonDict['dimension_groups']:
-            self + DimensionGroup(dim)
+        view_keys = [element for element in jsonDict]
+        if 'measures' in view_keys:
+            for measure in jsonDict['measures']:
+                self + Measure(measure)
+        else:
+            pass
+
+        if 'dimensions' in view_keys:
+            for dim in jsonDict['dimensions']:
+                self + Dimension(dim)
+        else:
+            pass
+        
+        if 'filters' in view_keys:
+            for flter in jsonDict['filters']:
+                self + Filter(flter)
+        else:
+            pass
+
+        if 'filters' in view_keys:
+            for dim in jsonDict['dimension_groups']:
+                self + DimensionGroup(dim)
+        else:
+            pass
+
 
     #TODO define iteration
     # def __iter__(self):
