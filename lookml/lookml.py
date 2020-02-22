@@ -904,7 +904,7 @@ class Property(object):
         self.name = name
         if isinstance(value, str):
             self.value = value
-        elif name in ('links','filters','tags','suggestions'):
+        elif name in ('links','filters','tags','suggestions', 'actions'):
             self.value = Properties(value, multiValueSpecialHandling=name)
 
         elif isinstance(value, dict) or isinstance(value, list):

@@ -1,6 +1,8 @@
+#Required for V1:
 TODO: Name makes sense at some points and levels (KEYS_WITH_NAME_FIELDS = ("user_attribute_param", "param", "form_param", "option")) https://github.com/joshtemple/lkml/commit/676c214fcc0e0641eb353095c6b3de3232df1695
 TODO: Sets
-TODO: Actions
+TODO: Actions -- Hugo
+TODO: Access Grants -- Hugo
 TODO: Constants
 TODO: Programatic Manipulation Tag / comment
 TODO: Project Puller / Github Pull Down (obtain from Bryan)
