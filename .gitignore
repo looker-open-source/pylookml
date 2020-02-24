@@ -2,6 +2,7 @@
 .app_data/
 log.log
 .vscode/
+config/settings.ini
 settings.ini
 old_code_fragments
 settings/templates/*

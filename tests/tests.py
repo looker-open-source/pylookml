@@ -1,6 +1,8 @@
 import unittest
 import lookml,lkml
-
+import configparser
+config = configparser.ConfigParser()
+config.read('lookml/lookml/config/settings.ini')
 class testField(unittest.TestCase):
     def setUp(self):
         self.order_items = lookml.View('order_items')
@@ -37,22 +39,6 @@ class testView(unittest.TestCase):
         extended_view.id.hide()
 
 
-
-
-    # def test_existance(self):
-    #     self.assertTrue(isinstance(self.order_items_explore,lookml.Explore))
-    #     # self.assertTrue(isinstance(self.parsedExplore,lookml.Explore))
-
-    # def test_addition_of_joins(self):
-    #     '''' tests the addition of joins '''
-    #     self.order_items_explore.addJoin(self.inventory_items).on(self.order_items.inventory_item_id , ' = ', self.inventory_items.id).setType('left_outer').setRelationship('one_to_one')
-    #     self.order_items_explore.addJoin(self.products).on(self.inventory_items.product_id , ' = ', self.products.id).setType('left_outer').setRelationship('many_to_one')
-    #     self.assertEqual(len(self.order_items_explore),2)
-
-    # def test_create_ndt(self):
-    #     pass
-
-
 class testParserBinding(unittest.TestCase):
     def setUp(self):
         with open('lookml/tests/thelook/test.lkml', 'r') as file:
@@ -67,6 +53,7 @@ class testParserBinding(unittest.TestCase):
         file2 = open('lookml/tests/thelook/test.out.lkml', 'w')
         file3 = open('lookml/tests/thelook/test.out2.lkml', 'w')
         lkmljson = lkml.load(file1)
+        file1.close()
         v = None
         if 'views' in lkmljson.keys():
                 for view in lkmljson['views']:
@@ -92,6 +79,7 @@ class testParserBinding(unittest.TestCase):
         v2 + lookml.Measure('count_of_total')
         v2.count_of_total.setType('sum')
         v2.count_of_total.sql = '${id}'
+        file2.close()
         file3.write(str(v2))
         file3.close()
         
@@ -99,6 +87,7 @@ class testParserBinding(unittest.TestCase):
     def test_model_loop(self):
         file1 = open('lookml/tests/thelook/thelook_test.model.lkml', 'r')
         lkmljson = lkml.load(file1)
+        file1.close()
         if 'explores' in lkmljson.keys():
             for explore in lkmljson['explores']:
                 self.parsedExplore = lookml.Explore(explore)
@@ -115,18 +104,30 @@ class testParserBinding(unittest.TestCase):
         if 'explores' in lkmljson.keys():
             for explore in lkmljson['explores']:
                 self.parsedExplore = lookml.Explore(explore)
+        file2.close()
         file3 = open('lookml/tests/thelook/thelook_test3.model.lkml', 'w')
         file3.write(str(self.parsedExplore))
         file3.close()
 
-    # def test_dispatch(self):
-        # pass
-        '''
-        1) Grab an arbirary file and create an index of all the stuff inside
-        2) Ensure that there is a namespacing mechanism from the "file" point of view
-        ? File Class?
-        ? This might make sense in anothr test case....
-        '''
+
+    def test_github_loop(self):
+        proj = lookml.Project(
+                repo="llooker/russ_sandbox",
+                access_token=config['github']['access_token']
+        )
+        v = proj.getFile('simple/tests.view.lkml')
+
+        v.views.test1.foo.sql = "${TABLE}.id"
+        v.views.test1.foo.addTag("Generated Code")
+        v.views.test2 + 'id'
+        v.views.test2.id.sql = "${TABLE}.`ID_`"
+        proj.updateFile(v)
+        print(v)
+
+
+
+
+
 
 if __name__ == '__main__':
     unittest.main()
