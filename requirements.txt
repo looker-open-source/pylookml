@@ -1,0 +1,11 @@
+certifi==2019.11.28
+chardet==3.0.4
+Deprecated==1.2.7
+idna==2.9
+lkml==0.2.2
+lookml==0.0.4
+PyGithub==1.46
+PyJWT==1.7.1
+requests==2.23.0
+urllib3==1.25.8
+wrapt==1.12.0

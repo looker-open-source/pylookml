@@ -1,6 +1,8 @@
 import re
 import lookml.config as conf
 import lkml
+from github import Github
+
 
 def snakeCase(string):
     str1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', string)
@@ -24,8 +26,59 @@ def ws_buffer(item):
                 )
     return wrapper
 
+class Project:
+    '''
+        A LookML Project at a GitHub location or location on the filesytem
+    '''
+    def __init__(self):
+        ''' 
+            Can be constructed with a github access token and repository name
+        '''
+        #self.access_token = 
+        #self.repository = 
+        #self.looker_project_name =
+        #self.deploy_url = 
+        pass
 
-class dispatcher():
+    def connectToGitHub(self):
+        '''
+            Activates Session with github allowing the traversal of files within the project
+        '''
+        pass
+
+    def files(self,pattern=''):
+        ''' Iteratively returns all the files or those matching a specific pattern '''
+        pass
+
+    def models(self, pattern=''):
+        ''' Iteratively returns all of the models or those matching a specific pattern'''
+        pass
+
+    def getFile(self,path):
+        '''  
+            returns a single lookml File object 
+        '''
+        pass
+
+    def updateFile(self,path):
+        '''  
+            returns a single lookml File object 
+        '''
+        pass
+
+    def newFile(self,path):
+        '''
+            creates a new file in the project and uploads it to github
+        '''
+        pass
+
+    def deleteFile(self,path):
+        '''
+            deletes a file from a repository at a specific path
+        '''
+        pass
+
+class File:
     def __init__(self, infilepath):
         '''parse the LookML infilepath, convert to JSON, and then read into JSON object
 
@@ -95,7 +148,6 @@ class dispatcher():
         """
         es = self.explores()
         return (es and len(es) > 0)
-
 
 class writeable(object):
     def __init__(self, *args, **kwargs):
@@ -648,9 +700,20 @@ class Join(object):
         self._from = kwargs.get('from', None)
         self.to = kwargs.get('to', None)
         if len(args) >= 1:
-            
             if isinstance(args[0],dict):
                 self.bind_lkml(args[0])
+
+    # def __getattribute__(self, key): 
+    #     if key == 'name':
+    #         return self.identifier
+    #     else:
+    #         return self.getProperty(key)
+
+    # def __setattr__(self, name, value):
+    #     if name in self.__dict__.keys():
+    #         self.__dict__[name] = value
+    #     else:
+    #         object.__setattr__(self, name, value)
 
     def bind_lkml(self, lkmldict):
             self.setName(lkmldict.pop('name'))
@@ -670,6 +733,9 @@ class Join(object):
 
     def setFrom(self,f):
         pass
+
+    def getProperty(self, prop):
+        return self.properties.getProperty(prop)
 
     def setProperty(self, name, value):
         ''''''
@@ -695,37 +761,18 @@ class Join(object):
         return self
 
     def setType(self, joinType):
-        assert joinType in ['left_outer','full_outer','inner','cross']
+        assert joinType in conf.JOIN_TYPES
         self.properties.addProperty('type',joinType)
         return self
 
     def setRelationship(self,rel):
-        assert rel in ['one_to_many','many_to_one','one_to_one','many_to_many']
+        assert rel in conf.RELATIONSHIPS
         self.properties.addProperty('relationship',rel)
         return self
 
-    # def __getattr__(self, key): #__getattr__
-    #     # return self.properties.getProperty(key)
-    #     if key == '_from':
-    #         return self._from
-    #     if key == 'to':
-    #         return self.to
-    #     else:
-    #         return self.properties.getProperty(key)
-        # if key in self.__dict__.keys():
-        #     return self.__dict__[key]            
-        # else:
-        #     return self.__getitem__(key)
 
-    # def __setattr__(self, name, value):
-    #     # print(self.__dict__.keys())
-    #     if name in self.__dict__.keys():
-    #         self.__dict__[name] = value
-    #     else:
-    #         object.__setattr__(self, name, value)
 
-    def __getitem__(self,identifier):
-        return self.getJoin(identifier)
+
 
 class Explore(writeable):
     ''' Represents an explore object in LookML'''
@@ -761,14 +808,20 @@ class Explore(writeable):
 
     def bind_lkml(self,jsonDict):
         self.setName(jsonDict.pop('name'))
+        if 'joins' in jsonDict.keys():
+            for join in jsonDict['joins']:
+                self + Join(join)        
+        jsonDict.pop('joins')
         for k,v in jsonDict.items():
-            self.setProperty(k,v) 
-        # for join in jsonDict['joins']:
-        #     pass
-        #     self.addJoin(join)
+            self.setProperty(k,v)
 
     def __len__(self):
         return len(self.joins)
+
+    def setProperty(self, name, value):
+        ''''''
+        self.properties.addProperty(name, value)
+        return self
 
     def __str__(self):
         return splice(
@@ -779,20 +832,17 @@ class Explore(writeable):
                      )
 
     def __add__(self,other):
-        if isinstance(other,View):
-            pass 
-        elif isinstance(other,Join):
-            self.addJoin(Join)
+        if isinstance(other,View) or isinstance(other,Join):
+            self.addJoin(other) 
+        else:
+            raise TypeError 
         return self
     def __radd__(self,other):
         return self.__add__(other)
     def __getattr__(self, key):
-        # print(self.__dict__.keys())
-        # if key in self.__dict__.keys():
-        #     return self.__dict__[key]
-        
+
+    
         if key == self.base_view.name and self.base_view:
-        # elif key == 'order_items':
             return self.base_view
         elif key in self.joins.keys():
             return self.joins[key]
@@ -867,9 +917,9 @@ class Model(writeable):
         
     def __str__(self):
         return splice(
-                        '\n'.join([str(p) for p in self.properties.getProperties()]), 
+                        '\n'.join([str(p) for p in self.properties.getProperties()]),
+                        '\n' * 5, '\n'.join([str(e) for e in self.getAccessGrants()]),
                         '\n' * 5, '\n'.join([str(e) for e in self.getExplores()]),
-                        '\n' * 5, '\n'.join([str(e) for e in self.getAccessGrants()])
                         )
 
     def __getattr__(self, key):
