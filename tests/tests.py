@@ -99,47 +99,25 @@ class testParserBinding(unittest.TestCase):
     def test_model_loop(self):
         file1 = open('lookml/tests/thelook/thelook_test.model.lkml', 'r')
         lkmljson = lkml.load(file1)
-        
-        if 'explores' in self.parsed.keys():
-            for explore in self.parsed['explores']:
+        if 'explores' in lkmljson.keys():
+            for explore in lkmljson['explores']:
                 self.parsedExplore = lookml.Explore(explore)
-                x = lookml.Join({
-                        'name': 'order_facts', 
-                        'relationship': 'many_to_one', 
-                        'sql_on': 'foo', 
-                        'type': 'left_outer', 
-                        'view_label': 'Orders'
-                        })
-                pass
-        file3 = open('lookml/tests/thelook/test.out2.lkml', 'w')
-        
-        v = None
-        for explore in self.parsed['explores']:
-            self.parsedExplore = lookml.Explore(explore)
 
-
-        file2 = open('lookml/tests/thelook/test.out.lkml', 'w')
-        file2.write(v.__str__())
+        file2 = open('lookml/tests/thelook/thelook_test2.model.lkml', 'w')
+        ###### MANIPULATE ######
+        # print(self.parsedExplore.order_facts.relationship)
+        self.parsedExplore.order_facts.setOn('FOO')
+        ###### MANIPULATE ######
+        file2.write(str(self.parsedExplore))
         file2.close()
-        file2 = open('lookml/tests/thelook/test.out.lkml', 'r')
-        v2 = None
-        lkmljson2 = lkml.load(file2)
-        if 'views' in lkmljson2.keys():
-                for view in lkmljson2['views']:
-                    v2 = lookml.View(view)
-        v2 - 'id'
-        v2.tst.addTag('foo')
-        v2 + lookml.Measure('count_of_total')
-        v2.count_of_total.setType('sum')
-        v2.count_of_total.sql = '${id}'
-        file3.write(str(v2))
+        file2 = open('lookml/tests/thelook/thelook_test2.model.lkml', 'r')
+        lkmljson = lkml.load(file2)
+        if 'explores' in lkmljson.keys():
+            for explore in lkmljson['explores']:
+                self.parsedExplore = lookml.Explore(explore)
+        file3 = open('lookml/tests/thelook/thelook_test3.model.lkml', 'w')
+        file3.write(str(self.parsedExplore))
         file3.close()
-
-        with open('lookml/tests/thelook/thelook_test.model.lkml', 'r') as file:
-            self.parsed = lkml.load(file)
-            pass
-    
-
 
     # def test_dispatch(self):
         # pass

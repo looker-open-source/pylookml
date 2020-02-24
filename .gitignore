@@ -8,7 +8,7 @@ settings/templates/*
 output/*
 run.py
 msi_run.py
-*.lkml
+# *.lkml
 testclient.py
 ############## Generic Python Gitignore configurations ##############
 # Byte-compiled / optimized / DLL files
