@@ -112,15 +112,17 @@ class testParserBinding(unittest.TestCase):
 
     def test_github_loop(self):
         proj = lookml.Project(
-                repo="llooker/russ_sandbox",
+                repo= config['github']['repo'],
                 access_token=config['github']['access_token']
         )
         v = proj.getFile('simple/tests.view.lkml')
 
         v.views.test1.foo.sql = "${TABLE}.id"
         v.views.test1.foo.addTag("Generated Code")
-        v.views.test2 + 'id'
+        v.views.test2 + 'id' + 'cool'
         v.views.test2.id.sql = "${TABLE}.`ID_`"
+        ~v.views.test2
+        v.views.test2.extend()
         proj.updateFile(v)
         print(v)
 
