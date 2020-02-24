@@ -1,7 +1,9 @@
 import re
 import lookml.config as conf
 import lkml
-from github import Github
+import github
+import base64
+import requests
 
 
 def snakeCase(string):
@@ -30,20 +32,14 @@ class Project:
     '''
         A LookML Project at a GitHub location or location on the filesytem
     '''
-    def __init__(self):
+    def __init__(self,repo='',access_token=''):
         ''' 
             Can be constructed with a github access token and repository name
         '''
-        #self.access_token = 
-        #self.repository = 
-        #self.looker_project_name =
-        #self.deploy_url = 
-        pass
-
-    def connectToGitHub(self):
-        '''
-            Activates Session with github allowing the traversal of files within the project
-        '''
+        self.gitsession = github.Github(access_token)
+        self.repo = self.gitsession.get_repo(repo)
+        # self.looker_project_name =
+        # self.deploy_url = 
         pass
 
     def files(self,pattern=''):
@@ -58,12 +54,13 @@ class Project:
         '''  
             returns a single lookml File object 
         '''
-        pass
+        return File(self.repo.get_contents(path))
 
-    def updateFile(self,path):
+    def updateFile(self,f):
         '''  
-            returns a single lookml File object 
+            takes a File object and attempts to re-upload it to the project. 
         '''
+        self.repo.update_file(f.path, "auto-update", str(f), sha=f.sha, branch="master")
         pass
 
     def newFile(self,path):
@@ -78,7 +75,34 @@ class Project:
         '''
         pass
 
+class views:
+    '''
+        A container for views which allows us to use .operator syntax 
+    '''
+    def __init__(self,viewlist):
+        self.views = {}
+        for view in viewlist:
+            v = View(view)
+            self.views.update({v.name:v})
+
+    def __getattr__(self,key):
+        return self.views[key]
+
+class explores:
+    '''
+        A container for explores which allows us to use .operator syntax 
+    '''
+    def __init__(self,explorelist):
+        self.explores = {}
+        for explore in explorelist:
+            e = Explore(explore)
+            self.explores.update({e.name:e})
+
+    def __getattr__(self,key):
+        return self.explores[key]
+
 class File:
+
     def __init__(self, infilepath):
         '''parse the LookML infilepath, convert to JSON, and then read into JSON object
 
@@ -89,57 +113,87 @@ class File:
             JSON object of LookML
 
         '''
-        if not os.path.exists(infilepath):
-            raise IOError("Filename does not exist: %s" % infilepath)
+
+        # if not os.path.exists(infilepath):
+        #     raise IOError("Filename does not exist: %s" % infilepath)
 
         self.infilepath = infilepath
-        if infilepath.endswith(".model.lkml"):
+        if isinstance(self.infilepath, github.ContentFile.ContentFile):
+            data = base64.b64decode(self.infilepath.content).decode('ascii')
+            self.json_data = lkml.load(data)
+
+        if infilepath._rawData['name'].endswith(".model.lkml"):
             self.filetype = 'model'
-        elif infilepath.endswith(".view.lkml"):
+        elif infilepath._rawData['name'].endswith(".view.lkml"):
             self.filetype = 'view'
-        elif infilepath.endswith(".explore.lkml"):
+        elif infilepath._rawData['name'].endswith(".explore.lkml"):
             self.filetype = 'explore'
         else:
-            raise Exception("Unsupported filename " + infilepath)
-        self.base_filename = os.path.basename(infilepath)
+            raise Exception("Unsupported filename " + infilepath._rawData['name'])
+        # self.base_filename = os.path.basename(infilepath)
+        self.path = self.infilepath._rawData['path']
+        self.sha = self.infilepath._rawData['sha']
+        self.base_filename = infilepath._rawData['name']
         self.base_name = self.base_filename.replace(".model.lkml", "").replace(".explore.lkml", "").replace(".view.lkml", "")        
 
-        with open(infilepath, 'r') as file:
-            self.json_data = lkml.load(file)
+        if 'views' in self.json_data.keys():
+            self.vws = views(self.json_data['views'])
+        else:
+            self.vws = None
+        if 'explores' in self.json_data.keys():
+            self.exps = explores(self.json_data['explores'])
+        else:
+            self.exps = None
+        
 
-    def views(self):
-        """get views (if any) from the LookML
+    def __getattr__(self, key):
+        if key == 'views':
+            return self.vws
+        elif key == 'explores':
+            return self.exps
+        else:
+            return object.__getattr__(key)
 
-        Returns:
-            views (list) if any, None otherwise
+    def __str__(self):
+        return splice(
+            conf.NEWLINE.join([ str(e) for e in self.exps.explores.values()] ) if self.exps else ''
+            ,conf.NEWLINE,
+            conf.NEWLINE.join([ str(v) for v in self.vws.views.values()]) if self.vws else ''
+        )
 
-        """
-        if 'views' in self.json_data:
-            return self.json_data['views']
-        return None
+    # def views(self):
+    #     """get views (if any) from the LookML
 
-    def has_views(self):
-        """does this have one or more views?
+    #     Returns:
+    #         views (list) if any, None otherwise
 
-        Returns:
-            bool, whether this has views
+    #     """
+    #     if 'views' in self.json_data:
+    #         return File.views(self.json_data['views'])
+    #     return None
 
-        """
-        vs = self.views()
-        return (vs and len(vs) > 0)
+    # def has_views(self):
+    #     """does this have one or more views?
 
-    def explores(self):
-        """get explores (if any) from the LookML
+    #     Returns:
+    #         bool, whether this has views
 
-        Returns:
-            explores (list) if any, None otherwise
+    #     """
+    #     vs = self.views()
+    #     return (vs and len(vs) > 0)
 
-        """
-        if 'explores' in self.json_data:
-            return self.json_data['explores']
-        return None
+    # def explores(self):
+    #     """get explores (if any) from the LookML
 
-    def has_explores(self):
+    #     Returns:
+    #         explores (list) if any, None otherwise
+
+    #     """
+    #     if 'explores' in self.json_data:
+    #         return self.json_data['explores']
+    #     return None
+
+    # def has_explores(self):
         """does this have one or more explores?
 
         Returns:
