@@ -119,9 +119,10 @@ class testParserBinding(unittest.TestCase):
         v.views.test1.foo.sql = "${TABLE}.id"
         v.views.test1.foo.addTag("Generated Code")
         v.views.test2 + 'id' + 'cool'
+        v.views.test2.id.type = 'number'
         v.views.test2.id.sql = "${TABLE}.`ID_`"
         ~v.views.test2
-        v.views.test2.extend()
+        # v.views.test2.extend()
         proj.updateFile(v)
         print(v)
 

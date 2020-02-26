@@ -1,18 +1,21 @@
 #Required for V1:
-TODO: finish project implementation -- Russ
-TODO: write test cases for model parsising aand updating 
+TODO: finish project implementation -- Russ.... iterate over files etc.
+TODO: allow to optionally hit the deploy url
+TODO: complete some of the dundermethod operators
+TODO: write test cases for model parsising and updating 
 TODO: Name makes sense at some points and levels (KEYS_WITH_NAME_FIELDS = ("user_attribute_param", "param", "form_param", "option")) https://github.com/joshtemple/lkml/commit/676c214fcc0e0641eb353095c6b3de3232df1695
 TODO: Sets
 TODO: Actions -- Hugo
 TODO: Constants
 TODO: Access Grants -- Hugo
 TODO: write additional simple round trip usecases for all the object types:
-       * Explore, view, access_grant, model file, data groups, named value format, map layers ... 
+       #* Explore, view, access_grant, model file, data groups, named value format, map layers ... 
 TODO: Common Sql Functions added to the SQL paramter
 TODO: Programatic Manipulation Tag / comment. Also remove tags
 TODO: basic usecases documented -- readthedocs.io or something... 
 
 ###### V2 ########### 
+TODO: equality operator for object comparison
 TODO: parse manifest file
 TODO: parse locale json file
 TODO: internal optimizations: good abstractions, no unnecessary memory, better internal class structure / data strcuture  
@@ -44,6 +47,7 @@ TODO: Massive Documentation
 TODO: Comprehensive and good unit tests
 TODO: Common HTML Functions added to the HTML paramter
 TODO: Ontology from the project.file.view.field? project.model.view.field? 
+### Long term or debatable ###
 TODO: Preserve initial ordering?
 
 Enhanecement: Make the internal datastructure of the class the JSON.... i.e. as the class state is modified so is the underlying json.

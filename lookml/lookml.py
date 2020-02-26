@@ -1155,6 +1155,12 @@ class Properties(object):
     def isMember(self, property):
         return property in self.schema.keys()
 
+    def props(self):
+        '''
+            Returns a list of the property values. Mostly used for membership checking
+        '''
+        return self.schema.keys()
+
 class Field(object):
     ''' Base class for fields in LookML, only derived/child types should be instantiated '''
     __slots__ = ['schema', 'properties','db_column','identifier','view','message']
@@ -1180,7 +1186,6 @@ class Field(object):
         self.view = kwargs.get('view', '')
         #If passed a dictionary it is assumed to be the LKML schema
         if len(args) > 1:
-            # print(args)
             if isinstance(args[1],dict):
                 self.bind_lkml(args[1])
 
@@ -1234,9 +1239,9 @@ class Field(object):
         elif name == 'name':
             self.setName(value)
             return self
-        elif name == 'sql':
+        # elif name in self.properties.props():
+        elif name in conf.FIELD_LEVEL_PROPS:
             return self.setProperty(name,value)
-
         else:
             object.__setattr__(self, name, value)
 
@@ -1244,6 +1249,7 @@ class Field(object):
         return self.setProperty('description', value)
 
     def addTag(self,tag):
+        #TODO: implement a remove tag too
         if self.properties.isMember('tags'):
             pass
         else:
