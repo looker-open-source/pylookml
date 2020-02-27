@@ -2,7 +2,7 @@
     # Things that should be their own class:
     # data_groups, named_value_format, sets
 NONUNIQUE_PROPERTIES = {'include','link', 'filters', 'bind_filters', 'data_groups', 'named_value_format', 'sets', 'column'}
-MULTIVALUE_PROPERTIES = ['drill_fields', 'timeframes', 'tiers','suggestions']
+MULTIVALUE_PROPERTIES = ['drill_fields', 'timeframes', 'tiers','suggestions','tags']
 KEYS_WITH_NAME_FIELDS = ("user_attribute_param", "param", "form_param", "option")
 TIMEFRAMES = ['raw', 'year', 'quarter', 'month', 'week', 'date', 'day_of_week', 'hour', 'hour_of_day', 'minute', 'time', 'time_of_day']
 JOIN_TYPES = ['left_outer','full_outer','inner','cross']
