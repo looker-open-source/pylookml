@@ -82,11 +82,33 @@ class views:
     def __init__(self,viewlist):
         self.views = {}
         for view in viewlist:
-            v = View(view)
-            self.views.update({v.name:v})
+            self.add(view)
 
     def __getattr__(self,key):
         return self.views[key]
+
+    def add(self, v):
+        if isinstance(v,dict):
+            v = View(v)
+        self.views.update({v.name:v})
+        return self
+
+    def remove(self, v):
+        if not isinstance(v,str):
+            v = v.name
+        self.views.pop(v)
+        return self
+
+    def __iter__(self):
+        self.iterPointer = iter(self.views.values())
+        return self
+
+    def __next__(self):
+        try:
+            return next(self.iterPointer)
+        except:
+            raise StopIteration
+
 
 class explores:
     '''
@@ -95,12 +117,32 @@ class explores:
     def __init__(self,explorelist):
         self.explores = {}
         for explore in explorelist:
-            e = Explore(explore)
-            self.explores.update({e.name:e})
+            self.add(explore)
 
     def __getattr__(self,key):
         return self.explores[key]
 
+    def add(self, e):
+        if isinstance(e,dict):
+            e = Explore(e)
+        self.explores.update({e.name:e})
+        return self
+
+    def remove(self, e):
+        if not isinstance(e,str):
+            e = e.name
+        self.explores.pop(e)
+        return self
+
+    def __iter__(self):
+        self.iterPointer = iter(self.explores.values())
+        return self
+
+    def __next__(self):
+        try:
+            return next(self.iterPointer)
+        except:
+            raise StopIteration
 class File:
 
     def __init__(self, infilepath):
@@ -113,9 +155,6 @@ class File:
             JSON object of LookML
 
         '''
-
-        # if not os.path.exists(infilepath):
-        #     raise IOError("Filename does not exist: %s" % infilepath)
 
         self.infilepath = infilepath
         if isinstance(self.infilepath, github.ContentFile.ContentFile):
@@ -161,47 +200,19 @@ class File:
             conf.NEWLINE.join([ str(v) for v in self.vws.views.values()]) if self.vws else ''
         )
 
-    # def views(self):
-    #     """get views (if any) from the LookML
+    def addView(self,v):
+        self.vws.add(v)
+        return self
 
-    #     Returns:
-    #         views (list) if any, None otherwise
+    def addExplore(self,e):
+        self.exps.add(e)
+        return self
 
-    #     """
-    #     if 'views' in self.json_data:
-    #         return File.views(self.json_data['views'])
-    #     return None
-
-    # def has_views(self):
-    #     """does this have one or more views?
-
-    #     Returns:
-    #         bool, whether this has views
-
-    #     """
-    #     vs = self.views()
-    #     return (vs and len(vs) > 0)
-
-    # def explores(self):
-    #     """get explores (if any) from the LookML
-
-    #     Returns:
-    #         explores (list) if any, None otherwise
-
-    #     """
-    #     if 'explores' in self.json_data:
-    #         return self.json_data['explores']
-    #     return None
-
-    # def has_explores(self):
-        """does this have one or more explores?
-
-        Returns:
-            bool, whether this has explores
-
-        """
-        es = self.explores()
-        return (es and len(es) > 0)
+    def __add__(self, other):
+        if isinstance(other, View):
+            self.addView(other)
+        elif isinstance(other, Explore):
+            self.addExplore(other)
 
 class writeable(object):
     def __init__(self, *args, **kwargs):
@@ -472,6 +483,11 @@ class View(writeable):
         ''' Sets the view to be "extension: required" '''
         self.properties.addProperty('extension','required')
         return self    
+
+    def getFieldsByTag(self,tag):
+        for field in self.getFields():
+            if tag in field.tags:
+                yield field
 
     def getFields(self):
         '''Returns all the fields as a generator'''
@@ -786,7 +802,8 @@ class Join(object):
         return self
 
     def setFrom(self,f):
-        pass
+        self._from = f
+        return self
 
     def getProperty(self, prop):
         return self.properties.getProperty(prop)
@@ -823,10 +840,6 @@ class Join(object):
         assert rel in conf.RELATIONSHIPS
         self.properties.addProperty('relationship',rel)
         return self
-
-
-
-
 
 class Explore(writeable):
     ''' Represents an explore object in LookML'''
@@ -1022,9 +1035,10 @@ class Model(writeable):
 class Property(object):
     ''' A basic property / key value pair. 
     If the value is a dict it will recusively instantiate properties within itself '''
-    __slots__ = ['name', 'value']
+    __slots__ = ['name', 'value','num']
     def __init__(self, name, value):
         self.name = name
+        self.num = 0
         if isinstance(value, str):
             self.value = value
         elif name in ('links','filters','tags','suggestions', 'actions'):
@@ -1033,13 +1047,34 @@ class Property(object):
         elif isinstance(value, dict) or isinstance(value, list):
             self.value = Properties(value)
         
-        # elif isinstance(value, list):
-        #     self.value = Properties(value)
-            # self.value = [Property(name + '_member', i) for i in value]
-        # elif isinstance(value,Properties):
-        #     self.value = [Property(name, i) for i in value]
         else:
             raise Exception('not a dict, list or string')
+        
+    def __len__(self):
+        return len(self.value)
+
+    def __add__(self,other):
+        if isinstance(self.value, str):
+            pass
+        elif isinstance(self.value, Properties):
+            self.value.addProperty('tags',other)
+        elif isinstance(self.value, list) and self.multiValueSpecialHandling in ('tags','suggestions'):
+            self.schema.append(other)
+        elif self.properties.multiValueSpecialHandling == 'filters':
+            pass
+        elif self.properties.multiValueSpecialHandling == 'links':
+            pass
+        else:
+            pass
+
+    def __iter__(self):
+        self.num = 0
+        return self
+
+    def __next__(self):
+        num = self.num
+        while num <= len(self.value):
+            return next(self.value)
 
     def __str__(self):
         if self.name.startswith('sql') or self.name == 'html':
@@ -1065,6 +1100,8 @@ class Property(object):
         else:
             return splice(self.name , ': ' , str(self.value))
 
+
+
 class Properties(object):
     '''
     Treats the collection of properties as a recursive dicitionary
@@ -1073,10 +1110,12 @@ class Properties(object):
     Things that should be their own class:
     data_groups, named_value_format, sets
     '''
-    __slots__ = ['schema','multiValueSpecialHandling']
+    __slots__ = ['schema','multiValueSpecialHandling','num','valueiterator']
 
     def __init__(self, schema, multiValueSpecialHandling=False):
         self.schema = schema
+        self.num = 0
+        self.valueiterator = iter(self.schema)
         self.multiValueSpecialHandling = multiValueSpecialHandling
 
     #TODO: Rewrite for list schema type
@@ -1111,9 +1150,17 @@ class Properties(object):
     def getProperty(self, identifier):
         
         if isinstance(self.schema, dict):
-            return Property(identifier, self.schema.get(identifier, None))
+            if identifier == 'sql':
+                # return sql_prop(identifier, self.schema.get(identifier, []))
+                return Property(identifier, self.schema.get(identifier, []))
+            else:    
+                return Property(identifier, self.schema.get(identifier, []))
         elif isinstance(self.schema, list):
-            return Property(identifier, self.schema.get(identifier, None))   
+            if identifier == 'sql':
+                # return sql_prop(identifier, self.schema.get(identifier, []))
+                return Property(identifier, self.schema.get(identifier, []))
+            else:    
+                return Property(identifier, self.schema.get(identifier, [])) 
 
 #TODO: Rewrite for list schema type
     def getProperties(self):
@@ -1131,13 +1178,35 @@ class Properties(object):
                 else:
                     yield Property('list_member',item)
 
-    # def getProperties(self):
-    #     for k, v in self.schema.items():
-    #         if k in conf.NONUNIQUE_PROPERTIES:
-    #             for n in v:
-    #                 yield Property(k, n)
-    #         else:
-    #             yield Property(k, v)
+
+    def __iter__(self):
+        # self.num = 0
+        self.valueiterator = iter(self.schema)
+        return self
+
+    def __next__(self):
+        # num = self.num
+        # while num <= len(self.schema):
+        try:
+            return next(self.valueiterator)
+        except:
+            raise StopIteration
+
+
+    def __add__(self,other):
+        if isinstance(self.schema, dict):
+            pass
+        elif isinstance(self.schema, list) and not self.multiValueSpecialHandling:
+            pass
+        elif isinstance(self.schema, list) and self.multiValueSpecialHandling in ('tags','suggestions'):
+            self.addProperty(self.multiValueSpecialHandling,other)
+        elif self.multiValueSpecialHandling == 'filters':
+            pass
+        elif self.multiValueSpecialHandling == 'links':
+            pass
+        else:
+            pass
+
 #TODO: Rewrite for list schema type
     def addProperty(self, name, value):
         if name in conf.NONUNIQUE_PROPERTIES:
@@ -1146,6 +1215,9 @@ class Properties(object):
             self.schema.update(
                 {name: index}
             )
+        elif isinstance(self.schema, list):
+            if value not in self.schema:
+                self.schema.append(value)
         else:
             self.schema.update({name: value})
 #TODO: Rewrite for list schema type
@@ -1160,6 +1232,10 @@ class Properties(object):
             Returns a list of the property values. Mostly used for membership checking
         '''
         return self.schema.keys()
+
+    def __len__(self):
+        return len(self.schema)
+
 
 class Field(object):
     ''' Base class for fields in LookML, only derived/child types should be instantiated '''
@@ -1205,7 +1281,6 @@ class Field(object):
             return ''
     
 
-
     def __str__(self):
         return splice(
                         self.identifier, splice(' {',conf.NEWLINEINDENT), 
@@ -1249,14 +1324,24 @@ class Field(object):
         return self.setProperty('description', value)
 
     def addTag(self,tag):
-        #TODO: implement a remove tag too
         if self.properties.isMember('tags'):
-            pass
+            if tag not in self.tags:
+                # self.tags.value.schema['tags'].append(tag)
+                self.tags.value.schema.append(tag)
+            #Else it's already a member
         else:
             self.setProperty('tags',[tag])
 
+    def removeTag(self,tag):
+        if self.properties.isMember('tags'):
+            self.tags.value.schema.remove(tag)
+        else:
+            pass
+            #TODO: raise an error
+
     def setView(self, view):
-        ''''''
+        '''
+        '''
         self.view = view
         return self  # satisfies a need to linkback (look where setView is called)
 
@@ -1319,6 +1404,10 @@ class Field(object):
         elif isinstance(access_grant,list):
             self.setProperty('required_access_grants', '[' + ','.join(access_grant) + ']')
         return self
+
+    def sql_nvl(self,value_if_null):
+        self.sql = "NVL(" + str(self.sql.value) + "," + value_if_null + ")"
+
 
 class Dimension(Field):
     def __init__(self, *args, **kwargs):

@@ -116,20 +116,45 @@ class testParserBinding(unittest.TestCase):
                 access_token=config['github']['access_token']
         )
         v = proj.getFile('simple/tests.view.lkml')
-        v.views.test1.foo.sql = "${TABLE}.id"
+        v.views.test1.foo.sql = "${TABLE}.scoop"
+        v.views.test1.foo.sql_nvl("0")
         v.views.test1.foo.addTag("Generated Code")
-        v.views.test2 + 'id' + 'cool'
-        v.views.test2.id.type = 'number'
-        v.views.test2.id.sql = "${TABLE}.`ID_`"
-        ~v.views.test2
+        v.views.test1.foo.addTag("cool")
+        v.views.test1.foo.addTag("cool1")
+        v.views.test1.foo.tags + 'wut'
+        v.views.test1.foo.suggestions = ['hello']
+        if 'cool' in v.views.test1.foo.tags:
+            v.views.test1.foo.tags + 'crazy_right?'
+        if 'hello' in v.views.test1.foo.suggestions:
+            v.views.test1.foo.suggestions + 'washington_post'
+        v.views.test1.foo.removeTag("cool1")
+        for tag in v.views.test1.foo.tags:
+            print(tag)
+        for f in v.views.test2.getFieldsByTag('x'):
+            f.sql_nvl("0")
+            f.removeTag('x')
+            print(f)
+
+        for y in v.views:
+            print(y)
+
+        newView = lookml.View('test3')
+        newView + 'id'
+        newView.id.sql = "${TABLE}._id_"
+        v + newView
+        # v.views.test2 + 'id' + 'cool'
+        # v.views.test2.id.type = 'number'
+        # v.views.test2.id.sql = "${TABLE}.`ID_`"
+        # ~v.views.test2
         # v.views.test2.extend()
         proj.updateFile(v)
-        print(v)
+        # print(v)
 
         #TODO: test case for full model manipulation
         #TODO: test the limits of by reference passing to shorten variable names
 
 
+#TODO: Add test coverage for providing positional arguments of vastly different types, i.e. lookml class vs json etc. 
 
 
 
