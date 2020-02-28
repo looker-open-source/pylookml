@@ -1,10 +1,25 @@
-This is a pythonic api for creating LookML objects.
+pyLookML allows you to fetch, parse and program lookml very easily. 
+It is an object oriented metaprogramming interface built on top of the AWESOME lkml parsing library which you can check out here: https://github.com/joshtemple/lkml. But extends it by adding convenience to it's json structure and more advanced integrations and object oriented behaviors.
+Check out the full documentation for pyLookml project here: https://lookml.readthedocs.io/en/latest/
+
+In the meantime here are some very basic examples for getting started:
 
 get started fast:
 `pip install lookml`
 
+Connect to a lookml github project:
+```
+   import lookml
+   proj = lookml.Project(
+         repo= "llooker/russ_sandbox",
+         access_token="your_github_access_token",
+   )
+   viewFile = proj.getFile('01_order_items.view.lkml')
+   orderItems = viewFile.views.order_items
+   print(orderItems.id)
+```
 
-
+Pure lookml generation:
 ```
 import lookml
 
@@ -22,137 +37,3 @@ order_items.write()
 
 ```
 
-```
-proj = lookml.Project(
-        repo= config['github']['repo'],
-        access_token=config['github']['access_token']
-)
-vf = proj.getFile('simple/tests.view.lkml')
-mf = proj.getFile('simple/test1.model.lkml')
-
-#loop over views
-for y in vf.views:
-    pass
-
-#Look up view objects from a file and give them a convenient name:
-test1 = vf.views.test1
-test2 = vf.views.test2
-
-#look up an explore
-mf.explores.test1.test2.on(
-        vf.views.test1.foo,'=',vf.views.test2.id
-        )
-mf.explores.test1.test2.setRelationship('many_to_one')
-mf.explores.test1.test2.setType('left_outer')
-
-#Manipulate field sql
-test1.foo.sql = "${TABLE}.foo"
-test1.foo.sql_nvl("0")
-
-#Tags, suggestions and ephemeral comments
-test1.foo.addTag("Generated Code")
-test1.foo.tags + 'tag_xyz'
-test1.foo.removeTag("tag_xyz")
-# loop over tags
-for tag in test1.foo.tags:
-    pass
-    #print(tag)
-test1.foo.setMessage("Auto Generated Code... comments in this will file may disappear on automation run")
-test1.foo.suggestions = ['suggestion1']
-if 'Generated Code' in test1.foo.tags:
-    test1.foo.tags + 'Detected Generated Code'
-if 'suggestion' in test1.foo.suggestions:
-    test1.foo.suggestions + 'suggestion2'
-
-test1.sumAllNumDimensions()
-
-for field in test1.getFieldsByType('sum'):
-    field.tags + 'sum'
-
-
-test1 + lookml.DimensionGroup('created')
-
-test1.addComparisonPeriod(test1.foo,test1.created)
-
-#Obtain lookml fields by tag
-for f in test2.getFieldsByTag('x'):
-    #do work
-    f.removeTag('x')
-
-#Add a new view
-newView = lookml.View('test3')
-newView + 'id'
-newView.id.type = 'number'
-newView.id.sql = "${TABLE}._id_"
-vf + newView
-
-test1.extend()
-proj.updateFile(vf)
-proj.updateFile(mf)
-```
-
-
-```
-#More advanced example:
-import lookml
-
-order_items = lookml.View('order_items').setSqlTableName(sql_table_name='public.order_items')
-order_items + 'id' + 'value' + 'inventory_item_id'
-order_items.id.setNumber()
-order_items.inventory_item_id.setNumber()
-order_items.addSum('value')
-order_items + lookml.DimensionGroup('created_at') 
-
-
-products = lookml.View('products')
-products + 'id' + 'name'
-
-inventory_items = lookml.View('inventory_items').setSqlTableName(sql_table_name='public.inventory_items')
-inventory_items + 'id' + 'product_id'
-
-
-order_items_explore = lookml.Explore(order_items)
-order_items_explore.addJoin(inventory_items).on(order_items.inventory_item_id , ' = ', inventory_items.id).setType('left_outer').setRelationship('one_to_one')
-order_items_explore.addJoin(products).on(inventory_items.product_id , ' = ', products.id).setType('left_outer').setRelationship('many_to_one')
-
-
-
-the_look = lookml.Model('the_look')
-the_look.setConnection('my_connection')
-the_look.include(order_items)
-the_look.include(inventory_items)
-the_look.addExplore(order_items_explore)
-
-
-the_look.order_items.order_items.id.addLink(
-    url='/dashboards/7?brand=cool',
-    label=''
-)
-
-product_facts_ndt = order_items_explore.createNDT(explore_source=order_items_explore, name='product_facts_ndt',fields=[products.id,order_items.total_value])
-product_facts_ndt.addSum('total_value')
-the_look.include(product_facts_ndt)
-product_facts_ndt.write()
-order_items_explore.addJoin(product_facts_ndt).on(products.id,' = ',product_facts_ndt.id).setType('left_outer').setRelationship('one_to_one')
-
-the_look.write()
-order_items.write()
-products.write()
-inventory_items.write()
-
-
-```
-
-
-
-Extending a View:
-```
-order_items = lookml.View('order_items')
-order_items + 'my_field'
-order_items_extended = order_items.extend()
-
-order_items_extended + 'my_field'
-order_items_extended.my_field.hide()
-
-print(order_items)
-```
