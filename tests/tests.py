@@ -115,43 +115,73 @@ class testParserBinding(unittest.TestCase):
                 repo= config['github']['repo'],
                 access_token=config['github']['access_token']
         )
-        v = proj.getFile('simple/tests.view.lkml')
-        v.views.test1.foo.sql = "${TABLE}.scoop"
-        v.views.test1.foo.sql_nvl("0")
-        v.views.test1.foo.addTag("Generated Code")
-        v.views.test1.foo.addTag("cool")
-        v.views.test1.foo.addTag("cool1")
-        v.views.test1.foo.tags + 'wut'
-        v.views.test1.foo.suggestions = ['hello']
-        if 'cool' in v.views.test1.foo.tags:
-            v.views.test1.foo.tags + 'crazy_right?'
-        if 'hello' in v.views.test1.foo.suggestions:
-            v.views.test1.foo.suggestions + 'washington_post'
-        v.views.test1.foo.removeTag("cool1")
-        for tag in v.views.test1.foo.tags:
-            print(tag)
-        for f in v.views.test2.getFieldsByTag('x'):
-            f.sql_nvl("0")
+        vf = proj.getFile('simple/tests.view.lkml')
+        mf = proj.getFile('simple/test1.model.lkml')
+        
+        #loop over views
+        for y in vf.views:
+            pass
+
+        #Look up view objects from a file and give them a convenient name:
+        test1 = vf.views.test1
+        test2 = vf.views.test2
+
+        #look up an explore
+        mf.explores.test1.test2.on(
+                vf.views.test1.foo,'=',vf.views.test2.id
+                )
+        mf.explores.test1.test2.setRelationship('many_to_one')
+        mf.explores.test1.test2.setType('left_outer')
+
+        #Manipulate field sql
+        test1.foo.sql = "${TABLE}.foo"
+        test1.foo.sql_nvl("0")
+        
+        #Tags, suggestions and ephemeral comments
+        test1.foo.addTag("Generated Code")
+        test1.foo.tags + 'tag_xyz'
+        test1.foo.removeTag("tag_xyz")
+        # loop over tags
+        for tag in test1.foo.tags:
+            pass
+            #print(tag)
+        test1.foo.setMessage("Auto Generated Code... comments in this will file may disappear on automation run")
+        test1.foo.suggestions = ['suggestion1']
+        if 'Generated Code' in test1.foo.tags:
+            test1.foo.tags + 'Detected Generated Code'
+        if 'suggestion' in test1.foo.suggestions:
+            test1.foo.suggestions + 'suggestion2'
+        
+        test1.sumAllNumDimensions()
+
+        for field in test1.getFieldsByType('sum'):
+            field.tags + 'sum'
+
+
+        test1 + lookml.DimensionGroup('created')
+
+        test1.addComparisonPeriod(test1.foo,test1.created)
+
+        #Obtain lookml fields by tag
+        for f in test2.getFieldsByTag('x'):
+            #do work
             f.removeTag('x')
-            print(f)
-
-        for y in v.views:
-            print(y)
-
+        
+        #Add a new view
         newView = lookml.View('test3')
         newView + 'id'
+        newView.id.type = 'number'
         newView.id.sql = "${TABLE}._id_"
-        v + newView
-        # v.views.test2 + 'id' + 'cool'
-        # v.views.test2.id.type = 'number'
-        # v.views.test2.id.sql = "${TABLE}.`ID_`"
-        # ~v.views.test2
-        # v.views.test2.extend()
-        proj.updateFile(v)
-        # print(v)
+        vf + newView
 
-        #TODO: test case for full model manipulation
-        #TODO: test the limits of by reference passing to shorten variable names
+        test1.extend()
+        # chris =  lookml.ndt(mf.explores.test1).addColumn('chris',test1.foo)
+        # print(chris)
+        proj.updateFile(vf)
+        proj.updateFile(mf)
+        # proj.newFile(lookml.File(lookml.View('test4')))
+
+
 
 
 #TODO: Add test coverage for providing positional arguments of vastly different types, i.e. lookml class vs json etc. 

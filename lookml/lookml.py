@@ -4,7 +4,7 @@ import lkml
 import github
 import base64
 import requests
-
+import time 
 
 def snakeCase(string):
     str1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', string)
@@ -32,23 +32,22 @@ class Project:
     '''
         A LookML Project at a GitHub location or location on the filesytem
     '''
-    def __init__(self,repo='',access_token=''):
+    def __init__(self,repo='',access_token='', branch="master", commitMessage=""):
         ''' 
             Can be constructed with a github access token and repository name
         '''
         self.gitsession = github.Github(access_token)
         self.repo = self.gitsession.get_repo(repo)
+        self.branch = branch
+        if not commitMessage:
+            self.commitMessage = "PyLookML Auto Updated: " + time.strftime('%h %d %Y @ %I:%M%p %Z')
         # self.looker_project_name =
         # self.deploy_url = 
-        pass
 
-    def files(self,pattern=''):
+    def files(self,path=''):
         ''' Iteratively returns all the files or those matching a specific pattern '''
         pass
 
-    def models(self, pattern=''):
-        ''' Iteratively returns all of the models or those matching a specific pattern'''
-        pass
 
     def getFile(self,path):
         '''  
@@ -60,20 +59,25 @@ class Project:
         '''  
             takes a File object and attempts to re-upload it to the project. 
         '''
-        self.repo.update_file(f.path, "auto-update", str(f), sha=f.sha, branch="master")
-        pass
+        self.repo.update_file(f.path, self.commitMessage, str(f), sha=f.sha, branch=self.branch)
+        return self
 
-    def newFile(self,path):
+    def newFile(self,f):
         '''
             creates a new file in the project and uploads it to github
         '''
-        pass
+        self.repo.create_file(f.path, self.commitMessage, str(f), branch=self.branch)
+        return self
 
-    def deleteFile(self,path):
+    def deleteFile(self,f):
         '''
             deletes a file from a repository at a specific path
         '''
-        pass
+        if isinstance(f,str):
+            f = self.getgetFile(f)
+        self.repo.delete_file(f.path, self.commitMessage, sha=f.sha, branch=self.branch)
+
+        return self
 
 class views:
     '''
@@ -109,7 +113,6 @@ class views:
         except:
             raise StopIteration
 
-
 class explores:
     '''
         A container for explores which allows us to use .operator syntax 
@@ -144,22 +147,17 @@ class explores:
         except:
             raise StopIteration
 class File:
-
     def __init__(self, infilepath):
-        '''parse the LookML infilepath, convert to JSON, and then read into JSON object
-
-        Args:
-            infilepath (str): path to input LookML file
-
-        Returns:
-            JSON object of LookML
-
-        '''
 
         self.infilepath = infilepath
         if isinstance(self.infilepath, github.ContentFile.ContentFile):
             data = base64.b64decode(self.infilepath.content).decode('ascii')
             self.json_data = lkml.load(data)
+        elif isinstance(self.infilepath,View):
+            self.addView(self.infilepath)
+            self.json_data = {}
+
+        self.path = self.infilepath._rawData['path'] if self.infilepath._rawData else self.infilepath.fileName
 
         if infilepath._rawData['name'].endswith(".model.lkml"):
             self.filetype = 'model'
@@ -170,19 +168,24 @@ class File:
         else:
             raise Exception("Unsupported filename " + infilepath._rawData['name'])
         # self.base_filename = os.path.basename(infilepath)
-        self.path = self.infilepath._rawData['path']
+        
         self.sha = self.infilepath._rawData['sha']
         self.base_filename = infilepath._rawData['name']
         self.base_name = self.base_filename.replace(".model.lkml", "").replace(".explore.lkml", "").replace(".view.lkml", "")        
 
         if 'views' in self.json_data.keys():
             self.vws = views(self.json_data['views'])
+            self.json_data.pop('views')
         else:
-            self.vws = None
+            self.vws = views({})
         if 'explores' in self.json_data.keys():
             self.exps = explores(self.json_data['explores'])
+            self.json_data.pop('explores')
         else:
-            self.exps = None
+            self.exps = explores({})
+
+        self.properties = Properties(self.json_data)
+        # join([str(p) for p in self.properties.getProperties()])
         
 
     def __getattr__(self, key):
@@ -191,13 +194,17 @@ class File:
         elif key == 'explores':
             return self.exps
         else:
+            pass
             return object.__getattr__(key)
+
 
     def __str__(self):
         return splice(
-            conf.NEWLINE.join([ str(e) for e in self.exps.explores.values()] ) if self.exps else ''
-            ,conf.NEWLINE,
-            conf.NEWLINE.join([ str(v) for v in self.vws.views.values()]) if self.vws else ''
+             conf.NEWLINE.join([str(p) for p in self.properties.getProperties()])
+            ,conf.NEWLINE
+            ,conf.NEWLINE.join([ str(e) for e in self.explores] ) if self.exps else ''
+            ,conf.NEWLINE
+            ,conf.NEWLINE.join([ str(v) for v in self.views]) if self.vws else ''
         )
 
     def addView(self,v):
@@ -237,11 +244,11 @@ class writeable(object):
         else:
             self.path = self.fileName
         
-    def bind_lkml(self,lkmldict):
-        '''Writable is never used, it's only a base class for extension
-            Each class inheriting from this must implement bind_lkml
-        '''
-        pass
+    def bind_lkml(self, lkmldict):
+            self.setName(lkmldict.pop('name'))
+
+            for k,v in lkmldict.items():
+                self.setProperty(k,v) 
 
     def setFolder(self,folder):
         self.outputFolder = folder
@@ -295,14 +302,7 @@ class View(writeable):
         else:
             self.tableSource = None
         self.message = kwargs.get('message', '')
-
-        #At Some Point may want to refactor the internal data structures
-        # self.dimension_groups = dict()
-        # self.dimensions = dict()
-        # self.measures = dict()
-        # self.filters = dict()
-        # self.sets = dict()
-        
+       
         self.fields = {}
         self.schema = kwargs.get('schema', {})
         self.properties = Properties(self.schema)
@@ -310,7 +310,6 @@ class View(writeable):
 
         #If passed a dictionary it is assumed to be the LKML schema
         if len(args) >= 1:
-            # print(args)
             if isinstance(args[0],dict):
                 self.bind_lkml(args[0])
 
@@ -352,9 +351,7 @@ class View(writeable):
             pass
 
 
-    #TODO define iteration
-    # def __iter__(self):
-    # def __next__(self):
+
 
     def __str__(self):
         return splice(
@@ -495,6 +492,22 @@ class View(writeable):
             ## Does this yeild only return the first value of this loop?
             yield literal
 
+    def fieldNames(self):
+        return list(self.fields.keys())
+
+    def getFieldsByType(self, t):
+        return filter(lambda field: str(field.type) == 'type: '+ t, list(self.fields.values()))
+
+    def sumAllNumDimensions(self):
+        for field in self.getFieldsByType('number'):
+            tmpFieldName = 'total_' + field.name 
+            if  tmpFieldName not in self.fieldNames() and isinstance(field,Dimension):
+                self + Measure({
+                    'name': tmpFieldName
+                    ,'type':'sum'
+                    ,'sql':field.ref_short
+                })
+
     def getFieldsSorted(self):
         ''' returns all the fields sorted first by alpabetical dimensions/filters, then alphabetical measures '''
         return sorted(self.fields.values(), key=lambda field: ''.join([str(isinstance(field, Measure)), field.identifier]))
@@ -507,7 +520,6 @@ class View(writeable):
     def getField(self, identifier):
         ''' Returns a specific field based on identifier/string lookup'''
         try:
-            # print(identifier)
             return self.fields[identifier]
         except KeyError:
             raise KeyError
@@ -773,7 +785,7 @@ class Join(object):
             if isinstance(args[0],dict):
                 self.bind_lkml(args[0])
 
-    # def __getattribute__(self, key): 
+    # def __getattr__(self, key): 
     #     if key == 'name':
     #         return self.identifier
     #     else:
@@ -878,7 +890,7 @@ class Explore(writeable):
         if 'joins' in jsonDict.keys():
             for join in jsonDict['joins']:
                 self + Join(join)        
-        jsonDict.pop('joins')
+            jsonDict.pop('joins')
         for k,v in jsonDict.items():
             self.setProperty(k,v)
 
@@ -911,6 +923,8 @@ class Explore(writeable):
     
         if key == self.base_view.name and self.base_view:
             return self.base_view
+        elif key == 'name':
+            return self.identifier
         elif key in self.joins.keys():
             return self.joins[key]
         else:
@@ -1087,6 +1101,8 @@ class Property(object):
             return splice(self.name, ': [', str(self.value), ']')
         elif self.name.startswith('explore_source'):
             return splice(self.name, str(self.value))
+        elif self.name == "includes":
+            return splice('include: "',str(self.value),'"')
         elif self.name in conf.MULTIVALUE_PROPERTIES:
             return splice(self.name , ': ' , str(self.value))
         elif self.name in ('links','filters'):
