@@ -65,10 +65,89 @@ Build from a developer version
    pip install git+https://github.com/llooker/lookml.git@04dbd05dd3f37a7fa624501a370df52af26bb5fc
 
 
+Basic Recipes
+------------------------------
+
+* connect to your github project
+
+.. code-block:: python
+   :linenos:
+
+   import lookml
+   proj = lookml.Project(
+         repo= "llooker/russ_sandbox",
+         access_token="your_github_access_token",
+   )
+
+
+* Loop over the views in a file
+
+.. code-block:: python
+   :linenos:
+
+   viewFile = proj.getFile('01_order_items.view.lkml')
+   #Loops over 1:n views in the file
+   for view in viewFile.views:
+       print(view)
+
+
+* Write your files back to github
+
+.. code-block:: python
+   :linenos:
+
+   viewFile = proj.getFile('01_order_items.view.lkml')
+   viewFile.views.order_items.id.addTag("hello, World!")
+   proj.updateFile(viewFile)
+
+* Loop over fields of a certain type
+
+.. code-block:: python
+   :linenos:
+
+   #TODO
+
+
+* Add a new view to an existing file
+
+.. code-block:: python
+   :linenos:
+
+   #TODO
+
+
+
+* Add a sum measure for every number dimension
+
+.. code-block:: python
+   :linenos:
+
+   orderItems.sumAllNumDimensions()
+
+* Get fields by tag, do work, remove tag
+
+.. code-block:: python
+   :linenos:
+
+   for field in orderItems.getFieldsByTag('x'):
+      #do work
+      field.removeTag('x')
 
 
 
 
+* Create an extended view
+
+.. code-block:: python
+   :linenos:
+
+   viewFile = proj.getFile('01_order_items.view.lkml')
+   order_items = viewFile.views.order_items
+   order_items.extend()
+   #this will print both order_items and order_items_extended 
+   #(pylookml captures the parent child relationship here)
+   print(order_items)
+   
 
 .. toctree::
    :maxdepth: 2
