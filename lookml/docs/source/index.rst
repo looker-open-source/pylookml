@@ -133,6 +133,13 @@ Basic Recipes
       #do work
       field.removeTag('x')
 
+* Add a comment to the tag
+
+.. code-block:: python
+   :linenos:
+
+   orderItems.id.setMessage("Hello I'm Automated")
+   #results in a comment above the dimension
 
 
 
@@ -148,6 +155,25 @@ Basic Recipes
    #(pylookml captures the parent child relationship here)
    print(order_items)
    
+
+
+* Find fields by regex searching their sql
+
+.. code-block:: python
+   :linenos:
+
+   >>> for field in o.getFieldBySql('\d{1,3}'):
+   ...     print(field)
+   >>>
+   dimension: foo {
+     type: string
+     sql: _FINDME_123_ ;;
+   }
+   
+
+
+
+
 
 .. toctree::
    :maxdepth: 2

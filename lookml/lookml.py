@@ -1,10 +1,65 @@
-import re
+import re, os
 import lookml.config as conf
 import lkml
 import github
 import base64
 import requests
 import time 
+
+#Required for V1:
+# get model metadata from API --> go where?
+
+# TODO: finish project implementation -- Russ.... iterate over files etc.
+# TODO: rationally break up the megafile...
+# TODO: use lkml.keys to define parameter / property specific behavior
+# TODO: allow to optionally hit the deploy url
+# TODO: bring in old code allowing shell git access
+# TODO: customize attibute access on JOIN class
+# TODO: Constants
+# TODO: write additional simple round trip testcase for all the object types:
+#        #* Explore, view, map layers ... 
+
+
+# ###### V2 ########### 
+# TODO: equality operator for object comparison | complete some of the dundermethod operator overloading schemes
+# TODO: parse manifest file
+# TODO: parse locale json file (i.e. localizaiton)
+# TODO: Add support for defining a user's config file in the working directory which allows easy configuration / scripting 
+# TODO: internal optimizations: good abstractions, no unnecessary memory, better internal class structure / data strcuture  
+# TODO: better whitespace and style control
+# TODO: adding comment messages at the top of all object types: view, file, explore etc
+# TODO: documentation standards in code -- docstrings, function descriptions etc...
+# TODO: go through and create / optimize slots for performance
+# TODO: Common Sql Functions added to the SQL paramter
+# TODO: use lkml.json_data to serve as the underlying data structure (plural keys, keys with name fields etc)
+# TODO: eliminate the "phanton property" in that a class instance is only created on get / observation.... (getters and setters should mutate the underlying json at all times to ensure conssistency)
+
+# ###### Post V2 #######
+# TODO: Boilerplate Code for this... [super view example...multi-model example...liveupdate service (lambda / cloud funcitons)]
+# TODO: Common Macros --> i.e. fast blocks 
+#         # Ideas:
+#         #  BigQuery table JSON auto creates the LookML
+#         #  Aggregate Awareness Macro
+#         #  Auto EAV Unnester
+#         #  Automatic Creation of NDT for pivot by rank type stuff
+#         #  Calendar Table
+#         #  SFDC Waterfall
+#         #  Guided Star Schema Generation?
+#         #  Multi Grain period over period 
+#         #  Drill to vis with constants
+#         #  Incremental PDTs? --> This breaks as of Looker 7?
+#         #  Negative Intervals Hacking
+#         #  Linking macro, Intel linking block?
+#         #  Fancy Conditional Formatting examples
+#         #  Something with slowly changing dimensions
+# TODO: Interactive block construction macro --> i.e. fast blocks 
+# TODO: Parse the Manifest file
+# TODO: Common HTML Functions added to the HTML paramter
+# ### Long term or debatable ###
+# TODO: Preserve initial ordering?
+
+# TODO: Enhanecement: Make the internal datastructure of the class the JSON.... i.e. as the class state is modified so is the underlying json.
+
 
 def snakeCase(string):
     str1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', string)
@@ -32,22 +87,23 @@ class Project:
     '''
         A LookML Project at a GitHub location or location on the filesytem
     '''
-    def __init__(self,repo='',access_token='', branch="master", commitMessage=""):
+    def __init__(self,repo='',access_token='', branch="master", commitMessage="", rootDir=""):
         ''' 
             Can be constructed with a github access token and repository name
         '''
+        self.type = "github"
         self.gitsession = github.Github(access_token)
         self.repo = self.gitsession.get_repo(repo)
         self.branch = branch
         if not commitMessage:
             self.commitMessage = "PyLookML Auto Updated: " + time.strftime('%h %d %Y @ %I:%M%p %Z')
-        # self.looker_project_name =
-        # self.deploy_url = 
+        self.looker_project_name = ""
+        self.deploy_url = ""
 
     def files(self,path=''):
-        ''' Iteratively returns all the files or those matching a specific pattern '''
-        pass
-
+        ''' Iteratively returns all the files at a path in the project '''
+        for f in  self.repo.get_contents(path):
+            yield File(f)
 
     def getFile(self,path):
         '''  
@@ -76,7 +132,6 @@ class Project:
         if isinstance(f,str):
             f = self.getgetFile(f)
         self.repo.delete_file(f.path, self.commitMessage, sha=f.sha, branch=self.branch)
-
         return self
 
 class views:
@@ -147,32 +202,44 @@ class explores:
         except:
             raise StopIteration
 class File:
-    def __init__(self, infilepath):
+    def __init__(self, f):
 
-        self.infilepath = infilepath
-        if isinstance(self.infilepath, github.ContentFile.ContentFile):
-            data = base64.b64decode(self.infilepath.content).decode('ascii')
+        if isinstance(f, github.ContentFile.ContentFile):
+            self.f_type = "github_api"
+
+        elif os.path.isfile(f):
+            self.f_type = "path"
+
+        if self.f_type == "github_api":
+            #Set Basic Attributes
+            self.name = f._rawData['name']
+            self.sha = f._rawData['sha']
+            self.base_name = self.name.replace(".model.lkml", "").replace(".explore.lkml", "").replace(".view.lkml", "")
+            self.path = f._rawData['path']
+
+            #Parse Step: Github content is returned base64 encoded
+            data = base64.b64decode(f.content).decode('ascii')
             self.json_data = lkml.load(data)
-        elif isinstance(self.infilepath,View):
-            self.addView(self.infilepath)
-            self.json_data = {}
 
-        self.path = self.infilepath._rawData['path'] if self.infilepath._rawData else self.infilepath.fileName
+        elif self.f_type == "path":
+            #Set Basic Attributes
+            self.name = os.path.basename(f)
+            self.base_name = self.name.replace(".model.lkml", "").replace(".explore.lkml", "").replace(".view.lkml", "")
+            self.path = os.path.relpath(f)
 
-        if infilepath._rawData['name'].endswith(".model.lkml"):
+            #Parse Step: file is provided 
+            with open(self.path, 'r') as tmp:
+                self.json_data = lkml.load(tmp)
+
+        if self.name.endswith(".model.lkml"):
             self.filetype = 'model'
-        elif infilepath._rawData['name'].endswith(".view.lkml"):
+        elif self.name.endswith(".view.lkml"):
             self.filetype = 'view'
-        elif infilepath._rawData['name'].endswith(".explore.lkml"):
+        elif self.name.endswith(".explore.lkml"):
             self.filetype = 'explore'
         else:
-            raise Exception("Unsupported filename " + infilepath._rawData['name'])
-        # self.base_filename = os.path.basename(infilepath)
-        
-        self.sha = self.infilepath._rawData['sha']
-        self.base_filename = infilepath._rawData['name']
-        self.base_name = self.base_filename.replace(".model.lkml", "").replace(".explore.lkml", "").replace(".view.lkml", "")        
-
+            raise Exception("Unsupported filename " + self.name)
+            
         if 'views' in self.json_data.keys():
             self.vws = views(self.json_data['views'])
             self.json_data.pop('views')
@@ -185,7 +252,6 @@ class File:
             self.exps = explores({})
 
         self.properties = Properties(self.json_data)
-        # join([str(p) for p in self.properties.getProperties()])
         
 
     def __getattr__(self, key):
@@ -324,31 +390,57 @@ class View(writeable):
     
 
     def bind_lkml(self,jsonDict):
+        #TODO: implement property interpreter (should be done but needs to be tested)
         self.setName(jsonDict.pop('name'))
-        view_keys = [element for element in jsonDict]
-        if 'measures' in view_keys:
-            for measure in jsonDict['measures']:
-                self + Measure(measure)
+        # view_keys = [element for element in jsonDict]
+
+        t = 'measures'
+        if t in jsonDict.keys():
+            for field in jsonDict[t]:
+                self + Measure(field)
+                
+            jsonDict.pop(t)
         else:
             pass
 
-        if 'dimensions' in view_keys:
-            for dim in jsonDict['dimensions']:
-                self + Dimension(dim)
+        t = 'dimensions'
+        if t in jsonDict.keys():
+            for field in jsonDict[t]:
+                self + Dimension(field)
+                
+            jsonDict.pop(t)
         else:
             pass
         
-        if 'filters' in view_keys:
-            for flter in jsonDict['filters']:
-                self + Filter(flter)
+        t = 'filters'
+        if t in jsonDict.keys():
+            for field in jsonDict[t]:
+                self + Filter(field)
+            
+            jsonDict.pop(t)
         else:
             pass
 
-        if 'filters' in view_keys:
-            for dim in jsonDict['dimension_groups']:
-                self + DimensionGroup(dim)
+        t = 'dimension_groups'
+        if t in jsonDict.keys():
+            for field in jsonDict[t]:
+                self + DimensionGroup(field)
+            
+            jsonDict.pop(t)
         else:
             pass
+
+        t = 'parameters'
+        if t in jsonDict.keys():
+            for field in jsonDict[t]:
+                self + Parameter(field)
+            
+            jsonDict.pop(t)
+        else:
+            pass
+
+        for k,v in jsonDict.items():
+            self.properties.addProperty(k,v) 
 
 
 
@@ -413,19 +505,14 @@ class View(writeable):
         return self.getField(identifier)
 
     def __getattr__(self, key):
-        # print(self.__dict__.keys())
         if key in self.__dict__.keys():
             return self.__dict__[key]
-        # elif key in super.__dict__.keys():
-        #     return super.__dict__[key]
         elif key == 'name':
             return self.identifier
         elif key == 'pk':
             return self.getPrimaryKey()
         elif key == 'ref':
             return splice('${',self.identifier,'}')
-        # elif key == 'path':
-        #     return self.path
         else:
             return self.__getitem__(key)
 
@@ -499,6 +586,9 @@ class View(writeable):
         return filter(lambda field: str(field.type) == 'type: '+ t, list(self.fields.values()))
 
     def sumAllNumDimensions(self):
+        '''
+            Adds a "total" measure  to the view for all number dimensions
+        '''
         for field in self.getFieldsByType('number'):
             tmpFieldName = 'total_' + field.name 
             if  tmpFieldName not in self.fieldNames() and isinstance(field,Dimension):
@@ -524,12 +614,13 @@ class View(writeable):
         except KeyError:
             raise KeyError
 
-    def getFieldByDBColumn(self, dbColumn):
-        ''' Converts the db column to lookCase for identifier lookup.....'''
-        #TODO: re-implement this to actually use the DB column as a key (keep in mind that doesn't need to be unique...)
-        #TODO: Raise a not found exception here instead of silently failing with a notfound key
-        return self.fields.get(lookCase(dbColumn), Field(identifier='Not Found'))
-    
+    def search(self, prop, pattern):
+        ''' pass a regex expression and will return the fields whose sql match '''
+        searchString = r''.join([r'.*',pattern,r'.*'])
+        for field in self.getFields():
+            if re.match(searchString,str(field.getProperty(prop))):
+                yield field
+
     def addField(self, field):
         '''Takes a field object as an argument and adds it to the view, if the field is a dimension and primary key it will be set as the view primary key'''
         # uses the 'setView' method on field which returns self so that field can fully qualify itself and so that field can be a member of view
@@ -1055,7 +1146,7 @@ class Property(object):
         self.num = 0
         if isinstance(value, str):
             self.value = value
-        elif name in ('links','filters','tags','suggestions', 'actions'):
+        elif name in ('links','filters','tags','suggestions', 'actions', 'sets', 'options', 'form_params', 'access_grants','params','allowed_values', 'named_value_formats', 'datagroups', 'map_layers'):
             self.value = Properties(value, multiValueSpecialHandling=name)
 
         elif isinstance(value, dict) or isinstance(value, list):
@@ -1091,9 +1182,19 @@ class Property(object):
             return next(self.value)
 
     def __str__(self):
+        #TODO: multiinstance / plural
+        #TODO: multivalue / list
+            #TODO: brackets
+            #TODO: braces
+        #TODO: quoted
+        #TODO: plain
+        #TODO: SQL / HTML Block ;;
+
         if self.name.startswith('sql') or self.name == 'html':
             return splice(self.name, ': ', str(self.value), ' ;;')
-        elif self.name in ['include', 'connection', 'description','value']:
+        if self.name == "strict_value_format":
+            return splice(self.name, ': ', str(self.value))
+        elif self.name in ['include', 'connection', 'description','value', "name","default","file"]:
             return splice(self.name, ': "', str(self.value), '"')
         elif self.name.endswith('url') or self.name.endswith('label') or self.name.endswith('format') or self.name.endswith('persist_for'):
             return splice(self.name, ': "', str(self.value), '"')
@@ -1105,8 +1206,8 @@ class Property(object):
             return splice('include: "',str(self.value),'"')
         elif self.name in conf.MULTIVALUE_PROPERTIES:
             return splice(self.name , ': ' , str(self.value))
-        elif self.name in ('links','filters'):
-            return str(self.value)
+        elif self.name in ('links','filters','actions','options', 'form_params','sets', 'access_grants','params', 'allowed_values', 'named_value_formats', 'datagroups', 'map_layers'):
+                return str(self.value)
         elif self.name == ('list_member') and isinstance(self.value,str):
             return splice(str(self.value),',')
         elif self.name == 'list_member':
@@ -1136,6 +1237,7 @@ class Properties(object):
 
     #TODO: Rewrite for list schema type
     def __str__(self):
+
         if isinstance(self.schema, dict):
             return splice(
                             '{\n    ' , 
@@ -1158,6 +1260,55 @@ class Properties(object):
             return splice('filters: ','\n filters: '.join([str(p) for p in self.getProperties()]))
         elif self.multiValueSpecialHandling == 'links':
             return splice('link: ','link: \n'.join([str(p) for p in self.getProperties()]))
+        elif self.multiValueSpecialHandling == 'actions':
+            return splice(' action: ','\naction: '.join([str(p) for p in self.getProperties()]))
+        elif self.multiValueSpecialHandling == 'options':
+            return splice(' option: ','\noption: '.join([str(p) for p in self.getProperties()]))
+        elif self.multiValueSpecialHandling == 'form_params':
+            return splice(' form_param: ','\nform_param: '.join([str(p) for p in self.getProperties()]))
+        elif self.multiValueSpecialHandling == 'access_grants':
+            buildString = ""
+            for fset in self.schema:
+                buildString = buildString + '\n access_grant: ' + fset.pop('name') + ' '
+                buildString = buildString + str(Property('list_member',fset))
+            return buildString
+        elif self.multiValueSpecialHandling == 'datagroups':
+            buildString = ""
+            for fset in self.schema:
+                buildString = buildString + '\n datagroup: ' + fset.pop('name') + ' '
+                buildString = buildString + str(Property('list_member',fset))
+            return buildString
+        elif self.multiValueSpecialHandling == 'map_layers':
+            buildString = ""
+            for fset in self.schema:
+                buildString = buildString + '\n map_layer: ' + fset.pop('name') + ' '
+                buildString = buildString + str(Property('list_member',fset))
+            return buildString
+        elif self.multiValueSpecialHandling == 'named_value_formats':
+            buildString = ""
+            for fset in self.schema:
+                buildString = buildString + '\n named_value_format: ' + fset.pop('name') + ' '
+                buildString = buildString + str(Property('list_member',fset))
+            return buildString
+        if self.multiValueSpecialHandling == 'allowed_values':
+            if isinstance(self.schema[0],dict):
+                return splice('allowed_value: ','\n allowed_value: '.join([str(p) for p in self.getProperties()]))
+            elif isinstance(self.schema[0],str):
+                return splice(
+                                'allowed_values: [\n    ' , 
+                                '\n    '.join(['"' + str(p) + '",' for p in self.getProperties()]) ,
+                                '\n    ]' 
+                                )
+
+        elif self.multiValueSpecialHandling == 'sets':
+            #TODO: make this implementation more consistent
+            buildString = ""
+            for fset in self.schema:
+                buildString = buildString + '\n set: ' + fset.pop('name') + ' '
+                buildString = buildString + str(Property('list_member',fset))
+            return buildString
+        elif self.multiValueSpecialHandling == 'params':
+            return splice(' param: ',' param: \n'.join([str(p) for p in self.getProperties()]))
         else:
             pass
             # raise TypeError
@@ -1178,7 +1329,6 @@ class Properties(object):
             else:    
                 return Property(identifier, self.schema.get(identifier, [])) 
 
-#TODO: Rewrite for list schema type
     def getProperties(self):
         if isinstance(self.schema, dict):
             for k, v in self.schema.items():
@@ -1189,20 +1339,17 @@ class Properties(object):
                     yield Property(k, v)
         elif isinstance(self.schema, list):
             for item in self.schema:
-                if self.multiValueSpecialHandling in ('suggestions','tags'):
+                if self.multiValueSpecialHandling in ('suggestions','tags','allowed_values'):
                     yield Property('list_member_quoted',item)
                 else:
                     yield Property('list_member',item)
 
 
     def __iter__(self):
-        # self.num = 0
         self.valueiterator = iter(self.schema)
         return self
 
     def __next__(self):
-        # num = self.num
-        # while num <= len(self.schema):
         try:
             return next(self.valueiterator)
         except:
@@ -1247,7 +1394,17 @@ class Properties(object):
         '''
             Returns a list of the property values. Mostly used for membership checking
         '''
-        return self.schema.keys()
+        if isinstance(self.schema, dict):
+            return self.schema.keys()
+        elif isinstance(self.schema, list):
+            return self.schema
+
+    def rawPropValue(self,key):
+        '''
+            if dict type schema, needs a prop name. If list type schema needs a number index
+        '''
+        return self.schema[key]
+
 
     def __len__(self):
         return len(self.schema)
