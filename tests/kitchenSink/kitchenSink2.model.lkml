@@ -231,6 +231,7 @@ dimension: gross_margin {
   type: number
   value_format_name: usd
   sql: ${sale_price} - ${inventory_items.cost} ;;
+  html: {{sale_price._value}} ;;
 }
 
 
@@ -448,12 +449,6 @@ dimension_group: shipped {
 }
 
 
-dimension: shipping_time {
-  type: number
-  sql: datediff('day',${shipped_raw},${delivered_raw})*1.0 ;;
-}
-
-
 dimension: status {
   sql: ${TABLE}.status ;;
 }
@@ -461,6 +456,12 @@ dimension: status {
 
 dimension: test_add_dimension {
   type: string
+}
+
+
+dimension: time_in_transit {
+  type: number
+  sql: datediff('day',${shipped_raw},${delivered_raw})*1.0 ;;
 }
 
 
@@ -516,7 +517,7 @@ measure: average_sale_price {
 measure: average_shipping_time {
   type: average
   value_format_name: decimal_2
-  sql: ${shipping_time} ;;
+  sql: ${time_in_transit} ;;
 }
 
 

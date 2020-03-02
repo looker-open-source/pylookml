@@ -4,12 +4,10 @@ import lkml
 import github
 import base64
 import requests
-import time 
+import time, copy
 
 #Required for V1:
-# get model metadata from API --> go where?
-
-# TODO: finish project implementation -- Russ.... iterate over files etc.
+# TODO: finish project implementation -- Russ.... iterate over files etc. put a file back / new file etc
 # TODO: rationally break up the megafile...
 # TODO: use lkml.keys to define parameter / property specific behavior
 # TODO: allow to optionally hit the deploy url
@@ -18,9 +16,13 @@ import time
 # TODO: Constants
 # TODO: write additional simple round trip testcase for all the object types:
 #        #* Explore, view, map layers ... 
-
+# TODO: get a better handle on __getattr__ infite loops and fix consitently
+# TODO: leverage inheretance on the dunder methods
+# TODO: trim superfluous classes: writable? rename it to lookmlbaseclass?
 
 # ###### V2 ########### 
+# get model metadata from API --> go where?
+# TODO: track all ancestors, all decendants (grandchildren) in a file
 # TODO: equality operator for object comparison | complete some of the dundermethod operator overloading schemes
 # TODO: parse manifest file
 # TODO: parse locale json file (i.e. localizaiton)
@@ -252,15 +254,19 @@ class File:
             self.exps = explores({})
 
         self.properties = Properties(self.json_data)
-        
+        self.props = self.properties.props()
 
     def __getattr__(self, key):
-        if key == 'views':
+        
+        if key in self.__dict__.keys():
+            return self.__dict__[key]
+        elif key == 'views':
             return self.vws
         elif key == 'explores':
             return self.exps
+        elif key in ['datagroups', 'map_layers', 'named_value_formats']:
+            return self.properties.getProperty(key)
         else:
-            pass
             return object.__getattr__(key)
 
 
@@ -457,7 +463,7 @@ class View(writeable):
                         )
 
     def __repr__(self):
-        return "%s (%r) fields: %s" % (self.__class__, self.identifier, len(self)) 
+        return "%s (%r) fields: %s id: %s" % (self.__class__, self.identifier, len(self), hex(id(self))) 
 
     def __len__(self):
         return len([f for f in self.getFields()])
@@ -511,7 +517,7 @@ class View(writeable):
             return self.identifier
         elif key == 'pk':
             return self.getPrimaryKey()
-        elif key == 'ref':
+        elif key == '__ref__':
             return splice('${',self.identifier,'}')
         else:
             return self.__getitem__(key)
@@ -595,7 +601,7 @@ class View(writeable):
                 self + Measure({
                     'name': tmpFieldName
                     ,'type':'sum'
-                    ,'sql':field.ref_short
+                    ,'sql':field.__refs__
                 })
 
     def getFieldsSorted(self):
@@ -616,6 +622,8 @@ class View(writeable):
 
     def search(self, prop, pattern):
         ''' pass a regex expression and will return the fields whose sql match '''
+        if isinstance(pattern,list):
+            pattern = '('+'|'.join(pattern)+')'
         searchString = r''.join([r'.*',pattern,r'.*'])
         for field in self.getFields():
             if re.match(searchString,str(field.getProperty(prop))):
@@ -740,7 +748,7 @@ class View(writeable):
         else:
             field = self.getField(f)
         measure = Measure(
-            identifier=''.join(['count_distinct_', field.identifier]), schema={'sql': field.ref_short}
+            identifier=''.join(['count_distinct_', field.identifier]), schema={'sql': field.__refs__}
         )
         measure.setType('count_distinct')
         self.addField(measure)
@@ -753,7 +761,7 @@ class View(writeable):
         else:
             field = self.getField(f)
         measure = Measure(
-            identifier=''.join(['total_', field.identifier]), schema={'sql': field.ref_short}
+            identifier=''.join(['total_', field.identifier]), schema={'sql': field.__refs__}
         )
         measure.setType('sum')
         self.addField(measure)
@@ -766,7 +774,7 @@ class View(writeable):
         else:
             field = self.getField(f)
         measure = Measure(
-            identifier=''.join(['average_', field.identifier]), schema={'sql': field.ref_short}
+            identifier=''.join(['average_', field.identifier]), schema={'sql': field.__refs__}
         )
         measure.setType('average')
         self.addField(measure)
@@ -796,7 +804,7 @@ class View(writeable):
                      WHEN {{% condition reporting_period %}} {0} {{% endcondition %}} THEN {1}
                      ELSE NULL
                     END
-                    '''.format('${'+date.identifier+'_raw}',field_to_measure.ref_short)
+                    '''.format('${'+date.identifier+'_raw}',field_to_measure.__refs__)
                 )
         self.comparison_period_measure.setProperty('sql',
         '''
@@ -804,7 +812,7 @@ class View(writeable):
            WHEN {{% condition comparison_period %}} {0} {{% endcondition %}} THEN {1}
            ELSE NULL
           END
-        '''.format('${'+date.identifier+'_raw}',field_to_measure.ref_short)
+        '''.format('${'+date.identifier+'_raw}',field_to_measure.__refs__)
         )
         return self
 
@@ -922,7 +930,7 @@ class Join(object):
         return self
 
     def on(self,left,operand,right):
-        statement = splice(left.ref ,operand, right.ref)
+        statement = splice(left.__ref__ ,operand, right.__ref__)
         self.setOn(statement)
         return self
 
@@ -1039,8 +1047,8 @@ class Explore(writeable):
         tmpndt = ndt(explore_source)
 
         for field in fields: 
-            tmpndt.addColumn(field.ref_raw_short,field.ref_raw)
-            tmpView + field.ref_raw_short
+            tmpndt.addColumn(field.__refrs__,field.__refr__)
+            tmpView + field.__refrs__
     
         tmpView.derived_table = tmpndt
         tmpView.tableSource = False
@@ -1238,6 +1246,19 @@ class Properties(object):
     #TODO: Rewrite for list schema type
     def __str__(self):
 
+        def process_plural_named_constructs(_type):
+            singular = _type[:-1]
+            buildString = ""
+            schemaDeepCopy = copy.copy(self.schema)
+            for fset in schemaDeepCopy:
+                buildString = buildString + '\n ' + singular + ': ' + fset.pop('name') + ' '
+                buildString = buildString + str(Property('list_member',fset))
+            return buildString
+
+        def process_plural_unnamed_constructs(_type):
+            singular = _type[:-1]
+            return splice(' ', singular ,': ','\n',singular,': '.join([str(p) for p in self.getProperties()]))
+
         if isinstance(self.schema, dict):
             return splice(
                             '{\n    ' , 
@@ -1256,6 +1277,8 @@ class Properties(object):
                             '\n    '.join(['"' + str(p) + '",' for p in self.getProperties()]) ,
                             '\n    ]' 
                             )
+        # elif self.multiValueSpecialHandling in ('filters', 'links', 'actions', 'options', 'form_params',"params"):
+        #     return process_plural_unnamed_constructs(self.multiValueSpecialHandling)
         elif self.multiValueSpecialHandling == 'filters':
             return splice('filters: ','\n filters: '.join([str(p) for p in self.getProperties()]))
         elif self.multiValueSpecialHandling == 'links':
@@ -1266,31 +1289,35 @@ class Properties(object):
             return splice(' option: ','\noption: '.join([str(p) for p in self.getProperties()]))
         elif self.multiValueSpecialHandling == 'form_params':
             return splice(' form_param: ','\nform_param: '.join([str(p) for p in self.getProperties()]))
-        elif self.multiValueSpecialHandling == 'access_grants':
-            buildString = ""
-            for fset in self.schema:
-                buildString = buildString + '\n access_grant: ' + fset.pop('name') + ' '
-                buildString = buildString + str(Property('list_member',fset))
-            return buildString
-        elif self.multiValueSpecialHandling == 'datagroups':
-            buildString = ""
-            for fset in self.schema:
-                buildString = buildString + '\n datagroup: ' + fset.pop('name') + ' '
-                buildString = buildString + str(Property('list_member',fset))
-            return buildString
-        elif self.multiValueSpecialHandling == 'map_layers':
-            buildString = ""
-            for fset in self.schema:
-                buildString = buildString + '\n map_layer: ' + fset.pop('name') + ' '
-                buildString = buildString + str(Property('list_member',fset))
-            return buildString
-        elif self.multiValueSpecialHandling == 'named_value_formats':
-            buildString = ""
-            for fset in self.schema:
-                buildString = buildString + '\n named_value_format: ' + fset.pop('name') + ' '
-                buildString = buildString + str(Property('list_member',fset))
-            return buildString
-        if self.multiValueSpecialHandling == 'allowed_values':
+        elif self.multiValueSpecialHandling == 'params':
+            return splice(' param: ',' param: \n'.join([str(p) for p in self.getProperties()]))
+        elif self.multiValueSpecialHandling in ("access_grants","datagroups","map_layers","named_value_formats","sets"):
+            return process_plural_named_constructs(self.multiValueSpecialHandling)
+        # elif self.multiValueSpecialHandling == 'access_grants':
+        #     buildString = ""
+        #     for fset in self.schema:
+        #         buildString = buildString + '\n access_grant: ' + fset.pop('name') + ' '
+        #         buildString = buildString + str(Property('list_member',fset))
+        #     return buildString
+        # elif self.multiValueSpecialHandling == 'datagroups':
+        #     buildString = ""
+        #     for fset in self.schema:
+        #         buildString = buildString + '\n datagroup: ' + fset.pop('name') + ' '
+        #         buildString = buildString + str(Property('list_member',fset))
+        #     return buildString
+        # elif self.multiValueSpecialHandling == 'map_layers':
+        #     buildString = ""
+        #     for fset in self.schema:
+        #         buildString = buildString + '\n map_layer: ' + fset.pop('name') + ' '
+        #         buildString = buildString + str(Property('list_member',fset))
+        #     return buildString
+        # elif self.multiValueSpecialHandling == 'named_value_formats':
+        #     buildString = ""
+        #     for fset in self.schema:
+        #         buildString = buildString + '\n named_value_format: ' + fset.pop('name') + ' '
+        #         buildString = buildString + str(Property('list_member',fset))
+        #     return buildString
+        elif self.multiValueSpecialHandling == 'allowed_values':
             if isinstance(self.schema[0],dict):
                 return splice('allowed_value: ','\n allowed_value: '.join([str(p) for p in self.getProperties()]))
             elif isinstance(self.schema[0],str):
@@ -1300,15 +1327,12 @@ class Properties(object):
                                 '\n    ]' 
                                 )
 
-        elif self.multiValueSpecialHandling == 'sets':
-            #TODO: make this implementation more consistent
-            buildString = ""
-            for fset in self.schema:
-                buildString = buildString + '\n set: ' + fset.pop('name') + ' '
-                buildString = buildString + str(Property('list_member',fset))
-            return buildString
-        elif self.multiValueSpecialHandling == 'params':
-            return splice(' param: ',' param: \n'.join([str(p) for p in self.getProperties()]))
+        # elif self.multiValueSpecialHandling == 'sets':
+        #     buildString = ""
+        #     for fset in self.schema:
+        #         buildString = buildString + '\n set: ' + fset.pop('name') + ' '
+        #         buildString = buildString + str(Property('list_member',fset))
+        #     return buildString
         else:
             pass
             # raise TypeError
@@ -1443,6 +1467,28 @@ class Field(object):
             for k,v in lkmldict.items():
                 self.setProperty(k,v) 
 
+    def children(self):
+        if self.view:
+            for dependent in self.view.search('sql',[self.__refsre__,self.__refre__]):
+                yield dependent
+
+    def change_name_and_child_references(self, newName):
+        '''
+            Change the name of the field and references to it in sql (does not yet perform the same for HTML / Links / Drill Fields / Sets / Actions etc)
+        '''
+        #TODO: complete checking all places for dependencies. 
+        old = copy.copy(self.name)
+        oldrefsre = copy.copy(self.__refsre__)
+        oldrefre = copy.copy(self.__refre__)
+        self.setName(newName)
+        for f in self.view.search('sql',[oldrefsre,oldrefre]):
+            f.sql = re.sub(oldrefsre, self.__refs__, str(f.sql.value))
+            f.sql = re.sub(oldrefre, self.__ref__, str(f.sql.value))
+        self.view.removeField(old)
+        self.view + self
+        return self
+
+
     def setMessage(self,message):
         self.message = message
         return self
@@ -1462,23 +1508,60 @@ class Field(object):
                          )
 
     def __getattr__(self, key):
+        # if key == 'name':
+        #     return self.identifier
+        # elif key == 'pk':
+        #     return self.getPrimaryKey()
+        # elif key == 'ref':
+        #     if self.view:
+        #         return splice('${' , self.view.identifier , '.' , self.identifier , '}')
+        # elif key == 'ref_raw':
+        #     if self.view:
+        #         return splice(self.view.identifier , '.' , self.identifier)
+        # elif key == 'ref_raw_short':
+        #     if self.view:
+        #         return splice(self.identifier)
+        # elif key == 'ref_short':
+        #     return splice('${' , self.identifier , '}')
+        # else:
+        #     return self.properties.getProperty(key)
         if key == 'name':
             return self.identifier
         elif key == 'pk':
             return self.getPrimaryKey()
-        elif key == 'ref':
+        #full reference
+        elif key == '__ref__':
             if self.view:
                 return splice('${' , self.view.identifier , '.' , self.identifier , '}')
-        elif key == 'ref_raw':
+        #Short Reference
+        elif key == '__refs__':
+            return splice('${' , self.identifier , '}')
+
+        #full reference -- regex escaped
+        elif key == '__refre__':
+            if self.view:
+                return splice('\$\{' , self.view.identifier , '\.' , self.identifier , '\}')
+        #Short reference -- regex escaped
+        elif key == '__refsre__':
+            if self.view:
+                return splice('\$\{' , self.identifier , '\}')
+        #Raw Reference
+        elif key == '__refr__':
             if self.view:
                 return splice(self.view.identifier , '.' , self.identifier)
-        elif key == 'ref_raw_short':
+        #Raw refence short
+        elif key == '__refrs__':
             if self.view:
                 return splice(self.identifier)
-        elif key == 'ref_short':
-            return splice('${' , self.identifier , '}')
+        #Raw Reference regex
+        elif key == '__refrre__':
+            if self.view:
+                return splice(self.view.identifier , '\.' , self.identifier)
+
         else:
             return self.properties.getProperty(key)
+
+
 
     def __setattr__(self, name, value):
         if name == 'label':

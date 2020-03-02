@@ -337,6 +337,7 @@ parameter: foo {
     type: number
     value_format_name: usd
     sql: ${sale_price} - ${inventory_items.cost} ;;
+    html: {{sale_price._value}};;
   }
 
   dimension: item_gross_margin_percentage {
