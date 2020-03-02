@@ -7,13 +7,14 @@ import requests
 import time, copy
 
 #Required for V1:
+# TODO: resolve only print once bug
 # TODO: finish project implementation -- Russ.... iterate over files etc. put a file back / new file etc
 # TODO: rationally break up the megafile...
 # TODO: use lkml.keys to define parameter / property specific behavior
 # TODO: allow to optionally hit the deploy url
 # TODO: bring in old code allowing shell git access
 # TODO: customize attibute access on JOIN class
-# TODO: Constants
+
 # TODO: write additional simple round trip testcase for all the object types:
 #        #* Explore, view, map layers ... 
 # TODO: get a better handle on __getattr__ infite loops and fix consitently
@@ -22,6 +23,8 @@ import time, copy
 
 # ###### V2 ########### 
 # get model metadata from API --> go where?
+# TODO: Constants
+# TODO: go back and add slots optimizations
 # TODO: track all ancestors, all decendants (grandchildren) in a file
 # TODO: equality operator for object comparison | complete some of the dundermethod operator overloading schemes
 # TODO: parse manifest file
@@ -136,74 +139,73 @@ class Project:
         self.repo.delete_file(f.path, self.commitMessage, sha=f.sha, branch=self.branch)
         return self
 
-class views:
-    '''
-        A container for views which allows us to use .operator syntax 
-    '''
-    def __init__(self,viewlist):
-        self.views = {}
-        for view in viewlist:
-            self.add(view)
-
-    def __getattr__(self,key):
-        return self.views[key]
-
-    def add(self, v):
-        if isinstance(v,dict):
-            v = View(v)
-        self.views.update({v.name:v})
-        return self
-
-    def remove(self, v):
-        if not isinstance(v,str):
-            v = v.name
-        self.views.pop(v)
-        return self
-
-    def __iter__(self):
-        self.iterPointer = iter(self.views.values())
-        return self
-
-    def __next__(self):
-        try:
-            return next(self.iterPointer)
-        except:
-            raise StopIteration
-
-class explores:
-    '''
-        A container for explores which allows us to use .operator syntax 
-    '''
-    def __init__(self,explorelist):
-        self.explores = {}
-        for explore in explorelist:
-            self.add(explore)
-
-    def __getattr__(self,key):
-        return self.explores[key]
-
-    def add(self, e):
-        if isinstance(e,dict):
-            e = Explore(e)
-        self.explores.update({e.name:e})
-        return self
-
-    def remove(self, e):
-        if not isinstance(e,str):
-            e = e.name
-        self.explores.pop(e)
-        return self
-
-    def __iter__(self):
-        self.iterPointer = iter(self.explores.values())
-        return self
-
-    def __next__(self):
-        try:
-            return next(self.iterPointer)
-        except:
-            raise StopIteration
 class File:
+    class view_collection:
+        '''
+            A container for views which allows us to use .operator syntax 
+        '''
+        def __init__(self,viewlist):
+            self.views = {}
+            for view in viewlist:
+                self.add(view)
+
+        def __getattr__(self,key):
+            return self.views[key]
+
+        def add(self, v):
+            if isinstance(v,dict):
+                v = View(v)
+            self.views.update({v.name:v})
+            return self
+
+        def remove(self, v):
+            if not isinstance(v,str):
+                v = v.name
+            self.views.pop(v)
+            return self
+
+        def __iter__(self):
+            self.iterPointer = iter(self.views.values())
+            return self
+
+        def __next__(self):
+            try:
+                return next(self.iterPointer)
+            except:
+                raise StopIteration
+    class explore_collection:
+        '''
+            A container for explores which allows us to use .operator syntax 
+        '''
+        def __init__(self,explorelist):
+            self.explores = {}
+            for explore in explorelist:
+                self.add(explore)
+
+        def __getattr__(self,key):
+            return self.explores[key]
+
+        def add(self, e):
+            if isinstance(e,dict):
+                e = Explore(e)
+            self.explores.update({e.name:e})
+            return self
+
+        def remove(self, e):
+            if not isinstance(e,str):
+                e = e.name
+            self.explores.pop(e)
+            return self
+
+        def __iter__(self):
+            self.iterPointer = iter(self.explores.values())
+            return self
+
+        def __next__(self):
+            try:
+                return next(self.iterPointer)
+            except:
+                raise StopIteration
     def __init__(self, f):
 
         if isinstance(f, github.ContentFile.ContentFile):
@@ -243,18 +245,19 @@ class File:
             raise Exception("Unsupported filename " + self.name)
             
         if 'views' in self.json_data.keys():
-            self.vws = views(self.json_data['views'])
+            self.vws = self.view_collection(self.json_data['views'])
             self.json_data.pop('views')
         else:
-            self.vws = views({})
+            self.vws = self.view_collection({})
         if 'explores' in self.json_data.keys():
-            self.exps = explores(self.json_data['explores'])
+            self.exps = self.explore_collection(self.json_data['explores'])
             self.json_data.pop('explores')
         else:
-            self.exps = explores({})
+            self.exps = self.explore_collection({})
 
         self.properties = Properties(self.json_data)
         self.props = self.properties.props()
+
 
     def __getattr__(self, key):
         
@@ -264,11 +267,11 @@ class File:
             return self.vws
         elif key == 'explores':
             return self.exps
+        #TODO: resolve attribute access issues
         elif key in ['datagroups', 'map_layers', 'named_value_formats']:
             return self.properties.getProperty(key)
         else:
             return object.__getattr__(key)
-
 
     def __str__(self):
         return splice(
@@ -293,43 +296,9 @@ class File:
         elif isinstance(other, Explore):
             self.addExplore(other)
 
-class writeable(object):
-    def __init__(self, *args, **kwargs):
-        self.identifier = kwargs.get('identifier', '')
-        if not self.identifier:
-            self.identifier = kwargs.get('name', '')
-        if not self.identifier:
-            if len(args) > 1:
-                if isinstance(args[1],str):
-                    self.identifier = args[1]
-                elif isinstance(args[1],View):
-                    self.identifier = args[1].identifier
-                elif isinstance(args[0],dict):
-                        self.bind_lkml(args[0])
-            else:
-                self.identifier = ''        
-        self.extension = kwargs.get('extension', '.lkml')
-        self.fileName = self.identifier + self.extension     
-        self.outputFolder = kwargs.get('output_dir',conf.OUTPUT_DIR)
-        if self.outputFolder:
-            self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
-        else:
-            self.path = self.fileName
-        
-    def bind_lkml(self, lkmldict):
-            self.setName(lkmldict.pop('name'))
-
-            for k,v in lkmldict.items():
-                self.setProperty(k,v) 
-
     def setFolder(self,folder):
         self.outputFolder = folder
         self.path = self.outputFolder + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
-        return self
-
-    def setName(self, identifier):
-        ''' create a synonym with identifier'''
-        self.identifier = identifier
         return self
 
     def write(self,overWriteExisting=True):
@@ -349,56 +318,87 @@ class writeable(object):
                 with open(self.path, 'w') as opened_file:
                     opened_file.write(self.__str__())
 
-class View(writeable):
-    __slots__ = [
-             'sql_table_name'
-            ,'derived_table'
-            ,'tableSource'
-            ,'message'
-            ,'fields'
-            ,'primaryKey'
-            ,'schema'
-            ,'properties'
-            ,'children'
-            ,'parent'
-            ,'fileName'
-            ]
-    def __init__(self, *args, **kwargs):
-        super(View, self).__init__(self, *args, **kwargs)
-        if 'sql_table_name' in kwargs.keys():
-            self.sql_table_name = Property('sql_table_name', kwargs.get('sql_table_name', 'view'))
-            self.tableSource = True
-        elif 'derived_table' in kwargs.keys():
-            self.derived_table = Property('derived_table', kwargs.get('derived_table', 'view'))
-            self.tableSource = False
-        else:
-            self.tableSource = None
-        self.message = kwargs.get('message', '')
-       
+class base(object):
+    def __init__(self,input):
+        self.identifier = ''
+        self.properties = Properties({})
+        self.message = ''
+        if isinstance(input,str):
+            self.setName(input)
+        elif isinstance(input,dict):
+            self.bind_lkml(input)
+        
+    def bind_lkml(self, lkmldict):
+            self.setName(lkmldict.pop('name'))
+            for k,v in lkmldict.items():
+                self.setProperty(k,v) 
+
+    def setName(self, identifier):
+        ''' create a synonym with identifier'''
+        self.identifier = identifier
+        return self
+        
+    def setLabel(self, label):
+        ''''''
+        return self.setProperty('label', label)
+
+    def getProperty(self, prop):
+        ''' Get a property from the properties collection '''
+        return self.properties[prop]
+
+    def setProperty(self, name, value):
+        ''' Set a property in the properties collection '''
+        self.properties.addProperty(name, value)
+        return self
+
+    def unSetProperty(self, name):
+        ''''''
+        self.properties.__del__(name)
+        return self
+
+    def hasProp(self, property):
+        return property in self.properties.props()
+
+    def props(self):
+        return self.properties.props()
+
+    def rawProp(self,key):
+        '''
+            if dict type schema, needs a prop name. If list type schema needs a number index
+        '''
+        return self.properties.rawPropValue(key)
+
+    def __len__(self):
+        return len(self.schema)
+
+    def __repr__(self):
+        return "%s (%r) name: %s id: %s" % (self.__class__, self.identifier, len(self), hex(id(self))) 
+
+    def __len__(self):
+        return len([f for f in self.getProperties()])
+
+    def __iter__(self):
+        self.valueiterator = iter(self.getProperties())
+        return self
+
+    def __next__(self):
+        try:
+            return next(self.valueiterator)
+        except:
+            raise StopIteration
+
+class View(base):
+    def __init__(self, input):
         self.fields = {}
-        self.schema = kwargs.get('schema', {})
-        self.properties = Properties(self.schema)
         self.primaryKey = ''
-
-        #If passed a dictionary it is assumed to be the LKML schema
-        if len(args) >= 1:
-            if isinstance(args[0],dict):
-                self.bind_lkml(args[0])
-
+        self.message = ''
         self.children = {}
         self.parent = None
-        self.fileName = self.identifier + '.view.lkml'
-        if self.outputFolder:
-            self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
-        else:
-            self.path = self.fileName
-    
-    
+        super(View, self).__init__(input)
 
     def bind_lkml(self,jsonDict):
         #TODO: implement property interpreter (should be done but needs to be tested)
         self.setName(jsonDict.pop('name'))
-        # view_keys = [element for element in jsonDict]
 
         t = 'measures'
         if t in jsonDict.keys():
@@ -448,14 +448,11 @@ class View(writeable):
         for k,v in jsonDict.items():
             self.properties.addProperty(k,v) 
 
-
-
-
     def __str__(self):
         return splice(
                         splice('#',self.message,conf.NEWLINE) if self.message else '', 
-                        'view: ', self.identifier, ' {', 
-                        conf.NEWLINE,self.source(),conf.NEWLINE, 
+                        'view: ', self.identifier, ' {', conf.NEWLINE,
+                        # conf.NEWLINE,self.source(),conf.NEWLINE, 
                         conf.NEWLINE.join([str(p) for p in self.properties.getProperties()]), 
                         conf.NEWLINE.join([str(field) for field in self.getFieldsSorted()]), 
                         splice(conf.NEWLINE,'}',conf.NEWLINE),
@@ -520,7 +517,7 @@ class View(writeable):
         elif key == '__ref__':
             return splice('${',self.identifier,'}')
         else:
-            return self.__getitem__(key)
+            return self.getField(key)
 
     def __setattr__(self, name, value):
         if name == 'label':
@@ -715,8 +712,8 @@ class View(writeable):
         return filter(lambda par: isinstance(par, Parameter), self.fields.values())
 
     def addDimension(self,dbColumn, type='string'):
-        ''' dbColumn is a string representing the column name'''
-        dim = Dimension(dbColumn=dbColumn)
+        ''' '''
+        dim = Dimension(dbColumn)
         dim.setType(type)
         self.addField(dim)
         return self
@@ -871,35 +868,20 @@ class ndt(View):
             ,conf.NEWLINEINDENT,'}',conf.NEWLINE,'}'
         )
 
-class Join(object):
+class Join(base):
     ''' Instantiates a LookML join object... '''
     __slots__ = ['properties', 'identifier','_from','to']
 
-    def __init__(self, *args, **kwargs):
-        self.properties = Properties(kwargs.get('schema', {}))
-        self.identifier = kwargs.get('identifier', kwargs.get('view', 'error_view_not_set'))
-        self._from = kwargs.get('from', None)
-        self.to = kwargs.get('to', None)
-        if len(args) >= 1:
-            if isinstance(args[0],dict):
-                self.bind_lkml(args[0])
+    def __init__(self, input):
+        self.properties = Properties({})
+        self.identifier = ''
+        self._from = ''
+        self.to = ''
+        super(Join,self).__init__(input)
+        # if len(args) >= 1:
+        #     if isinstance(args[0],dict):
+        #         self.bind_lkml(args[0])
 
-    # def __getattr__(self, key): 
-    #     if key == 'name':
-    #         return self.identifier
-    #     else:
-    #         return self.getProperty(key)
-
-    # def __setattr__(self, name, value):
-    #     if name in self.__dict__.keys():
-    #         self.__dict__[name] = value
-    #     else:
-    #         object.__setattr__(self, name, value)
-
-    def bind_lkml(self, lkmldict):
-            self.setName(lkmldict.pop('name'))
-            for k,v in lkmldict.items():
-                self.setProperty(k,v) 
 
     def __str__(self):
         return splice(
@@ -908,20 +890,8 @@ class Join(object):
                          conf.NEWLINE,'}',conf.NEWLINE
                           )
 
-    def setName(self, identifier):
-        self.identifier = identifier
-        return self
-
     def setFrom(self,f):
         self._from = f
-        return self
-
-    def getProperty(self, prop):
-        return self.properties.getProperty(prop)
-
-    def setProperty(self, name, value):
-        ''''''
-        self.properties.addProperty(name, value)
         return self
     
     def setTo(self,t):
@@ -952,38 +922,13 @@ class Join(object):
         self.properties.addProperty('relationship',rel)
         return self
 
-class Explore(writeable):
+class Explore(base):
     ''' Represents an explore object in LookML'''
-    def __init__(self, *args, **kwargs):
-        super(Explore, self).__init__(self, *args, **kwargs)
-        self.properties = Properties(kwargs.get('schema', {}))
-        # self.identifier = kwargs.get('identifier', kwargs.get('view', 'error_view_not_set'))
-        self.joins = dict()
-        
-        self.identifier = kwargs.get('identifier', '')
-        self.base_view = kwargs.get('view',View(self.identifier))
-        if not self.identifier:
-            self.identifier = kwargs.get('name', '')
-        if not self.identifier:
-            if len(args) >= 1:
-                if isinstance(args[0],str):
-                    self.setName(args[0])
-                elif isinstance(args[0],View):
-                    self.setName(args[0].name)
-                    self.base_view = args[0]
-                elif isinstance(args[0],dict):
-                    self.bind_lkml(args[0])
-        
-        self.fileName = self.identifier + '.explore.lkml'
-        if self.outputFolder:
-            self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
-        else:
-            self.path = self.fileName
-
-        
-
-        self.view = kwargs.get('view', '')
-
+    def __init__(self, input):
+        self.joins = {}
+        self.base_view = ''
+        super(Explore, self).__init__(input)
+            
     def bind_lkml(self,jsonDict):
         self.setName(jsonDict.pop('name'))
         if 'joins' in jsonDict.keys():
@@ -995,11 +940,6 @@ class Explore(writeable):
 
     def __len__(self):
         return len(self.joins)
-
-    def setProperty(self, name, value):
-        ''''''
-        self.properties.addProperty(name, value)
-        return self
 
     def __str__(self):
         return splice(
@@ -1017,10 +957,9 @@ class Explore(writeable):
         return self
     def __radd__(self,other):
         return self.__add__(other)
-    def __getattr__(self, key):
 
-    
-        if key == self.base_view.name and self.base_view:
+    def __getattr__(self, key):
+        if self.base_view and key == self.base_view.name:
             return self.base_view
         elif key == 'name':
             return self.identifier
@@ -1054,10 +993,6 @@ class Explore(writeable):
         tmpView.tableSource = False
         return tmpView
 
-    def setName(self,name): 
-        self.identifier = name
-        return self
-
     def setViewName(self,view):
         self.properties.addProperty('view_name',view)
 
@@ -1082,69 +1017,6 @@ class Explore(writeable):
     def getJoin(self, key):
         return self.joins.get(key, {})
 
-class Model(writeable):
-    def __init__(self, *args, **kwargs):
-        super(Model, self).__init__(self, *args, **kwargs)
-        self.schema = kwargs.get('schema', {})
-        self.properties = Properties(self.schema)
-        self.explores = {}
-        self.access_grants = {}
-        self.fileName = self.identifier + '.model.lkml'
-        if self.outputFolder:
-            self.path = self.outputFolder  + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
-        else:
-            self.path = self.fileName       
-        
-    def __str__(self):
-        return splice(
-                        '\n'.join([str(p) for p in self.properties.getProperties()]),
-                        '\n' * 5, '\n'.join([str(e) for e in self.getAccessGrants()]),
-                        '\n' * 5, '\n'.join([str(e) for e in self.getExplores()]),
-                        )
-
-    def __getattr__(self, key):
-        # print(self.__dict__.keys())
-        if key in self.__dict__.keys():
-            return self.__dict__[key]
-        elif key in self.explores.keys():
-        # elif key == 'order_items':
-            return self.explores[key]
-        else:
-            return self.__getitem__(key)
-
-
-    def setConnection(self,value):
-        self.properties.addProperty('connection',value)
-        return self
-
-    def include(self,file):
-        if isinstance(file,writeable):
-            self.properties.addProperty('include',file.fileName)
-        else:
-            self.properties.addProperty('include',file) 
-        return self 
-
-    def addAccessGrant(self, access_grant):
-        self.access_grants.update({access_grant.identifier: access_grant})
-
-    def getAccessGrants(self):
-        for field, literal in self.access_grants.items():
-            yield literal
-
-    def setName(self, name):
-       self.setIdentifier(name)
-       return self
-
-    def addExplore(self, explore):
-        self.explores.update({explore.identifier: explore})
-
-    def getExplores(self):
-        for field, literal in self.explores.items():
-            yield literal
-
-    def getExplore(self, key):
-        return self.explores.pop(key, {})
-
 class Property(object):
     ''' A basic property / key value pair. 
     If the value is a dict it will recusively instantiate properties within itself '''
@@ -1154,7 +1026,13 @@ class Property(object):
         self.num = 0
         if isinstance(value, str):
             self.value = value
+        # lkml.keys.PLURAL_KEYS
+        # ('view', 'measure', 'dimension', 'dimension_group', 'filter', 'access_filter', 
+        # 'bind_filter', 'map_layer', 'parameter', 'set', 'column', 'derived_column', 'include', 
+        # 'explore', 'link', 'when', 'allowed_value', 'named_value_format', 'join', 'datagroup', 'access_grant', 
+        # 'sql_step', 'action', 'param', 'form_param', 'option', 'user_attribute_param', 'assert', 'test')
         elif name in ('links','filters','tags','suggestions', 'actions', 'sets', 'options', 'form_params', 'access_grants','params','allowed_values', 'named_value_formats', 'datagroups', 'map_layers'):
+        # elif name+'s' in lkml.keys.PLURAL_KEYS:
             self.value = Properties(value, multiValueSpecialHandling=name)
 
         elif isinstance(value, dict) or isinstance(value, list):
@@ -1198,14 +1076,52 @@ class Property(object):
         #TODO: plain
         #TODO: SQL / HTML Block ;;
 
-        if self.name.startswith('sql') or self.name == 'html':
+        def quote_pair():
+            pass
+        
+    # lkml.keys.PLURAL_KEYS
+    # ('view', 'measure', 'dimension', 'dimension_group', 'filter', 'access_filter', 
+    # 'bind_filter', 'map_layer', 'parameter', 'set', 'column', 'derived_column', 'include', 
+    # 'explore', 'link', 'when', 'allowed_value', 'named_value_format', 'join', 'datagroup', 'access_grant', 
+    # 'sql_step', 'action', 'param', 'form_param', 'option', 'user_attribute_param', 'assert', 'test')
+    # lkml.keys.KEYS_WITH_NAME_FIELDS
+    # ('user_attribute_param', 'param', 'form_param', 'option')
+    # lkml.keys.QUOTED_LITERAL_KEYS
+    # ('label', 'view_label', 'group_label', 'group_item_label', 'suggest_persist_for', 
+    # 'default_value', 'direction', 'value_format', 'name', 'url', 'icon_url', 'form_url', 'default', '
+    # tags', 'value', 'description', 'sortkeys', 'indexes', 'partition_keys', 'connection', 'include', 
+    # 'max_cache_age', 'allowed_values', 'timezone', 'persist_for', 'cluster_keys', 'distribution', 'extents_json_url', 
+    # 'feature_key', 'file', 'property_key', 'property_label_key', 'else')
+    # lkml.keys.EXPR_BLOCK_KEYS
+    # ('expression_custom_filter', 'expression', 'html', 'sql_trigger_value', 'sql_table_name', 'sql_distinct_key', 
+    # 'sql_start', 'sql_always_having', 'sql_always_where', 'sql_trigger', 'sql_foreign_key', 'sql_where', 'sql_end', 
+    # 'sql_create', 'sql_latitude', 'sql_longitude', 'sql_step', 'sql_on', 'sql')
+            
+            # replace with expression block
+            # if self.name.startswith('sql') or self.name == 'html':
+            #     return splice(self.name, ': ', str(self.value), ' ;;')
+        if self.name in (
+                'links','filters','actions','options', 
+                'form_params','sets', 'access_grants',
+                'params', 'allowed_values', 'named_value_formats', 
+                'datagroups', 'map_layers'):
+                return str(self.value)
+        #This one since it is a multi-value key, shouldn't be quoted literal
+        elif self.name in ('tags'):
+            return splice(self.name , ': ' , str(self.value))
+        elif self.name in lkml.keys.EXPR_BLOCK_KEYS:
             return splice(self.name, ': ', str(self.value), ' ;;')
-        if self.name == "strict_value_format":
-            return splice(self.name, ': ', str(self.value))
-        elif self.name in ['include', 'connection', 'description','value', "name","default","file"]:
+        # Not needed? does a default case
+        # elif self.name == "strict_value_format":
+        #     return splice(self.name, ': ', str(self.value))
+        elif self.name in lkml.keys.QUOTED_LITERAL_KEYS:
             return splice(self.name, ': "', str(self.value), '"')
-        elif self.name.endswith('url') or self.name.endswith('label') or self.name.endswith('format') or self.name.endswith('persist_for'):
-            return splice(self.name, ': "', str(self.value), '"')
+        # replace with quote literal
+        # elif self.name in ['include', 'connection', 'description','value', "name","default","file"]:
+        #     return splice(self.name, ': "', str(self.value), '"')
+        # elif self.name.endswith('url') or self.name.endswith('label') or self.name.endswith('format') or self.name.endswith('persist_for'):
+        #     return splice(self.name, ': "', str(self.value), '"')
+
         elif self.name == 'extends':
             return splice(self.name, ': [', str(self.value), ']')
         elif self.name.startswith('explore_source'):
@@ -1214,8 +1130,7 @@ class Property(object):
             return splice('include: "',str(self.value),'"')
         elif self.name in conf.MULTIVALUE_PROPERTIES:
             return splice(self.name , ': ' , str(self.value))
-        elif self.name in ('links','filters','actions','options', 'form_params','sets', 'access_grants','params', 'allowed_values', 'named_value_formats', 'datagroups', 'map_layers'):
-                return str(self.value)
+
         elif self.name == ('list_member') and isinstance(self.value,str):
             return splice(str(self.value),',')
         elif self.name == 'list_member':
@@ -1225,8 +1140,6 @@ class Property(object):
         else:
             return splice(self.name , ': ' , str(self.value))
 
-
-
 class Properties(object):
     '''
     Treats the collection of properties as a recursive dicitionary
@@ -1235,7 +1148,7 @@ class Properties(object):
     Things that should be their own class:
     data_groups, named_value_format, sets
     '''
-    __slots__ = ['schema','multiValueSpecialHandling','num','valueiterator']
+    # __slots__ = ['schema','multiValueSpecialHandling','num','valueiterator']
 
     def __init__(self, schema, multiValueSpecialHandling=False):
         self.schema = schema
@@ -1243,21 +1156,24 @@ class Properties(object):
         self.valueiterator = iter(self.schema)
         self.multiValueSpecialHandling = multiValueSpecialHandling
 
-    #TODO: Rewrite for list schema type
     def __str__(self):
 
-        def process_plural_named_constructs(_type):
-            singular = _type[:-1]
+        def process_plural_named_constructs():
+            singular = self.multiValueSpecialHandling[:-1]
             buildString = ""
             schemaDeepCopy = copy.copy(self.schema)
             for fset in schemaDeepCopy:
-                buildString = buildString + '\n ' + singular + ': ' + fset.pop('name') + ' '
+                buildString = buildString + conf.NEWLINE + singular + ': ' + fset.pop('name') + ' '
                 buildString = buildString + str(Property('list_member',fset))
             return buildString
 
-        def process_plural_unnamed_constructs(_type):
-            singular = _type[:-1]
-            return splice(' ', singular ,': ','\n',singular,': '.join([str(p) for p in self.getProperties()]))
+        def process_plural_unnamed_constructs():
+            if not self.multiValueSpecialHandling == "filters":
+                singular = conf.NEWLINE + self.multiValueSpecialHandling[:-1] + ': '
+            else:
+                singular = conf.NEWLINE + self.multiValueSpecialHandling + ': '
+            
+            return splice( singular , singular.join([str(p) for p in self.getProperties()]))
 
         if isinstance(self.schema, dict):
             return splice(
@@ -1277,46 +1193,13 @@ class Properties(object):
                             '\n    '.join(['"' + str(p) + '",' for p in self.getProperties()]) ,
                             '\n    ]' 
                             )
-        # elif self.multiValueSpecialHandling in ('filters', 'links', 'actions', 'options', 'form_params',"params"):
-        #     return process_plural_unnamed_constructs(self.multiValueSpecialHandling)
-        elif self.multiValueSpecialHandling == 'filters':
-            return splice('filters: ','\n filters: '.join([str(p) for p in self.getProperties()]))
-        elif self.multiValueSpecialHandling == 'links':
-            return splice('link: ','link: \n'.join([str(p) for p in self.getProperties()]))
-        elif self.multiValueSpecialHandling == 'actions':
-            return splice(' action: ','\naction: '.join([str(p) for p in self.getProperties()]))
-        elif self.multiValueSpecialHandling == 'options':
-            return splice(' option: ','\noption: '.join([str(p) for p in self.getProperties()]))
-        elif self.multiValueSpecialHandling == 'form_params':
-            return splice(' form_param: ','\nform_param: '.join([str(p) for p in self.getProperties()]))
-        elif self.multiValueSpecialHandling == 'params':
-            return splice(' param: ',' param: \n'.join([str(p) for p in self.getProperties()]))
+        elif self.multiValueSpecialHandling in ('filters', 'links', 'actions', 'options', 'form_params','params'):
+            return process_plural_unnamed_constructs()
+
+
         elif self.multiValueSpecialHandling in ("access_grants","datagroups","map_layers","named_value_formats","sets"):
-            return process_plural_named_constructs(self.multiValueSpecialHandling)
-        # elif self.multiValueSpecialHandling == 'access_grants':
-        #     buildString = ""
-        #     for fset in self.schema:
-        #         buildString = buildString + '\n access_grant: ' + fset.pop('name') + ' '
-        #         buildString = buildString + str(Property('list_member',fset))
-        #     return buildString
-        # elif self.multiValueSpecialHandling == 'datagroups':
-        #     buildString = ""
-        #     for fset in self.schema:
-        #         buildString = buildString + '\n datagroup: ' + fset.pop('name') + ' '
-        #         buildString = buildString + str(Property('list_member',fset))
-        #     return buildString
-        # elif self.multiValueSpecialHandling == 'map_layers':
-        #     buildString = ""
-        #     for fset in self.schema:
-        #         buildString = buildString + '\n map_layer: ' + fset.pop('name') + ' '
-        #         buildString = buildString + str(Property('list_member',fset))
-        #     return buildString
-        # elif self.multiValueSpecialHandling == 'named_value_formats':
-        #     buildString = ""
-        #     for fset in self.schema:
-        #         buildString = buildString + '\n named_value_format: ' + fset.pop('name') + ' '
-        #         buildString = buildString + str(Property('list_member',fset))
-        #     return buildString
+            return process_plural_named_constructs()
+
         elif self.multiValueSpecialHandling == 'allowed_values':
             if isinstance(self.schema[0],dict):
                 return splice('allowed_value: ','\n allowed_value: '.join([str(p) for p in self.getProperties()]))
@@ -1326,32 +1209,26 @@ class Properties(object):
                                 '\n    '.join(['"' + str(p) + '",' for p in self.getProperties()]) ,
                                 '\n    ]' 
                                 )
-
-        # elif self.multiValueSpecialHandling == 'sets':
-        #     buildString = ""
-        #     for fset in self.schema:
-        #         buildString = buildString + '\n set: ' + fset.pop('name') + ' '
-        #         buildString = buildString + str(Property('list_member',fset))
-        #     return buildString
         else:
             pass
-            # raise TypeError
 
-#TODO: Rewrite for list schema type
-    def getProperty(self, identifier):
-        
+    def __getitem__(self, key):
+        '''
+            TODO: fix ephemeral properties...
+            TDOD: Add property subtyping
+        '''        
         if isinstance(self.schema, dict):
-            if identifier == 'sql':
+            if key == 'sql':
                 # return sql_prop(identifier, self.schema.get(identifier, []))
-                return Property(identifier, self.schema.get(identifier, []))
+                return Property(key, self.schema.get(key, []))
             else:    
-                return Property(identifier, self.schema.get(identifier, []))
+                return Property(key, self.schema.get(key, []))
         elif isinstance(self.schema, list):
-            if identifier == 'sql':
+            if key == 'sql':
                 # return sql_prop(identifier, self.schema.get(identifier, []))
-                return Property(identifier, self.schema.get(identifier, []))
+                return Property(key, self.schema.get(key, []))
             else:    
-                return Property(identifier, self.schema.get(identifier, [])) 
+                return Property(key, self.schema.get(key, [])) 
 
     def getProperties(self):
         if isinstance(self.schema, dict):
@@ -1368,7 +1245,6 @@ class Properties(object):
                 else:
                     yield Property('list_member',item)
 
-
     def __iter__(self):
         self.valueiterator = iter(self.schema)
         return self
@@ -1378,7 +1254,6 @@ class Properties(object):
             return next(self.valueiterator)
         except:
             raise StopIteration
-
 
     def __add__(self,other):
         if isinstance(self.schema, dict):
@@ -1394,7 +1269,6 @@ class Properties(object):
         else:
             pass
 
-#TODO: Rewrite for list schema type
     def addProperty(self, name, value):
         if name in conf.NONUNIQUE_PROPERTIES:
             index = self.schema.get(name,[])
@@ -1407,13 +1281,19 @@ class Properties(object):
                 self.schema.append(value)
         else:
             self.schema.update({name: value})
-#TODO: Rewrite for list schema type
-    def delProperty(self, identifier):
-        self.schema.pop(identifier, None)
-#TODO: Rewrite for list schema type
-    def isMember(self, property):
-        return property in self.schema.keys()
 
+    def __delete__(self, identifier):
+        if isinstance(self.schema,dict):
+            self.schema.pop(identifier, None)
+        elif isinstance(self.schema,list):
+            self.schema.remove(identifier, None)
+
+    def isMember(self, property):
+        if isinstance(self.schema,dict):
+            return property in self.schema.keys()
+        elif isinstance(self.schema,list):
+            return property in self.schema
+        
     def props(self):
         '''
             Returns a list of the property values. Mostly used for membership checking
@@ -1429,38 +1309,14 @@ class Properties(object):
         '''
         return self.schema[key]
 
-
     def __len__(self):
         return len(self.schema)
 
-
-class Field(object):
+class Field(base):
     ''' Base class for fields in LookML, only derived/child types should be instantiated '''
-    __slots__ = ['schema', 'properties','db_column','identifier','view','message']
-    def __init__(self, *args, **kwargs):
-        self.schema = kwargs.get('schema', {})
-        self.properties = Properties(self.schema)
-        self.db_column = kwargs.get('dbColumn', '')
-        self.message = kwargs.get('message', '')
-
-        self.identifier = kwargs.get('identifier', None)
-        if not self.identifier:
-            self.identifier = kwargs.get('name', None)
-        if not self.identifier:
-            if len(args) > 1:
-                if isinstance(args[1],str):
-                    self.setName(args[1])
-                    self.db_column = args[1]
-            elif self.db_column:
-                self.identifier = lookCase(self.db_column)
-            else:
-                self.identifier = ''
-
-        self.view = kwargs.get('view', '')
-        #If passed a dictionary it is assumed to be the LKML schema
-        if len(args) > 1:
-            if isinstance(args[1],dict):
-                self.bind_lkml(args[1])
+    def __init__(self, input):
+        self.db_column = ''
+        super(Field, self).__init__(input)
 
     def bind_lkml(self, lkmldict):
             self.setName(lkmldict.pop('name'))
@@ -1488,7 +1344,6 @@ class Field(object):
         self.view + self
         return self
 
-
     def setMessage(self,message):
         self.message = message
         return self
@@ -1499,7 +1354,6 @@ class Field(object):
         else:
             return ''
     
-
     def __str__(self):
         return splice(
                         self.identifier, splice(' {',conf.NEWLINEINDENT), 
@@ -1508,23 +1362,7 @@ class Field(object):
                          )
 
     def __getattr__(self, key):
-        # if key == 'name':
-        #     return self.identifier
-        # elif key == 'pk':
-        #     return self.getPrimaryKey()
-        # elif key == 'ref':
-        #     if self.view:
-        #         return splice('${' , self.view.identifier , '.' , self.identifier , '}')
-        # elif key == 'ref_raw':
-        #     if self.view:
-        #         return splice(self.view.identifier , '.' , self.identifier)
-        # elif key == 'ref_raw_short':
-        #     if self.view:
-        #         return splice(self.identifier)
-        # elif key == 'ref_short':
-        #     return splice('${' , self.identifier , '}')
-        # else:
-        #     return self.properties.getProperty(key)
+
         if key == 'name':
             return self.identifier
         elif key == 'pk':
@@ -1557,11 +1395,8 @@ class Field(object):
         elif key == '__refrre__':
             if self.view:
                 return splice(self.view.identifier , '\.' , self.identifier)
-
         else:
-            return self.properties.getProperty(key)
-
-
+            return self.getProperty(key)
 
     def __setattr__(self, name, value):
         if name == 'label':
@@ -1601,27 +1436,9 @@ class Field(object):
         self.view = view
         return self  # satisfies a need to linkback (look where setView is called)
 
-    def setName(self,identifier):
-        self.identifier = identifier
-        return self
-
-    def setProperty(self, name, value):
-        ''''''
-        self.properties.addProperty(name, value)
-        return self
-
-    def unSetProperty(self, name):
-        ''''''
-        self.properties.delProperty(name)
-        return self
-
     def setSql(self, sql):
         self.setProperty('sql', sql)
         return self
-
-    def getProperty(self, identifier):
-        ''''''
-        return self.properties.getProperty(identifier)
 
     def setType(self, type):
         ''''''
@@ -1635,10 +1452,6 @@ class Field(object):
     def setString(self):
         ''''''
         return self.setType('string')
-
-    def setLabel(self, label):
-        ''''''
-        return self.setProperty('label', label)
 
     def setViewLabel(self, viewLabel):
         ''''''
@@ -1666,13 +1479,11 @@ class Field(object):
 
 
 class Dimension(Field):
-    def __init__(self, *args, **kwargs):
-        super(Dimension, self).__init__(self, *args, **kwargs)
-        # self.setDBColumn(self.db_column,changeIdentifier=False)
-
-
+    def __init__(self, input):
+        super(Dimension, self).__init__(input)
+        
     def isPrimaryKey(self):
-        if self.properties.isMember('primary_key') and self.properties.getProperty('primary_key').value == 'yes':
+        if self.hasProp('primary_key') and self.getProperty('primary_key').value == 'yes':
             return True
         else:
             return False
@@ -1726,8 +1537,8 @@ class Dimension(Field):
                         )
 
 class DimensionGroup(Field):
-    def __init__(self, *args, **kwargs):
-        super(DimensionGroup, self).__init__(self, *args, **kwargs)
+    def __init__(self, input):
+        super(DimensionGroup, self).__init__(input)
         if not self.properties.isMember('timeframes'):
             self.properties.addProperty('timeframes', splice('[','{},'.format(conf.NEWLINEINDENT).join(conf.TIMEFRAMES),']'))
         if not self.properties.isMember('type'):
@@ -1751,8 +1562,8 @@ class DimensionGroup(Field):
                         )
 
 class Measure(Field):
-    def __init__(self, *args, **kwargs):
-        super(Measure, self).__init__(self, *args, **kwargs)
+    def __init__(self, input):
+        super(Measure, self).__init__(input)
 
 
     @ws_buffer
@@ -1763,8 +1574,8 @@ class Measure(Field):
                         )
 
 class Filter(Field):
-    def __init__(self, *args, **kwargs):
-        super(Filter, self).__init__(self, *args, **kwargs)
+    def __init__(self, input):
+        super(Filter, self).__init__(input)
 
     @ws_buffer
     def __str__(self):
@@ -1774,8 +1585,8 @@ class Filter(Field):
                         )
 
 class Parameter(Field):
-    def __init__(self, *args, **kwargs):
-        super(Parameter, self).__init__(self, *args, **kwargs)
+    def __init__(self, input):
+        super(Parameter, self).__init__(input)
     
     @ws_buffer
     def __str__(self):
@@ -1783,21 +1594,3 @@ class Parameter(Field):
                         'parameter: ', 
                         super(Parameter, self).__str__()
                         )
-
-class Field_Level_Permissions(Field):
-    def __init__(self, *args, **kwargs):
-        super(Field_Level_Permissions, self).__init__(self, *args, **kwargs)
-
-    @ws_buffer
-    def __str__(self):
-        return splice(self.getMessage(),
-                        '\naccess_grant: ', 
-                        super(Field_Level_Permissions, self).__str__()
-                        )
-    
-    def set_User_Attribute(self, user_attribute):
-        return self.setProperty('user_attribute', user_attribute)
-         
-    def set_Allowed_Value(self, allowed_value):
-        return self.setProperty('allowed_values', '["%s"]' %allowed_value)                        
-
