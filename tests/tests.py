@@ -136,8 +136,6 @@ class testKitchenSinkLocal(unittest.TestCase):
         with open('lookml/tests/kitchenSink/kitchenSink2.model.lkml', 'w') as f:
             f.write(self.f_copy.__str__())
 
-        
-
     # @unittest.expectedFailure
     def test_step6(self):
         '''
@@ -162,8 +160,6 @@ class testKitchenSinkLocal(unittest.TestCase):
             remove KitchenSink2 if it exists (comment teardown out if having step6 difficulties and need to inspect kitchensink2)
         '''
         pass
-
-
 
 #     def test_view_loop(self):
 #         file1 = open('lookml/tests/thelook/test.lkml', 'r')
@@ -304,11 +300,6 @@ class testKitchenSinkLocal(unittest.TestCase):
 #         )
 #         vf = proj.getFile('simple/action.view.lkml')
 #         print(vf.views.foo)
-
-
-
-
-
 
 if __name__ == '__main__':
     unittest.main()

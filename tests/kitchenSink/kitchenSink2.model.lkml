@@ -214,7 +214,7 @@ dimension_group: first_order_period {
 }
 
 
-parameter: foo {
+paramter: foo {
   allowed_value: {
     label: "foobar"
     value: "bar"

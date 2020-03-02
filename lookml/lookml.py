@@ -323,6 +323,7 @@ class base(object):
         self.identifier = ''
         self.properties = Properties({})
         self.message = ''
+        self.token = ''
         if isinstance(input,str):
             self.setName(input)
         elif isinstance(input,dict):
@@ -342,6 +343,16 @@ class base(object):
         ''''''
         return self.setProperty('label', label)
 
+    def setMessage(self,message):
+        self.message = message
+        return self
+
+    def getMessage(self):
+        if self.message:
+            return splice('#',self.message,conf.NEWLINE)
+        else:
+            return ''
+    
     def getProperty(self, prop):
         ''' Get a property from the properties collection '''
         return self.properties[prop]
@@ -397,9 +408,7 @@ class View(base):
         super(View, self).__init__(input)
 
     def bind_lkml(self,jsonDict):
-        #TODO: implement property interpreter (should be done but needs to be tested)
-        self.setName(jsonDict.pop('name'))
-
+        
         t = 'measures'
         if t in jsonDict.keys():
             for field in jsonDict[t]:
@@ -440,19 +449,17 @@ class View(base):
         if t in jsonDict.keys():
             for field in jsonDict[t]:
                 self + Parameter(field)
-            
+
             jsonDict.pop(t)
         else:
             pass
 
-        for k,v in jsonDict.items():
-            self.properties.addProperty(k,v) 
+        super().bind_lkml(jsonDict)
 
     def __str__(self):
         return splice(
                         splice('#',self.message,conf.NEWLINE) if self.message else '', 
                         'view: ', self.identifier, ' {', conf.NEWLINE,
-                        # conf.NEWLINE,self.source(),conf.NEWLINE, 
                         conf.NEWLINE.join([str(p) for p in self.properties.getProperties()]), 
                         conf.NEWLINE.join([str(field) for field in self.getFieldsSorted()]), 
                         splice(conf.NEWLINE,'}',conf.NEWLINE),
@@ -1318,11 +1325,6 @@ class Field(base):
         self.db_column = ''
         super(Field, self).__init__(input)
 
-    def bind_lkml(self, lkmldict):
-            self.setName(lkmldict.pop('name'))
-            for k,v in lkmldict.items():
-                self.setProperty(k,v) 
-
     def children(self):
         if self.view:
             for dependent in self.view.search('sql',[self.__refsre__,self.__refre__]):
@@ -1344,16 +1346,6 @@ class Field(base):
         self.view + self
         return self
 
-    def setMessage(self,message):
-        self.message = message
-        return self
-
-    def getMessage(self):
-        if self.message:
-            return splice('#',self.message,conf.NEWLINE)
-        else:
-            return ''
-    
     def __str__(self):
         return splice(
                         self.identifier, splice(' {',conf.NEWLINEINDENT), 
@@ -1477,10 +1469,10 @@ class Field(base):
     def sql_nvl(self,value_if_null):
         self.sql = "NVL(" + str(self.sql.value) + "," + value_if_null + ")"
 
-
 class Dimension(Field):
     def __init__(self, input):
         super(Dimension, self).__init__(input)
+        self.token = 'dimension'
         
     def isPrimaryKey(self):
         if self.hasProp('primary_key') and self.getProperty('primary_key').value == 'yes':
@@ -1532,7 +1524,7 @@ class Dimension(Field):
     @ws_buffer
     def __str__(self):
         return splice( self.getMessage(),
-                        'dimension: ', 
+                        self.token,': ', 
                         super(Dimension, self).__str__()
                         )
 
@@ -1545,6 +1537,7 @@ class DimensionGroup(Field):
             self.properties.addProperty('type', 'time')
         if not self.properties.isMember('sql'):
             self.properties.addProperty('sql', splice('${TABLE}.' , conf.DB_FIELD_DELIMITER_START , self.db_column , conf.DB_FIELD_DELIMITER_END))
+        self.token = 'dimension_group'
 
     def setDBColumn(self, dbColumn, changeIdentifier=True):
         ''''''
@@ -1557,40 +1550,43 @@ class DimensionGroup(Field):
     @ws_buffer
     def __str__(self):
         return splice(self.getMessage(),
-                        'dimension_group: ', 
+                        self.token, ': ', 
                         super(DimensionGroup, self).__str__()
                         )
 
 class Measure(Field):
     def __init__(self, input):
         super(Measure, self).__init__(input)
+        self.token = 'measure'
 
 
     @ws_buffer
     def __str__(self):
         return splice(self.getMessage(),
-                        'measure: ', 
+                        self.token, ': ', 
                         super(Measure, self).__str__()
                         )
 
 class Filter(Field):
     def __init__(self, input):
         super(Filter, self).__init__(input)
+        self.token = 'filter'
 
     @ws_buffer
     def __str__(self):
         return splice(self.getMessage(),
-                        'filter: ', 
+                        self.token, ': ', 
                         super(Filter, self).__str__()
                         )
 
 class Parameter(Field):
     def __init__(self, input):
         super(Parameter, self).__init__(input)
+        self.token = 'paramter'
     
     @ws_buffer
     def __str__(self):
         return splice(self.getMessage(),
-                        'parameter: ', 
+                        self.token, ': ', 
                         super(Parameter, self).__str__()
                         )
