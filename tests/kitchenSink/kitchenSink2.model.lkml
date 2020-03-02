@@ -2,34 +2,34 @@ connection: "snowflake"
 label: "1) eCommerce with Event Data"
 include: "*.view"
 
- datagroup: mydatagroup {
+datagroup: mydatagroup {
     sql_trigger: select current_date ;;
     label: "Daily"
     description: "Should fire daily just afte midnight UTC"
     }
- datagroup: mydatagroup2 {
+datagroup: mydatagroup2 {
     sql_trigger: select convert_tz(current_date, 'America/Los_Angeles') ;;
     label: "Daily"
     description: "Should fire daily just afte midnight pacific"
     }
 
- named_value_format: euro_in_thousands {
+named_value_format: euro_in_thousands {
     value_format: "\"€\"0.000,\" K\""
     strict_value_format: yes
     }
- named_value_format: euro_in_millions {
+named_value_format: euro_in_millions {
     value_format: "\"€\"0.0000,\" M\""
     strict_value_format: yes
     }
 
- map_layer: neighborhoods {
+map_layer: neighborhoods {
     file: "my_neighborhoods.json"
     }
- map_layer: cities {
+map_layer: cities {
     file: "cities.json"
     }
 
- access_grant: abc {
+access_grant: abc {
     allowed_values: [
     "a",
     "b",
@@ -37,7 +37,7 @@ include: "*.view"
     ]
     user_attribute: abc
     }
- access_grant: xyz {
+access_grant: xyz {
     allowed_values: [
     "x",
     "y",
@@ -105,10 +105,9 @@ join: distribution_centers {
 }
 
 view: order_items {
-
 sql_table_name: ecomm.order_items ;;
 
- set: detail {
+set: detail {
     fields: [
     id,
     order_id,
@@ -123,7 +122,7 @@ sql_table_name: ecomm.order_items ;;
     user_order_facts.phone_number,
     ]
     }
- set: return_detail {
+set: return_detail {
     fields: [
     id,
     order_id,
@@ -251,14 +250,17 @@ dimension: id {
     "suggestion1",
     "suggestion2",
     ]
-   action: {
+  
+action: {
     label: "Send this to slack channel"
     url: "https://hooks.zapier.com/hooks/catch/1662138/tvc3zj/"
-     param: {
+    
+param: {
     name: "user_dash_link"
     value: "https://demo.looker.com/dashboards/160?Email={{ users.email._value}}"
     }
-     form_param: {
+    
+form_param: {
     name: "Message"
     type: textarea
     default: "Hey,
@@ -270,7 +272,8 @@ form_param: {
     name: "Recipient"
     type: select
     default: "zevl"
-     option: {
+    
+option: {
     name: "zevl"
     label: "Zev"
     }
@@ -283,7 +286,8 @@ form_param: {
     name: "Channel"
     type: select
     default: "cs"
-     option: {
+    
+option: {
     name: "cs"
     label: "Customer Support"
     }
@@ -296,7 +300,8 @@ option: {
 action: {
     label: "Create Order Form"
     url: "https://hooks.zapier.com/hooks/catch/2813548/oosxkej/"
-     form_param: {
+    
+form_param: {
     name: "Order ID"
     type: string
     default: "{{ order_id._value }}"
@@ -565,7 +570,8 @@ measure: count_last_28d {
   type: count_distinct
   sql: ${id} ;;
   hidden: yes
-  filters: {
+  
+filters: {
     field: created_date
     value: "28 days"
     }
@@ -576,7 +582,8 @@ measure: count_with_repeat_purchase_within_30d {
   type: count_distinct
   sql: ${id} ;;
   view_label: "Repeat Purchase Facts"
-  filters: {
+  
+filters: {
     field: repeat_orders_within_30d
     value: "Yes"
     }
@@ -587,7 +594,8 @@ measure: first_purchase_count {
   view_label: "Orders"
   type: count_distinct
   sql: ${order_id} ;;
-  filters: {
+  
+filters: {
     field: order_facts.is_first_purchase
     value: "Yes"
     }
@@ -597,7 +605,8 @@ measure: first_purchase_count {
     created_date,
     users.traffic_source,
     ]
-  link: {
+  
+link: {
     label: "New User's Behavior by Traffic Source"
     url: "
       {% assign vis_config = '{
@@ -636,7 +645,8 @@ measure: hidden_first_purchase_visualization_link {
   view_label: "Orders"
   type: count_distinct
   sql: ${order_id} ;;
-  filters: {
+  
+filters: {
     field: order_facts.is_first_purchase
     value: "Yes"
     }
@@ -678,7 +688,8 @@ measure: return_rate {
 measure: returned_count {
   type: count_distinct
   sql: ${id} ;;
-  filters: {
+  
+filters: {
     field: is_returned
     value: "yes"
     }
@@ -692,7 +703,8 @@ measure: returned_total_sale_price {
   type: sum
   value_format_name: usd
   sql: ${sale_price} ;;
-  filters: {
+  
+filters: {
     field: is_returned
     value: "yes"
     }
