@@ -116,14 +116,6 @@ Basic Recipes
    #TODO
 
 
-
-* Add a sum measure for every number dimension
-
-.. code-block:: python
-   :linenos:
-
-   orderItems.sumAllNumDimensions()
-
 * Get fields by tag, do work, remove tag
 
 .. code-block:: python
@@ -157,22 +149,96 @@ Basic Recipes
    
 
 
-* Find fields by regex searching their sql
+* Find fields by regex searching a parameter
 
 .. code-block:: python
    :linenos:
 
-   >>> for field in o.getFieldBySql('\d{1,3}'):
+   >>> for field in myView.search('sql','\$\{TABLE\}.id'):
    ...     print(field)
    >>>
-   dimension: foo {
-     type: string
-     sql: _FINDME_123_ ;;
+   dimension: id {
+     type: number
+     sql: ${TABLE}.id ;;
    }
-   
+   dimension: id_order {
+     type: string
+     sql: ${TABLE}.id_order ;;
+   }
+   >>> for field in o.search('label','bar'):
+   ...     print(field)
+   >>>
+   dimension: bar {
+     type: string
+     label: "Bar"
+     sql: ${TABLE}.bar ;;
+   }
+   dimension: bar2 {
+     type: string
+     label: "Foobar"
+     sql: ${TABLE}.bar2 ;;
+   }
 
 
+Fields
+------------------------------
+.. code-block:: python
+   :linenos:
 
+   >>> myView = View('order_items') + 'id'
+   >>> print(field.__ref__)
+   ${order_items.id}
+   >>> print(field.__refs__)
+   ${id}
+   >>> print(field.__refr__)
+   order_items.id
+   >>> print(field.__refrs__)
+   id
+
+Convenience Methods
+------------------------------
+* Add a sum measure for every number dimension
+
+.. code-block:: python
+   :linenos:
+
+   orderItems.sumAllNumDimensions()
+
+
+* Change the name of a field and all its child references
+
+.. code-block:: python
+   :linenos:
+
+   >>> print(order_items2.shipping_time)
+
+   dimension: shipping_time {
+     type: number
+     sql: datediff('day',${shipped_raw},${delivered_raw})*1.0 ;;
+   }
+
+   >>> for field in order_items2.shipping_time.children():
+   ...    print(field)
+
+   measure: average_shipping_time {
+     type: average
+     value_format_name: decimal_2
+     sql: ${shipping_time} ;;
+   }
+
+   >>> order_items2.shipping_time.change_name_and_child_references('time_in_transit')
+   >>> print(time_in_transit)
+   dimension: time_in_transit {
+     type: number
+     sql: datediff('day',${shipped_raw},${delivered_raw})*1.0 ;;
+   }
+   >>> for field in order_items2.time_in_transit.children():
+   ...    print(field)
+   measure: average_shipping_time {
+     type: average
+     value_format_name: decimal_2
+     sql: ${time_in_transit} ;;
+   }
 
 
 .. toctree::

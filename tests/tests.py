@@ -91,6 +91,9 @@ class testKitchenSinkLocal(unittest.TestCase):
         self.assertEqual(self.order_items.primaryKey, 'id')
         self.assertEqual(self.order_items.primaryKey, self.order_items.pk.name)
         
+        #Check Children
+        self.assertEqual(1, len(list(self.order_items.shipping_time.children())))
+
         # Check Looping construct
         for tag in self.order_items.id.tags:
             pass
@@ -126,6 +129,9 @@ class testKitchenSinkLocal(unittest.TestCase):
         #### Modifications ###
         self.f_copy.views.order_items.id.sql = "${TABLE}.test_sql_change"
         self.f_copy.views.order_items + 'test_add_dimension'
+        self.f_copy.views.order_items.shipping_time.change_name_and_child_references('time_in_transit')
+        # print(self.f_copy.datagroups)
+        # print(self.f_copy)
         #### End Modifications ###
         with open('lookml/tests/kitchenSink/kitchenSink2.model.lkml', 'w') as f:
             f.write(self.f_copy.__str__())
@@ -144,11 +150,12 @@ class testKitchenSinkLocal(unittest.TestCase):
         #Check dimension Addition:
         self.assertIsInstance(order_items2.test_add_dimension, lookml.Dimension)
         #Check searching dimensions by sql:
-        for field in order_items2.search('sql','\$\{shipped_raw\}'):
-            # field.hide()
-            print(field)
+        self.assertEqual(1,len(list(order_items2.search('sql','\$\{shipped_raw\}'))))
 
-        
+        #Check renamed field has the correct number of direct children
+        self.assertEqual(1, len(list(order_items2.time_in_transit.children())))
+
+
 
     def tearDown(self):
         '''
