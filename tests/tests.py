@@ -50,15 +50,15 @@ class testKitchenSinkLocal(unittest.TestCase):
         #46 total
         self.totalFields = len(self.order_items)
         # 17 Dimensions
-        self.totalDims = len(list(self.order_items.getDimensions()))
+        self.totalDims = len(list(self.order_items.dims()))
         # 5  DimensionGroups
-        self.totalDgs = len(list(self.order_items.getDimensionGroups()))
+        self.totalDgs = len(list(self.order_items.dimensionGroups()))
         # 22 Measures
-        self.totalMeas = len(list(self.order_items.getMeasures()))
+        self.totalMeas = len(list(self.order_items.measures()))
         # 2  Filters
-        self.totalFilters = len(list(self.order_items.getFilters()))
+        self.totalFilters = len(list(self.order_items.filters()))
         # 0  Paramters
-        self.totalParams = len(list(self.order_items.getParameters()))
+        self.totalParams = len(list(self.order_items.parameters()))
         # print(self.order_items.foo)
         
         #Asserts all the subtypes of fields should add up to the total
@@ -69,8 +69,8 @@ class testKitchenSinkLocal(unittest.TestCase):
             + self.totalFilters 
             + self.totalParams
             )
-        self.assertEqual(len(self.order_items),len(list(self.order_items.getFieldNames()))) 
-        self.assertEqual(len(self.order_items),47) #Counts the total fields (should be 47 when foo param is corrected)
+        self.assertEqual(len(self.order_items),len(list(self.order_items.fieldNames()))) 
+        self.assertEqual(len(self.order_items),47) #Counts the total fields
 
         self.assertTrue(isinstance(self.order_items.id,lookml.Dimension))
         self.assertTrue(isinstance(self.order_items.total_gross_margin,lookml.Measure))
@@ -130,8 +130,11 @@ class testKitchenSinkLocal(unittest.TestCase):
         self.f_copy.views.order_items.id.sql = "${TABLE}.test_sql_change"
         self.f_copy.views.order_items + 'test_add_dimension'
         self.f_copy.views.order_items.shipping_time.change_name_and_child_references('time_in_transit')
-        # print(self.f_copy.datagroups)
-        # print(self.f_copy)
+        self.f_copy.views.order_items.id.addTag('x')
+        self.assertEqual(len(self.f_copy.views.order_items.id.tags),4)
+        # self.f_copy.views.order_items.id.removeTag('x')
+        self.f_copy.views.order_items.id.tags - 'x'
+        self.assertEqual(len(self.f_copy.views.order_items.id.tags),3)
         #### End Modifications ###
         with open('lookml/tests/kitchenSink/kitchenSink2.model.lkml', 'w') as f:
             f.write(self.f_copy.__str__())
@@ -147,11 +150,27 @@ class testKitchenSinkLocal(unittest.TestCase):
         self.assertEqual(order_items2.id.sql.value,"${TABLE}.test_sql_change")
         #Check dimension Addition:
         self.assertIsInstance(order_items2.test_add_dimension, lookml.Dimension)
+
+        #Check view is still the same length + 1 (added one field in the prior test case)
+        self.assertEqual(len(order_items2),48)
+
         #Check searching dimensions by sql:
         self.assertEqual(1,len(list(order_items2.search('sql','\$\{shipped_raw\}'))))
 
         #Check renamed field has the correct number of direct children
         self.assertEqual(1, len(list(order_items2.time_in_transit.children())))
+
+        # print(*[str(f) for f in order_items2.dims()])
+        # print(order_items2.stringify(order_items2.dims_sorted()))
+        
+        # print(
+        #     lookml.stringify(
+        #         lookml.sortMe(order_items2.dims())
+        #     )
+        # )
+
+        # for dim in order_items2.dims_sorted():
+        #     print(dim)
 
 
 
@@ -160,41 +179,6 @@ class testKitchenSinkLocal(unittest.TestCase):
             remove KitchenSink2 if it exists (comment teardown out if having step6 difficulties and need to inspect kitchensink2)
         '''
         pass
-
-#     def test_view_loop(self):
-#         file1 = open('lookml/tests/thelook/test.lkml', 'r')
-#         file2 = open('lookml/tests/thelook/test.out.lkml', 'w')
-#         file3 = open('lookml/tests/thelook/test.out2.lkml', 'w')
-#         lkmljson = lkml.load(file1)
-#         file1.close()
-#         v = None
-#         if 'views' in lkmljson.keys():
-#                 for view in lkmljson['views']:
-#                     v = lookml.View(view)
-#         v + 'id'
-#         v + 'bar'
-#         v.id.sql = "COALESCE(${TABLE}.id,0)"
-#         v.id.addTag('Generated Code')
-#         v.foo.sql = "COALESCE(${TABLE}.id,0)"
-#         v.foo.addTag('Generated Code')
-#         v.bar.setMessage('this is bar')
-#         v.id.setMessage('Auto Generated -- Dont touch')
-#         file2.write(v.__str__())
-#         file2.close()
-#         file2 = open('lookml/tests/thelook/test.out.lkml', 'r')
-#         v2 = None
-#         lkmljson2 = lkml.load(file2)
-#         if 'views' in lkmljson2.keys():
-#                 for view in lkmljson2['views']:
-#                     v2 = lookml.View(view)
-#         v2 - 'id'
-#         v2.tst.addTag('foo')
-#         v2 + lookml.Measure('count_of_total')
-#         v2.count_of_total.setType('sum')
-#         v2.count_of_total.sql = '${id}'
-#         file2.close()
-#         file3.write(str(v2))
-#         file3.close()
         
 # TODO: write test so that it 
 #     def test_model_loop(self):
