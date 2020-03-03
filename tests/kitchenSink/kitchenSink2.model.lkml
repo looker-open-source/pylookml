@@ -46,11 +46,14 @@ access_grant: xyz {
     user_attribute: abc
     }
 
+
 explore: order_items {
     label: "(1) Orders, Items and Users"
-    view_name: order_items
+  view_name: order_items
+    
+
 join: order_facts {
-    required_access_grants: [
+  required_access_grants: [
     abc,
     ]
   type: left_outer
@@ -58,85 +61,69 @@ join: order_facts {
   relationship: many_to_one
   sql_on: ${order_facts.order_id} = ${order_items.order_id} ;;
 }
+  
 
-    
 join: inventory_items {
-    type: full_outer
+  type: full_outer
   relationship: one_to_one
   sql_on: ${inventory_items.id} = ${order_items.inventory_item_id} ;;
 }
+  
 
-    
 join: users {
-    type: left_outer
+  type: left_outer
   relationship: many_to_one
   sql_on: ${order_items.user_id} = ${users.id} ;;
 }
+  
 
-    
 join: user_order_facts {
-    view_label: "Users"
+  view_label: "Users"
   type: left_outer
   relationship: many_to_one
   sql_on: ${user_order_facts.user_id} = ${order_items.user_id} ;;
 }
+  
 
-    
 join: products {
-    type: left_outer
+  type: left_outer
   relationship: many_to_one
   sql_on: ${products.id} = ${inventory_items.product_id} ;;
 }
+  
 
-    
 join: repeat_purchase_facts {
-    relationship: many_to_one
+  relationship: many_to_one
   type: full_outer
   sql_on: ${order_items.order_id} = ${repeat_purchase_facts.order_id} ;;
 }
+  
 
-    
 join: distribution_centers {
-    type: left_outer
+  type: left_outer
   sql_on: ${distribution_centers.id} = ${inventory_items.product_distribution_center_id} ;;
   relationship: many_to_one
 }
-
 }
 
-view: order_items {
-sql_table_name: ecomm.order_items ;;
 
-set: detail {
-    fields: [
-    id,
-    order_id,
-    status,
-    created_date,
-    sale_price,
-    products.brand,
-    products.item_name,
-    users.portrait,
-    users.name,
-    users.email,
-    user_order_facts.phone_number,
-    ]
+
+view: order_items {
+    sql_table_name: ecomm.order_items ;;
+    
+
+parameter: foo {
+  allowed_value: {
+    label: "foobar"
+    value: "bar"
     }
-set: return_detail {
-    fields: [
-    id,
-    order_id,
-    status,
-    created_date,
-    returned_date,
-    sale_price,
-    products.brand,
-    products.item_name,
-    users.portrait,
-    users.name,
-    users.email,
-    ]
+ allowed_value: {
+    label: "x"
+    value: "x"
     }
+}
+    
+
 filter: cohort_by {
   type: string
   hidden: yes
@@ -147,33 +134,26 @@ filter: cohort_by {
     "Year",
     ]
 }
+  
 
-
-dimension_group: created {
-  type: time
-  timeframes: [
-    time,
-    hour,
-    date,
-    week,
-    month,
-    year,
-    hour_of_day,
-    day_of_week,
-    month_num,
-    month_name,
-    raw,
-    week_of_year,
+filter: metric {
+  type: string
+  hidden: yes
+  suggestions: [
+    "Order Count",
+    "Gross Margin",
+    "Total Sales",
+    "Unique Users",
     ]
-  sql: ${TABLE}.created_at ;;
 }
-
+    #DIMENSIONS#
+    
 
 dimension: days_since_sold {
   hidden: yes
   sql: datediff('day',${created_raw},CURRENT_DATE) ;;
 }
-
+  
 
 dimension: days_to_process {
   type: number
@@ -183,48 +163,14 @@ dimension: days_to_process {
         WHEN ${status} = 'Cancelled' THEN NULL
       END ;;
 }
-
+  
 
 dimension: days_until_next_order {
   type: number
   view_label: "Repeat Purchase Facts"
   sql: DATEDIFF('day',${created_raw},${repeat_purchase_facts.next_order_raw}) ;;
 }
-
-
-dimension_group: delivered {
-  type: time
-  timeframes: [
-    date,
-    week,
-    month,
-    raw,
-    ]
-  sql: ${TABLE}.delivered_at ;;
-}
-
-
-dimension_group: first_order_period {
-  type: time
-  timeframes: [
-    date,
-    ]
-  hidden: yes
-  sql: CAST(DATE_TRUNC({% parameter cohort_by %}, ${user_order_facts.first_order_date}) AS DATE) ;;
-}
-
-
-paramter: foo {
-  allowed_value: {
-    label: "foobar"
-    value: "bar"
-    }
- allowed_value: {
-    label: "x"
-    value: "x"
-    }
-}
-
+  
 
 dimension: gross_margin {
   type: number
@@ -232,7 +178,7 @@ dimension: gross_margin {
   sql: ${sale_price} - ${inventory_items.cost} ;;
   html: {{sale_price._value}} ;;
 }
-
+  
 
 dimension: id {
   primary_key: yes
@@ -333,27 +279,27 @@ form_param: {
     }
     }
 }
-
+  
 
 dimension: inventory_item_id {
   type: number
   hidden: yes
   sql: ${TABLE}.inventory_item_id ;;
 }
-
+  
 
 dimension: is_returned {
   type: yesno
   sql: ${returned_raw} IS NOT NULL ;;
 }
-
+  
 
 dimension: item_gross_margin_percentage {
   type: number
   value_format_name: percent_2
   sql: 1.0 * ${gross_margin}/NULLIF(${sale_price},0) ;;
 }
-
+  
 
 dimension: item_gross_margin_percentage_tier {
   type: tier
@@ -372,40 +318,28 @@ dimension: item_gross_margin_percentage_tier {
     ]
   style: interval
 }
-
-
-filter: metric {
-  type: string
-  hidden: yes
-  suggestions: [
-    "Order Count",
-    "Gross Margin",
-    "Total Sales",
-    "Unique Users",
-    ]
-}
-
+  
 
 dimension: months_since_signup {
   view_label: "Orders"
   type: number
   sql: DATEDIFF('month',${users.created_raw},${created_raw}) ;;
 }
-
+  
 
 dimension: periods_as_customer {
   type: number
   hidden: yes
   sql: DATEDIFF({% parameter cohort_by %}, ${user_order_facts.first_order_date}, ${user_order_facts.latest_order_date}) ;;
 }
-
+  
 
 dimension: repeat_orders_within_30d {
   type: yesno
   view_label: "Repeat Purchase Facts"
   sql: ${days_until_next_order} <= 30 ;;
 }
-
+  
 
 dimension: reporting_period {
   group_label: "Order Date"
@@ -420,7 +354,79 @@ dimension: reporting_period {
 
       END ;;
 }
+  
 
+dimension: sale_price {
+  type: number
+  value_format_name: usd
+  sql: ${TABLE}.sale_price ;;
+}
+  
+
+dimension: status {
+  sql: ${TABLE}.status ;;
+}
+  
+
+dimension: test_add_dimension {
+  type: string
+}
+  
+
+dimension: time_in_transit {
+  type: number
+  sql: datediff('day',${shipped_raw},${delivered_raw})*1.0 ;;
+}
+  
+
+dimension: user_id {
+  type: number
+  hidden: yes
+  sql: ${TABLE}.user_id ;;
+}
+    
+
+dimension_group: created {
+  type: time
+  timeframes: [
+    time,
+    hour,
+    date,
+    week,
+    month,
+    year,
+    hour_of_day,
+    day_of_week,
+    month_num,
+    month_name,
+    raw,
+    week_of_year,
+    ]
+  sql: ${TABLE}.created_at ;;
+}
+  
+
+dimension_group: delivered {
+  type: time
+  timeframes: [
+    date,
+    week,
+    month,
+    raw,
+    ]
+  sql: ${TABLE}.delivered_at ;;
+}
+  
+
+dimension_group: first_order_period {
+  type: time
+  timeframes: [
+    date,
+    ]
+  hidden: yes
+  sql: CAST(DATE_TRUNC({% parameter cohort_by %}, ${user_order_facts.first_order_date}) AS DATE) ;;
+}
+  
 
 dimension_group: returned {
   type: time
@@ -433,14 +439,7 @@ dimension_group: returned {
     ]
   sql: ${TABLE}.returned_at ;;
 }
-
-
-dimension: sale_price {
-  type: number
-  value_format_name: usd
-  sql: ${TABLE}.sale_price ;;
-}
-
+  
 
 dimension_group: shipped {
   type: time
@@ -452,30 +451,8 @@ dimension_group: shipped {
     ]
   sql: ${TABLE}.shipped_at ;;
 }
-
-
-dimension: status {
-  sql: ${TABLE}.status ;;
-}
-
-
-dimension: test_add_dimension {
-  type: string
-}
-
-
-dimension: time_in_transit {
-  type: number
-  sql: datediff('day',${shipped_raw},${delivered_raw})*1.0 ;;
-}
-
-
-dimension: user_id {
-  type: number
-  hidden: yes
-  sql: ${TABLE}.user_id ;;
-}
-
+    #MEASURES#
+    
 
 measure: 30_day_repeat_purchase_rate {
   description: "The percentage of customers who purchase again within 30 days"
@@ -490,14 +467,14 @@ measure: 30_day_repeat_purchase_rate {
     30_day_repeat_purchase_rate,
     ]
 }
-
+  
 
 measure: average_days_to_process {
   type: average
   value_format_name: decimal_2
   sql: ${days_to_process} ;;
 }
-
+  
 
 measure: average_gross_margin {
   type: average
@@ -507,7 +484,7 @@ measure: average_gross_margin {
     detail*,
     ]
 }
-
+  
 
 measure: average_sale_price {
   type: average
@@ -517,14 +494,14 @@ measure: average_sale_price {
     detail*,
     ]
 }
-
+  
 
 measure: average_shipping_time {
   type: average
   value_format_name: decimal_2
   sql: ${time_in_transit} ;;
 }
-
+  
 
 measure: average_spend_per_user {
   type: number
@@ -534,7 +511,7 @@ measure: average_spend_per_user {
     detail*,
     ]
 }
-
+  
 
 measure: cohort_values_0 {
   type: count_distinct
@@ -544,7 +521,7 @@ measure: cohort_values_0 {
         ELSE null
       END ;;
 }
-
+  
 
 measure: cohort_values_1 {
   type: sum
@@ -554,7 +531,7 @@ measure: cohort_values_1 {
         ELSE 0
       END ;;
 }
-
+  
 
 measure: count {
   type: count_distinct
@@ -563,7 +540,7 @@ measure: count {
     detail*,
     ]
 }
-
+  
 
 measure: count_last_28d {
   label: "Count Sold in Trailing 28 Days"
@@ -576,7 +553,7 @@ filters: {
     value: "28 days"
     }
 }
-
+  
 
 measure: count_with_repeat_purchase_within_30d {
   type: count_distinct
@@ -588,7 +565,7 @@ filters: {
     value: "Yes"
     }
 }
-
+  
 
 measure: first_purchase_count {
   view_label: "Orders"
@@ -638,7 +615,7 @@ link: {
       {{ hidden_first_purchase_visualization_link._link }}&vis_config={{ vis_config | encode_uri }}&sorts=users.average_lifetime_orders+descc&toggle=dat,pik,vis&limit=5000"
     }
 }
-
+  
 
 measure: hidden_first_purchase_visualization_link {
   hidden: yes
@@ -656,7 +633,7 @@ filters: {
     user_order_facts.average_lifetime_orders,
     ]
 }
-
+  
 
 measure: median_sale_price {
   type: median
@@ -666,7 +643,7 @@ measure: median_sale_price {
     detail*,
     ]
 }
-
+  
 
 measure: order_count {
   view_label: "Orders"
@@ -676,14 +653,14 @@ measure: order_count {
     ]
   sql: ${order_id} ;;
 }
-
+  
 
 measure: return_rate {
   type: number
   value_format_name: percent_2
   sql: 1.0 * ${returned_count} / nullif(${count},0) ;;
 }
-
+  
 
 measure: returned_count {
   type: count_distinct
@@ -697,7 +674,7 @@ filters: {
     detail*,
     ]
 }
-
+  
 
 measure: returned_total_sale_price {
   type: sum
@@ -709,7 +686,7 @@ filters: {
     value: "yes"
     }
 }
-
+  
 
 measure: total_gross_margin {
   type: sum
@@ -719,14 +696,14 @@ measure: total_gross_margin {
     detail*,
     ]
 }
-
+  
 
 measure: total_gross_margin_percentage {
   type: number
   value_format_name: percent_2
   sql: 1.0 * ${total_gross_margin}/ NULLIF(${total_sale_price},0) ;;
 }
-
+  
 
 measure: total_sale_price {
   type: sum
@@ -736,12 +713,43 @@ measure: total_sale_price {
     detail*,
     ]
 }
-
+  
 
 measure: values {
   type: number
   hidden: yes
   sql: ${cohort_values_0} + ${cohort_values_1} ;;
 }
-
+###SETS####
+    
+set: detail {
+    fields: [
+    id,
+    order_id,
+    status,
+    created_date,
+    sale_price,
+    products.brand,
+    products.item_name,
+    users.portrait,
+    users.name,
+    users.email,
+    user_order_facts.phone_number,
+    ]
+    }
+set: return_detail {
+    fields: [
+    id,
+    order_id,
+    status,
+    created_date,
+    returned_date,
+    sale_price,
+    products.brand,
+    products.item_name,
+    users.portrait,
+    users.name,
+    users.email,
+    ]
+    }
 }

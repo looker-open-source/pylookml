@@ -5,23 +5,21 @@ import github
 import base64
 import requests
 import time, copy
+from string import Template
 
 #Required for V1:
-# TODO: resolve only print once bug
 # TODO: finish project implementation -- Russ.... iterate over files etc. put a file back / new file etc
-# TODO: rationally break up the megafile...
 # TODO: use lkml.keys to define parameter / property specific behavior
 # TODO: allow to optionally hit the deploy url
 # TODO: bring in old code allowing shell git access
 # TODO: customize attibute access on JOIN class
-
-# TODO: write additional simple round trip testcase for all the object types:
-#        #* Explore, view, map layers ... 
 # TODO: get a better handle on __getattr__ infite loops and fix consitently
 # TODO: leverage inheretance on the dunder methods
-# TODO: trim superfluous classes: writable? rename it to lookmlbaseclass?
+#
 
 # ###### V2 ########### 
+# TODO: rationally break up the megafile...
+# TODO: rationalize operator overloading
 # get model metadata from API --> go where?
 # TODO: Constants
 # TODO: go back and add slots optimizations
@@ -78,6 +76,17 @@ def removeSpace(string):  # removing special character / [|]<>,.?}{+=~!$%^&*()-
 
 def lookCase(string):
     return removeSpace(snakeCase(string))
+
+def sortMe(func):
+    ''' returns all the fields sorted first by alpabetical dimensions/filters, then alphabetical measures '''
+    return sorted(list(func), key=lambda field: field.identifier)
+
+def stringify(collection,delim=conf.NEWLINEINDENT):
+    '''
+        calls string and concatinates each item in a collection
+    '''
+    # return delim + delim.join([str(item) for item in collection])
+    return  delim.join([str(item) for item in collection])
 
 def ws_buffer(item):
     def wrapper(*args,**kwargs):
@@ -260,7 +269,6 @@ class File:
 
 
     def __getattr__(self, key):
-        
         if key in self.__dict__.keys():
             return self.__dict__[key]
         elif key == 'views':
@@ -328,6 +336,7 @@ class base(object):
             self.setName(input)
         elif isinstance(input,dict):
             self.bind_lkml(input)
+        self.templateMap = {}
         
     def bind_lkml(self, lkmldict):
             self.setName(lkmldict.pop('name'))
@@ -367,6 +376,9 @@ class base(object):
         self.properties.__del__(name)
         return self
 
+    def getProperties(self):
+        return self.properties.getProperties()
+
     def hasProp(self, property):
         return property in self.properties.props()
 
@@ -383,7 +395,8 @@ class base(object):
         return len(self.schema)
 
     def __repr__(self):
-        return "%s (%r) name: %s id: %s" % (self.__class__, self.identifier, len(self), hex(id(self))) 
+        # return "%s (%r) name: %s id: %s" % (self.__class__, self.identifier, len(self), hex(id(self))) 
+        return "%s  name: %s id: %s" % (self.__class__, self.identifier, hex(id(self))) 
 
     def __len__(self):
         return len([f for f in self.getProperties()])
@@ -398,17 +411,44 @@ class base(object):
         except:
             raise StopIteration
 
+    def __str__(self):
+        self.templateMap = {
+             'message': self.message
+            ,'identifier':self.identifier
+            ,'props': stringify([str(p) for p in self.getProperties()])
+            ,'token': self.token
+        }
+        return Template(getattr(conf.TEMPLATES,self.token)).substitute(**self.templateMap)
+
+
 class View(base):
     def __init__(self, input):
-        self.fields = {}
+        self._fields = {}
         self.primaryKey = ''
         self.message = ''
         self.children = {}
         self.parent = None
         super(View, self).__init__(input)
+        self.token = 'view'
+
+
+    def __str__(self):
+        self.templateMap = {
+             'message':self.message
+            ,'token':self.token 
+            ,'identifier':self.identifier
+            ,'props': stringify([str(p) for p in self.getProperties() if p.name != "sets"]) 
+            ,'parameters':stringify(sortMe(self.parameters()))
+            ,'filters': stringify(sortMe(self.filters()))
+            ,'dimensions': stringify(sortMe(self.dims()))
+            ,'dimensionGroups': stringify(sortMe(self.dimensionGroups()))
+            ,'measures': stringify(sortMe(self.measures()))
+            ,'sets': stringify([str(p) for p in self.getProperties() if p.name == "sets"]) 
+            ,'children': stringify(self.children.values()) if self.children else ''
+        } 
+        return Template(getattr(conf.TEMPLATES,self.token)).substitute(**self.templateMap)
 
     def bind_lkml(self,jsonDict):
-        
         t = 'measures'
         if t in jsonDict.keys():
             for field in jsonDict[t]:
@@ -456,21 +496,16 @@ class View(base):
 
         super().bind_lkml(jsonDict)
 
-    def __str__(self):
-        return splice(
-                        splice('#',self.message,conf.NEWLINE) if self.message else '', 
-                        'view: ', self.identifier, ' {', conf.NEWLINE,
-                        conf.NEWLINE.join([str(p) for p in self.properties.getProperties()]), 
-                        conf.NEWLINE.join([str(field) for field in self.getFieldsSorted()]), 
-                        splice(conf.NEWLINE,'}',conf.NEWLINE),
-                        *[str(child) for child in self.children.values()] if self.children else ''
-                        )
+
+    def getFieldsSorted(self):
+        ''' returns all the fields sorted first by alpabetical dimensions/filters, then alphabetical measures '''
+        return sorted(self._fields.values(), key=lambda field: ''.join([str(isinstance(field, Measure)), field.identifier]))
 
     def __repr__(self):
         return "%s (%r) fields: %s id: %s" % (self.__class__, self.identifier, len(self), hex(id(self))) 
 
     def __len__(self):
-        return len([f for f in self.getFields()])
+        return len([f for f in self.fields()])
 
     def __add__(self,other):
         if isinstance(other, Field):
@@ -498,21 +533,21 @@ class View(base):
 
     def __invert__(self):
         ''' hides all dimensions (not measures) '''
-        for dim in self.getDimensions():
+        for dim in self.dims():
             dim.hide()
-        for dim in self.getDimensionGroups():
+        for dim in self.dimensionGroups():
             dim.hide()
-        for dim in self.getParameters():
+        for dim in self.parameters():
             dim.hide()
-        for dim in self.getFilters():
+        for dim in self.filters():
             dim.hide()
         return self
 
     def __contains__(self,item):
-        return item in self.fields.keys()
+        return item in self._fields.keys()
 
     def __getitem__(self,identifier):
-        return self.getField(identifier)
+        return self.field(identifier)
 
     def __getattr__(self, key):
         if key in self.__dict__.keys():
@@ -524,7 +559,7 @@ class View(base):
         elif key == '__ref__':
             return splice('${',self.identifier,'}')
         else:
-            return self.getField(key)
+            return self.field(key)
 
     def __setattr__(self, name, value):
         if name == 'label':
@@ -539,61 +574,27 @@ class View(base):
         else:
             object.__setattr__(self, name, value)
 
-    def source(self):
-        if self.tableSource == None:
-            return ''
-        elif self.tableSource == False:
-            return str(self.derived_table)
-        else:
-            return str(self.sql_table_name)
-
-    def setSqlTableName(self,sql_table_name='',schema=''):
-        ''' Set the sql table name, returns self'''
-        if schema:
-            tmp = splice(
-                    conf.DB_FIELD_DELIMITER_START, schema , conf.DB_FIELD_DELIMITER_END,'.', 
-                    conf.DB_FIELD_DELIMITER_START, sql_table_name ,conf.DB_FIELD_DELIMITER_END
-                    )
-        else:
-            tmp = splice(
-                    conf.DB_FIELD_DELIMITER_START, sql_table_name ,conf.DB_FIELD_DELIMITER_END
-                    )
-        self.sql_table_name = Property('sql_table_name',tmp)
-        self.tableSource = True
-        self.derived_table = None
-        return self
-
-    def setMessage(self, message):
-        '''Sets a Commented Message above the view'''
-        self.message = ''.join(['#', message])
-        return self
-
-    def setLabel(self, label):
-        ''' Sets the view label property'''
-        self.properties.addProperty('label',label)
-        return self
-
     def setExtensionRequired(self):
         ''' Sets the view to be "extension: required" '''
         self.properties.addProperty('extension','required')
         return self    
 
     def getFieldsByTag(self,tag):
-        for field in self.getFields():
+        for field in self.fields():
             if tag in field.tags:
                 yield field
 
-    def getFields(self):
+    def fields(self):
         '''Returns all the fields as a generator'''
-        for field, literal in self.fields.items():
-            ## Does this yeild only return the first value of this loop?
+        for field, literal in self._fields.items():
+            ## Does this yeild only return the first instance it is looped?
             yield literal
 
     def fieldNames(self):
-        return list(self.fields.keys())
+        return list(self._fields.keys())
 
     def getFieldsByType(self, t):
-        return filter(lambda field: str(field.type) == 'type: '+ t, list(self.fields.values()))
+        return filter(lambda field: str(field.type) == 'type: '+ t, list(self._fields.values()))
 
     def sumAllNumDimensions(self):
         '''
@@ -608,35 +609,29 @@ class View(base):
                     ,'sql':field.__refs__
                 })
 
-    def getFieldsSorted(self):
-        ''' returns all the fields sorted first by alpabetical dimensions/filters, then alphabetical measures '''
-        return sorted(self.fields.values(), key=lambda field: ''.join([str(isinstance(field, Measure)), field.identifier]))
-
-    def getFieldNames(self):
-        ''' Returns field names/identifiers as a generator yielding strings '''
-        for field, literal in self.fields.items():
-            yield field
-
-    def getField(self, identifier):
-        ''' Returns a specific field based on identifier/string lookup'''
-        try:
-            return self.fields[identifier]
-        except KeyError:
-            raise KeyError
+    def field(self, f):
+        ''' retrieve a field, argument can be the name or a field'''
+        if isinstance(f,str):
+            try:
+                return self._fields[f]
+            except KeyError:
+                raise KeyError
+        elif isinstance(f,Field):
+            return self._fields[f.identifier]
 
     def search(self, prop, pattern):
         ''' pass a regex expression and will return the fields whose sql match '''
         if isinstance(pattern,list):
             pattern = '('+'|'.join(pattern)+')'
         searchString = r''.join([r'.*',pattern,r'.*'])
-        for field in self.getFields():
+        for field in self.fields():
             if re.match(searchString,str(field.getProperty(prop))):
                 yield field
 
     def addField(self, field):
         '''Takes a field object as an argument and adds it to the view, if the field is a dimension and primary key it will be set as the view primary key'''
         # uses the 'setView' method on field which returns self so that field can fully qualify itself and so that field can be a member of view
-        self.fields.update({field.identifier: field.setView(self)})
+        self._fields.update({field.identifier: field.setView(self)})
         # If a primary key is added it will overwrite the existing primary key....
         if isinstance(field, Dimension):
             if field.isPrimaryKey():
@@ -652,13 +647,13 @@ class View(base):
         if isinstance(field,Field):
             if isinstance(field,Dimension):
                 pk(field)
-            pk(self.getField(field.identifier))
-            return self.fields.pop(field.identifier, None)
+            pk(self.field(field.identifier))
+            return self._fields.pop(field.identifier, None)
         elif isinstance(field,str):
-            dimToDel = self.getField(field)
+            dimToDel = self.field(field)
             if isinstance(dimToDel,Dimension):
                 pk(dimToDel)
-            return self.fields.pop(field, None)
+            return self._fields.pop(field, None)
         else:
             raise Exception('Not a string or Field instance provided')
 
@@ -676,7 +671,7 @@ class View(base):
                 f.setPrimaryKey()
             self.primaryKey = f.identifier
         else:
-            tmpField = self.getField(f)
+            tmpField = self.field(f)
             if isinstance(tmpField, Dimension):
                 self.primaryKey = tmpField.identifier
                 if not callFromChild:
@@ -687,36 +682,36 @@ class View(base):
     def getPrimaryKey(self):
         '''returns the primary key'''
         if self.primaryKey:
-            return self.getField(self.primaryKey)
+            return self.field(self.primaryKey)
 
     def unSetPrimaryKey(self):
         '''Unsets the view primary key returns self'''
-        # pk = self.getField(self.primaryKey)
+        # pk = self.field(self.primaryKey)
         pk = self.getPrimaryKey()
         if isinstance(pk, Dimension):
             pk.unSetPrimaryKey()
         self.primaryKey = ''
         return self
 
-    def getDimensions(self):
+    def dims(self):
         '''returns iterable of Dimension Fields'''
-        return filter(lambda dim: isinstance(dim, Dimension), self.fields.values())
+        return filter(lambda dim: isinstance(dim, Dimension), self._fields.values())
 
-    def getDimensionGroups(self):
+    def dimensionGroups(self):
         '''returns iterable of DimensionGroup Fields'''
-        return filter(lambda dim: isinstance(dim, DimensionGroup), self.fields.values())
+        return filter(lambda dim: isinstance(dim, DimensionGroup), self._fields.values())
 
-    def getMeasures(self):
+    def measures(self):
         '''returns iterable of Measure Fields'''
-        return filter(lambda meas: isinstance(meas, Measure), self.fields.values())
+        return filter(lambda meas: isinstance(meas, Measure), self._fields.values())
 
-    def getFilters(self):
+    def filters(self):
         '''returns iterable of Filter Fields'''
-        return filter(lambda fil: isinstance(fil, Filter), self.fields.values())
+        return filter(lambda fil: isinstance(fil, Filter), self._fields.values())
 
-    def getParameters(self):
+    def parameters(self):
         '''returns iterable of Paramter Fields'''
-        return filter(lambda par: isinstance(par, Parameter), self.fields.values())
+        return filter(lambda par: isinstance(par, Parameter), self._fields.values())
 
     def addDimension(self,dbColumn, type='string'):
         ''' '''
@@ -750,7 +745,7 @@ class View(base):
         if isinstance(f, Field):
             field = f
         else:
-            field = self.getField(f)
+            field = self.field(f)
         measure = Measure(
             identifier=''.join(['count_distinct_', field.identifier]), schema={'sql': field.__refs__}
         )
@@ -763,7 +758,7 @@ class View(base):
         if isinstance(f, Field):
             field = f
         else:
-            field = self.getField(f)
+            field = self.field(f)
         measure = Measure(
             identifier=''.join(['total_', field.identifier]), schema={'sql': field.__refs__}
         )
@@ -776,7 +771,7 @@ class View(base):
         if isinstance(f, Field):
             field = f
         else:
-            field = self.getField(f)
+            field = self.field(f)
         measure = Measure(
             identifier=''.join(['average_', field.identifier]), schema={'sql': field.__refs__}
         )
@@ -877,7 +872,6 @@ class ndt(View):
 
 class Join(base):
     ''' Instantiates a LookML join object... '''
-    __slots__ = ['properties', 'identifier','_from','to']
 
     def __init__(self, input):
         self.properties = Properties({})
@@ -885,17 +879,7 @@ class Join(base):
         self._from = ''
         self.to = ''
         super(Join,self).__init__(input)
-        # if len(args) >= 1:
-        #     if isinstance(args[0],dict):
-        #         self.bind_lkml(args[0])
-
-
-    def __str__(self):
-        return splice(
-                         conf.NEWLINE,'join: ', self.identifier, ' {',conf.NEWLINE,'    ',
-                         conf.NEWLINEINDENT.join([str(p) for p in self.properties.getProperties()]),
-                         conf.NEWLINE,'}',conf.NEWLINE
-                          )
+        self.token = 'join'
 
     def setFrom(self,f):
         self._from = f
@@ -935,6 +919,8 @@ class Explore(base):
         self.joins = {}
         self.base_view = ''
         super(Explore, self).__init__(input)
+        self.token = 'explore'
+
             
     def bind_lkml(self,jsonDict):
         self.setName(jsonDict.pop('name'))
@@ -949,12 +935,14 @@ class Explore(base):
         return len(self.joins)
 
     def __str__(self):
-        return splice(
-                    '\nexplore: ', self.identifier, ' {\n    ', 
-                    '\n    '.join([str(p) for p in self.properties.getProperties()]), 
-                    '\n    '.join([str(join) for join in self.getJoins()]),
-                     '\n}\n'
-                     )
+        self.templateMap = {
+             'message': self.message
+            ,'identifier':self.identifier
+            ,'props': stringify([str(p) for p in self.getProperties()])
+            ,'joins': stringify([str(j) for j in self.getJoins()])
+            ,'token': self.token
+        }
+        return Template(getattr(conf.TEMPLATES,self.token)).substitute(**self.templateMap)
 
     def __add__(self,other):
         if isinstance(other,View) or isinstance(other,Join):
@@ -962,6 +950,7 @@ class Explore(base):
         else:
             raise TypeError 
         return self
+    
     def __radd__(self,other):
         return self.__add__(other)
 
@@ -1062,6 +1051,12 @@ class Property(object):
             pass
         elif self.properties.multiValueSpecialHandling == 'links':
             pass
+        else:
+            pass
+
+    def __sub__(self,other):
+        if isinstance(self.value, Properties) and self.value.multiValueSpecialHandling in ('tags','suggestions'):
+            self.value.schema.remove(other)
         else:
             pass
 
@@ -1324,6 +1319,9 @@ class Field(base):
     def __init__(self, input):
         self.db_column = ''
         super(Field, self).__init__(input)
+        self.templateMap = {
+
+        }
 
     def children(self):
         if self.view:
@@ -1346,12 +1344,14 @@ class Field(base):
         self.view + self
         return self
 
-    def __str__(self):
-        return splice(
-                        self.identifier, splice(' {',conf.NEWLINEINDENT), 
-                            conf.NEWLINEINDENT.join([str(n) for n in self.properties.getProperties()]),
-                            splice(conf.NEWLINE,'}')
-                         )
+    # def __str__(self):
+    #     self.templateMap = {
+    #          'message': self.message
+    #         ,'identifier':self.identifier
+    #         ,'props': stringify([str(p) for p in self.getProperties()])
+    #     }
+    #     return Template(getattr(conf.TEMPLATES,self.token)).substitute(self.templateMap)
+ 
 
     def __getattr__(self, key):
 
@@ -1420,7 +1420,6 @@ class Field(base):
             self.tags.value.schema.remove(tag)
         else:
             pass
-            #TODO: raise an error
 
     def setView(self, view):
         '''
@@ -1521,13 +1520,6 @@ class Dimension(Field):
         })
         return self
 
-    @ws_buffer
-    def __str__(self):
-        return splice( self.getMessage(),
-                        self.token,': ', 
-                        super(Dimension, self).__str__()
-                        )
-
 class DimensionGroup(Field):
     def __init__(self, input):
         super(DimensionGroup, self).__init__(input)
@@ -1547,46 +1539,18 @@ class DimensionGroup(Field):
             self.identifier = lookCase(self.db_column)
         return self
     
-    @ws_buffer
-    def __str__(self):
-        return splice(self.getMessage(),
-                        self.token, ': ', 
-                        super(DimensionGroup, self).__str__()
-                        )
-
 class Measure(Field):
     def __init__(self, input):
         super(Measure, self).__init__(input)
         self.token = 'measure'
-
-
-    @ws_buffer
-    def __str__(self):
-        return splice(self.getMessage(),
-                        self.token, ': ', 
-                        super(Measure, self).__str__()
-                        )
 
 class Filter(Field):
     def __init__(self, input):
         super(Filter, self).__init__(input)
         self.token = 'filter'
 
-    @ws_buffer
-    def __str__(self):
-        return splice(self.getMessage(),
-                        self.token, ': ', 
-                        super(Filter, self).__str__()
-                        )
-
 class Parameter(Field):
     def __init__(self, input):
         super(Parameter, self).__init__(input)
-        self.token = 'paramter'
+        self.token = 'parameter'
     
-    @ws_buffer
-    def __str__(self):
-        return splice(self.getMessage(),
-                        self.token, ': ', 
-                        super(Parameter, self).__str__()
-                        )
