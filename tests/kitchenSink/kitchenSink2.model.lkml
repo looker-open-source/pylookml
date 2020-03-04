@@ -146,7 +146,6 @@ filter: metric {
     "Unique Users",
     ]
 }
-    #DIMENSIONS#
     
 
 dimension: days_since_sold {
@@ -451,7 +450,6 @@ dimension_group: shipped {
     ]
   sql: ${TABLE}.shipped_at ;;
 }
-    #MEASURES#
     
 
 measure: 30_day_repeat_purchase_rate {
@@ -720,7 +718,6 @@ measure: values {
   hidden: yes
   sql: ${cohort_values_0} + ${cohort_values_1} ;;
 }
-###SETS####
     
 set: detail {
     fields: [

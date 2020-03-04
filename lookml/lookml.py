@@ -7,6 +7,9 @@ import requests
 import time, copy
 from string import Template
 
+
+
+
 #Required for V1:
 # TODO: finish project implementation -- Russ.... iterate over files etc. put a file back / new file etc
 # TODO: use lkml.keys to define parameter / property specific behavior
@@ -101,7 +104,16 @@ class Project:
     '''
         A LookML Project at a GitHub location or location on the filesytem
     '''
-    def __init__(self,repo='',access_token='', branch="master", commitMessage="", rootDir=""):
+    def __init__(
+                    self,
+                    repo='',
+                    access_token='', 
+                    branch="master", 
+                    commitMessage="", 
+                    rootDir="", 
+                    looker_host="",
+                    looker_project_name=""
+                ):
         ''' 
             Can be constructed with a github access token and repository name
         '''
@@ -111,40 +123,89 @@ class Project:
         self.branch = branch
         if not commitMessage:
             self.commitMessage = "PyLookML Auto Updated: " + time.strftime('%h %d %Y @ %I:%M%p %Z')
-        self.looker_project_name = ""
+        
+        self.looker_host = looker_host
+        if self.looker_host and not looker_host.startswith('https://'):
+            self.looker_host = 'https://' + looker_host 
+            if not self.looker_host.endswith('/'):
+                self.looker_host = self.looker_host + '/'
+    
+        self.looker_project_name = looker_project_name
         self.deploy_url = ""
+        self.constructDeployUrl()
+
+    def constructDeployUrl(self):
+        if self.looker_project_name and self.looker_host:
+            self.deploy_url = self.looker_host + 'webhooks/projects/' + self.looker_project_name + '/deploy'
+        # https://prod.host.com/webhooks/projects/projectname/deploy
+        #https://prod.host.com/webhooks/projects/projectname/deploy 
+
+
+    def deploy(self):
+        if self.deploy_url:
+            requests.get(self.deploy_url)
 
     def files(self,path=''):
         ''' Iteratively returns all the files at a path in the project '''
         for f in  self.repo.get_contents(path):
             yield File(f)
 
-    def getFile(self,path):
+    def file(self,path):
         '''  
             returns a single lookml File object 
         '''
         return File(self.repo.get_contents(path))
 
-    def updateFile(self,f):
+    def update(self,f):
         '''  
             takes a File object and attempts to re-upload it to the project. 
         '''
         self.repo.update_file(f.path, self.commitMessage, str(f), sha=f.sha, branch=self.branch)
         return self
 
-    def newFile(self,f):
+    def add(self,f):
         '''
             creates a new file in the project and uploads it to github
         '''
         self.repo.create_file(f.path, self.commitMessage, str(f), branch=self.branch)
         return self
 
-    def deleteFile(self,f):
+    def put(self,f):
+        ''' add or update '''
+        # print(f.path)
+        if self.exists(f):
+            if f.sha:
+                self.update(f)
+            else:
+                f2 = self.file(f.path)
+                f.setSha(f2.sha)
+                self.update(f)
+        else:
+            self.add(f)
+        
+
+    def exists(self,f):
+        '''
+            returns boolean if the file exists on 
+        '''
+        def checkgithub(f0):
+            try:
+                self.repo.get_contents(f0)
+                return True
+            except github.GithubException as e:
+                if e._GithubException__status == 404:
+                    return False
+        if isinstance(f,File):
+            return checkgithub(f.path)
+        elif isinstance(f,str):
+            return checkgithub(f)
+
+    def delete(self,f):
         '''
             deletes a file from a repository at a specific path
         '''
         if isinstance(f,str):
-            f = self.getgetFile(f)
+            f = self.getFile(f)
         self.repo.delete_file(f.path, self.commitMessage, sha=f.sha, branch=self.branch)
         return self
 
@@ -216,34 +277,65 @@ class File:
             except:
                 raise StopIteration
     def __init__(self, f):
-
-        if isinstance(f, github.ContentFile.ContentFile):
-            self.f_type = "github_api"
-
-        elif os.path.isfile(f):
-            self.f_type = "path"
-
-        if self.f_type == "github_api":
+        def githubBootstrap():
+            #custom initialization for github_api type
             #Set Basic Attributes
             self.name = f._rawData['name']
             self.sha = f._rawData['sha']
             self.base_name = self.name.replace(".model.lkml", "").replace(".explore.lkml", "").replace(".view.lkml", "")
             self.path = f._rawData['path']
-
             #Parse Step: Github content is returned base64 encoded
             data = base64.b64decode(f.content).decode('ascii')
             self.json_data = lkml.load(data)
 
-        elif self.f_type == "path":
+        def filepathBootstrap():
+            #custom initialization for path type
             #Set Basic Attributes
             self.name = os.path.basename(f)
             self.base_name = self.name.replace(".model.lkml", "").replace(".explore.lkml", "").replace(".view.lkml", "")
             self.path = os.path.relpath(f)
-
+            self.sha = ''
             #Parse Step: file is provided 
             with open(self.path, 'r') as tmp:
                 self.json_data = lkml.load(tmp)
 
+        def viewBootstrap():
+            #custom initialization for path type
+            #Set Basic Attributes
+            self.name = f.name + '.view.lkml'
+            self.base_name = f.name
+            self.path = self.name
+            self.sha = ''
+            #load as json_Data for compatibility with the rest of the class
+            #TODO: revist if this is needed to convert back and forth or if another more direct method would be preferable
+            self.json_data = lkml.load(str(f))
+
+        def exploreBootstrap():
+            #custom initialization for path type
+            #Set Basic Attributes
+            self.name = f.name + '.explore.lkml'
+            self.base_name = f.name
+            self.path = self.name
+            self.sha = ''
+            #load as json_Data for compatibility with the rest of the class
+            #TODO: revist if this is needed to convert back and forth or if another more direct method would be preferable
+            self.json_data = lkml.load(str(f))
+
+        #Step 1 -- Data Type introspection
+        if isinstance(f, github.ContentFile.ContentFile):
+            self.f_type = "github_api"
+            githubBootstrap()
+        elif isinstance(f, View):
+            self.f_type = "view"
+            viewBootstrap()
+        elif isinstance(f, Explore):
+            self.f_type = "explore"
+            exploreBootstrap()
+        elif os.path.isfile(f):
+            self.f_type = "path"
+            filepathBootstrap()
+
+        #Step 2 -- set a lookml "file type" mostly only used for path info 
         if self.name.endswith(".model.lkml"):
             self.filetype = 'model'
         elif self.name.endswith(".view.lkml"):
@@ -289,6 +381,10 @@ class File:
             ,conf.NEWLINE
             ,conf.NEWLINE.join([ str(v) for v in self.views]) if self.vws else ''
         )
+
+    def setSha(self,sha):
+        self.sha = sha
+        return self
 
     def addView(self,v):
         self.vws.add(v)
@@ -782,10 +878,10 @@ class View(base):
     def addComparisonPeriod(self,field_to_measure,date, measure_type='count_distinct'):
         self.addFields(
                 [
-                    Filter().setName('reporting_period').setProperty('type','date')
-                   ,Filter().setName('comparison_period').setProperty('type','date')
-                   ,Measure().setName('reporting_period_measure')
-                   ,Measure().setName('comparison_period_measure')
+                    Filter('reporting_period').setName('reporting_period').setProperty('type','date')
+                   ,Filter('comparison_period').setName('comparison_period').setProperty('type','date')
+                   ,Measure('reporting_period_measure').setName('reporting_period_measure')
+                   ,Measure('comparison_period_measure').setName('comparison_period_measure')
                    ]
                 )
         assert isinstance(field_to_measure,Dimension)
@@ -1124,7 +1220,7 @@ class Property(object):
         # elif self.name.endswith('url') or self.name.endswith('label') or self.name.endswith('format') or self.name.endswith('persist_for'):
         #     return splice(self.name, ': "', str(self.value), '"')
 
-        elif self.name == 'extends':
+        elif self.name in ('extends', 'alias'):
             return splice(self.name, ': [', str(self.value), ']')
         elif self.name.startswith('explore_source'):
             return splice(self.name, str(self.value))
