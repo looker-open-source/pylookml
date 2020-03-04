@@ -38,12 +38,9 @@ view: $identifier {
     $props
     $parameters
     $filters
-    #DIMENSIONS#
     $dimensions
     $dimensionGroups
-    #MEASURES#
     $measures
-###SETS####
     $sets
 }
 $children"""
