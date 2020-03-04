@@ -830,9 +830,8 @@ class View(base):
 
     def addCount(self):
         '''Add a count measure to the view, returns self'''
-        measure = Measure(
-            identifier='count', schema={'type': 'count'}
-        )
+        measure = Measure( 'count' )
+        measure.setType('count')
         self.addField(measure)
         return self
 
@@ -842,9 +841,8 @@ class View(base):
             field = f
         else:
             field = self.field(f)
-        measure = Measure(
-            identifier=''.join(['count_distinct_', field.identifier]), schema={'sql': field.__refs__}
-        )
+        measure = Measure( 'count_distinct_' + field.identifier)
+        measure.sql = field.__refs__
         measure.setType('count_distinct')
         self.addField(measure)
         return self
@@ -855,9 +853,7 @@ class View(base):
             field = f
         else:
             field = self.field(f)
-        measure = Measure(
-            identifier=''.join(['total_', field.identifier]), schema={'sql': field.__refs__}
-        )
+        measure = Measure( ''.join(['total_', field.identifier]))
         measure.setType('sum')
         self.addField(measure)
         return self
