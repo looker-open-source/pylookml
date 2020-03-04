@@ -8,23 +8,20 @@ import time, copy
 from string import Template
 
 
-
-
 #Required for V1:
-# TODO: finish project implementation -- Russ.... iterate over files etc. put a file back / new file etc
-# TODO: use lkml.keys to define parameter / property specific behavior
-# TODO: allow to optionally hit the deploy url
-# TODO: bring in old code allowing shell git access
-# TODO: customize attibute access on JOIN class
-# TODO: get a better handle on __getattr__ infite loops and fix consitently
-# TODO: leverage inheretance on the dunder methods
-#
+# TODO: Whitespace issues 
+# TODO: bring in old code allowing shell git access 
+
 
 # ###### V2 ########### 
 # TODO: rationally break up the megafile...
 # TODO: rationalize operator overloading
 # get model metadata from API --> go where?
 # TODO: Constants
+# TODO: use lkml.keys to define parameter / property specific behavior
+# TODO: customize attibute access on JOIN class
+# TODO: get a better handle on __getattr__ infite loops and fix consitently
+# TODO: leverage inheretance on the dunder methods
 # TODO: go back and add slots optimizations
 # TODO: track all ancestors, all decendants (grandchildren) in a file
 # TODO: equality operator for object comparison | complete some of the dundermethod operator overloading schemes
@@ -84,12 +81,12 @@ def sortMe(func):
     ''' returns all the fields sorted first by alpabetical dimensions/filters, then alphabetical measures '''
     return sorted(list(func), key=lambda field: field.identifier)
 
-def stringify(collection,delim=conf.NEWLINEINDENT):
+def stringify(collection,delim=conf.NEWLINEINDENT, prefix=True):
     '''
         calls string and concatinates each item in a collection
     '''
     # return delim + delim.join([str(item) for item in collection])
-    return  delim.join([str(item) for item in collection])
+    return  (delim if prefix else '') + delim.join([str(item) for item in collection])
 
 def ws_buffer(item):
     def wrapper(*args,**kwargs):
@@ -135,11 +132,12 @@ class Project:
         self.constructDeployUrl()
 
     def constructDeployUrl(self):
+        '''
+            Constructs a github deploy URL according to this pattern:
+            https://prod.host.com/webhooks/projects/projectname/deploy
+        '''
         if self.looker_project_name and self.looker_host:
             self.deploy_url = self.looker_host + 'webhooks/projects/' + self.looker_project_name + '/deploy'
-        # https://prod.host.com/webhooks/projects/projectname/deploy
-        #https://prod.host.com/webhooks/projects/projectname/deploy 
-
 
     def deploy(self):
         if self.deploy_url:
@@ -428,6 +426,7 @@ class base(object):
         self.properties = Properties({})
         self.message = ''
         self.token = ''
+        self.indentLevel = 1
         if isinstance(input,str):
             self.setName(input)
         elif isinstance(input,dict):
@@ -449,7 +448,7 @@ class base(object):
         return self.setProperty('label', label)
 
     def setMessage(self,message):
-        self.message = message
+        self.message = message 
         return self
 
     def getMessage(self):
@@ -509,9 +508,9 @@ class base(object):
 
     def __str__(self):
         self.templateMap = {
-             'message': self.message
-            ,'identifier':self.identifier
-            ,'props': stringify([str(p) for p in self.getProperties()])
+             'message': self.getMessage()
+            ,'identifier': self.identifier
+            ,'props': stringify([ conf.INDENT + str(p) for p in self.getProperties()])
             ,'token': self.token
         }
         return Template(getattr(conf.TEMPLATES,self.token)).substitute(**self.templateMap)
@@ -530,7 +529,7 @@ class View(base):
 
     def __str__(self):
         self.templateMap = {
-             'message':self.message
+             'message':self.getMessage()
             ,'token':self.token 
             ,'identifier':self.identifier
             ,'props': stringify([str(p) for p in self.getProperties() if p.name != "sets"]) 
@@ -1032,7 +1031,7 @@ class Explore(base):
 
     def __str__(self):
         self.templateMap = {
-             'message': self.message
+             'message': self.getMessage()
             ,'identifier':self.identifier
             ,'props': stringify([str(p) for p in self.getProperties()])
             ,'joins': stringify([str(j) for j in self.getJoins()])
@@ -1273,18 +1272,32 @@ class Properties(object):
             
             return splice( singular , singular.join([str(p) for p in self.getProperties()]))
 
+        def render(template,delim=' '):
+            self.templateMap = {
+                'data': stringify([str(p) for p in self.getProperties()], delim=delim, prefix=False)
+            }
+            return Template(getattr(conf.TEMPLATES,template)).substitute(self.templateMap)
+
+            # splice(
+            #                 '{\n    ' , 
+            #                 '\n    '.join([str(p) for p in self.getProperties()]) ,
+            #                 '\n    }' 
+            #                 )
+
         if isinstance(self.schema, dict):
-            return splice(
-                            '{\n    ' , 
-                            '\n    '.join([str(p) for p in self.getProperties()]) ,
-                            '\n    }' 
-                            )
+            return render('array', delim=conf.NEWLINEINDENT)
+            # return splice(
+            #                 '{\n    ' , 
+            #                 '\n    '.join([str(p) for p in self.getProperties()]) ,
+            #                 '\n    }' 
+            #                 )
         elif isinstance(self.schema, list) and not self.multiValueSpecialHandling:
-            return splice(
-                            '[\n    ' , 
-                            '\n    '.join([str(p) for p in self.getProperties()]) ,
-                            '\n    ]' 
-                            )
+            return render('_list', delim=' ')
+            # return splice(
+            #                 '[\n    ' , 
+            #                 '\n    '.join([str(p) for p in self.getProperties()]) ,
+            #                 '\n    ]' 
+            #                 )
         elif isinstance(self.schema, list) and self.multiValueSpecialHandling in ('tags','suggestions'):
             return splice(
                             '[\n    ' , 
