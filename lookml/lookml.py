@@ -853,9 +853,7 @@ class View(base):
             field = f
         else:
             field = self.field(f)
-        measure = Measure(
-            identifier=''.join(['total_', field.identifier]), schema={'sql': field.__refs__}
-        )
+        measure = Measure( ''.join(['total_', field.identifier]))
         measure.setType('sum')
         self.addField(measure)
         return self
