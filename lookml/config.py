@@ -22,10 +22,8 @@ FIELD_LEVEL_PROPS = ['action', 'allow_fill', 'alpha_sort', 'bypass_suggest_restr
 # Template(getattr(conf.TEMPLATES,self.token))
 class TEMPLATES:
     default =  """
-$message
-$token: $identifier {
-  $props
-}"""
+$message  $token: $identifier { $props 
+  }"""
     join = default
     dimension = default
     measure = default
@@ -35,20 +33,20 @@ $token: $identifier {
     view = """
 $message
 view: $identifier {
-    $props
-    $parameters
-    $filters
-    $dimensions
-    $dimensionGroups
-    $measures
-    $sets
+$props $parameters $filters $dimensions $dimensionGroups $measures $sets
 }
 $children"""
     explore = """
 $message
 $token: $identifier {
-    $props
-    $joins
+$props
+$joins
 }
 """
+    array = """{
+  $data
+  }"""
+    _list = """[
+  $data
+  ]"""
 #TODO: change these to configurable parameters via either argparse / config file / both 

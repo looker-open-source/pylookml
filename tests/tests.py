@@ -185,37 +185,48 @@ class testKitchenSinkLocal(unittest.TestCase):
 
 
 
-    def tearDown(self):
-        '''
-            remove KitchenSink2 if it exists (comment teardown out if having step6 difficulties and need to inspect kitchensink2)
-        '''
-        pass
+    # def tearDown(self):
+    #     '''
+    #         remove KitchenSink2 if it exists (comment teardown out if having step6 difficulties and need to inspect kitchensink2)
+    #     '''
+    #     pass
         
+    # def test_github_loop(self):
+    #     proj = lookml.Project(
+    #              repo= config['github']['repo']
+    #             ,access_token=config['github']['access_token']
+    #             ,looker_host="https://profservices.dev.looker.com/"
+    #             ,looker_project_name="russ_sanbox"
+    #     )
+    #     vf = proj.file('simple/tests.view.lkml')
+    #     mf = proj.file('simple/test1.model.lkml')
+    #     proj.update(vf)
+    #     proj.update(mf)
+    #     myNewView = lookml.View('great_test2') + 'id' + 'count_of_total'
+    #     myNewView.id.sql = "${TABLE}.`id`"
+    #     myNewView.id.setType('string')
+    #     myNewFile = lookml.File(myNewView)
+    #     proj.put(myNewFile)
+    #     proj.deploy()
 
-    def test_github_loop(self):
-        proj = lookml.Project(
-                 repo= config['github']['repo']
-                ,access_token=config['github']['access_token']
-                ,looker_host="https://profservices.dev.looker.com/"
-                ,looker_project_name="russ_sanbox"
-        )
-        vf = proj.file('simple/tests.view.lkml')
-        mf = proj.file('simple/test1.model.lkml')
-        
-        proj.update(vf)
-        proj.update(mf)
-        # proj.deleteFile('great_test2.view.lkml')
-        myNewView = lookml.View('great_test2') + 'id' + 'count_of_total' + 'worked' + 'poop'
-        myNewView.id.sql = "${TABLE}.`id`"
-        myNewView.id.setType('string')
-        myNewFile = lookml.File(myNewView)
-        proj.put(myNewFile)
-        proj.deploy()
-        # print(myNewFile.path)
-        # print(myNewFile)
-        # proj.add(myNewFile)
-        # print(proj.exists('nope.txt'))
-        # print(proj.exists('simple/tests.view.lkml'))
+class whitespaceTest(unittest.TestCase):
+    '''
+        Test Procedure:
+        Setup) Obtain Local Kitchen Sink Model File
+        2) Parse the file
+    '''
+# @unittest.skipIf(condition, reason)
+# @unittest.expectedFailure
+
+    def setUp(self):
+        self.f = lookml.File('lookml/tests/kitchenSink/kitchenSink.model.lkml')
+        self.f2 = None
+        self.order_items = self.f.views.order_items
+        self.order_items_explore = self.f.explores.order_items
+
+    def test_step1(self):
+        pass
+
 
 
 if __name__ == '__main__':
