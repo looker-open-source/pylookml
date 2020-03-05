@@ -1,6 +1,7 @@
 import unittest, copy
 import lookml
-import configparser
+import configparser, json
+from looker_sdk import client, models, methods
 config = configparser.ConfigParser()
 config.read('lookml/tests/settings.ini')
 
@@ -225,7 +226,77 @@ class whitespaceTest(unittest.TestCase):
         self.order_items_explore = self.f.explores.order_items
 
     def test_step1(self):
-        pass
+        for i in self.f.datagroups:
+            print(i)
+        o = self.order_items
+        o.gross_margin.required_access_grants = ["a","b","c"]
+        o.gross_margin.required_access_grants - 'a'
+        o.gross_margin.required_access_grants + 'x'
+        # for child in o.gross_margin.children():
+        #     print(child)
+        # o.gross_margin.sql = "${TABLE}.id"
+        with self.assertRaises(Exception):
+            o.gross_margin.sql + 'cool'
+        # print([x for x in o.gross_margin.required_access_grants])
+        # print(o.gross_margin)
+        
+        # for i in self.f.views.order_items.dims():
+        #     print(i)
+
+    def test_create_view_from_info_schema(self):
+        sdk = client.setup("api.ini")
+        sql = """
+                SELECT 
+                    t.TABLE_NAME
+                    ,t.TABLE_SCHEMA
+                    ,t.COLUMN_NAME
+                    ,t.DATA_TYPE
+                    , CASE 
+                        WHEN t.DATA_TYPE IN ('TIMESTAMP_LTZ') THEN 'time'
+                        WHEN t.DATA_TYPE IN ('FLOAT','NUMBER') THEN 'number'
+                        ELSE 'string' END as "LOOKER_TYPE"
+                FROM 
+                    information_schema.COLUMNS as t
+                WHERE
+                    1=1
+                    AND t.table_name = 'ORDER_ITEMS'
+                    AND t.table_schema = 'PUBLIC'
+                LIMIT 100
+        """
+        query_config = models.WriteSqlQueryCreate(sql=sql, connection_id="snowlooker")
+        query = sdk.create_sql_query(query_config)
+        response = sdk.run_sql_query(slug=query.slug, result_format="json")
+        response_json = json.loads(response)
+        order_items = lookml.View('order_items_3')
+        order_items.sql_table_name = 'PUBLIC.ORDER_ITEMS'
+        def column_to_dimension(col):
+            if col['LOOKER_TYPE'] == 'time':
+                tmpDim = lookml.DimensionGroup(
+                        lookml.lookCase(col['COLUMN_NAME'])
+                        )
+            else:
+                tmpDim = lookml.Dimension(lookml.lookCase(col['COLUMN_NAME']))
+            tmpDim.setType(col['LOOKER_TYPE'])
+            tmpDim.sql = "${TABLE}." + col['COLUMN_NAME']
+            return tmpDim
+        
+        for column in response_json:
+            order_items + column_to_dimension(column)
+
+        order_items.sumAllNumDimensions()
+        order_items.addCount()
+
+        proj = lookml.Project(
+                 repo= config['github']['repo']
+                ,access_token=config['github']['access_token']
+                ,looker_host="https://profservices.dev.looker.com/"
+                ,looker_project_name="russ_sanbox"
+        )
+        myNewFile = lookml.File(order_items)
+        proj.put(myNewFile)
+        proj.deploy()
+
+        
 
 
 

@@ -10,7 +10,15 @@ from string import Template
 
 #Required for V1:
 # TODO: Whitespace issues 
-# TODO: bring in old code allowing shell git access 
+# TODO: Implement remaining collections
+# TODO: Documentation:
+        # loop through all the files in a project make a change and update
+        # 
+        #
+        #
+# TODO: bring in old code allowing shell git access
+# TODO: Henry? Auto - tune?
+# TODO: Top N? 
 
 
 # ###### V2 ########### 
@@ -367,8 +375,9 @@ class File:
             return self.exps
         #TODO: resolve attribute access issues
         elif key in ['datagroups', 'map_layers', 'named_value_formats']:
-            return self.properties.getProperty(key)
+            return self.properties[key]
         else:
+            # raise KeyError
             return object.__getattr__(key)
 
     def __str__(self):
@@ -446,6 +455,16 @@ class base(object):
     def setLabel(self, label):
         ''''''
         return self.setProperty('label', label)
+
+    def hide(self):
+        ''''''
+        self.properties.addProperty('hidden', 'yes')
+        return self
+
+    def unHide(self):
+        ''''''
+        self.properties.delProperty('hidden')
+        return self
 
     def setMessage(self,message):
         self.message = message 
@@ -666,6 +685,8 @@ class View(base):
         elif name == 'pk':
             self.setPrimaryKey(value)
             return self
+        elif name == 'sql_table_name':
+            self.setProperty(name, value)
         else:
             object.__setattr__(self, name, value)
 
@@ -852,7 +873,7 @@ class View(base):
             field = f
         else:
             field = self.field(f)
-        measure = Measure( ''.join(['total_', field.identifier]))
+        measure = Measure('total_' + field.identifier)
         measure.setType('sum')
         self.addField(measure)
         return self
@@ -1004,6 +1025,16 @@ class Join(base):
         self.properties.addProperty('relationship',rel)
         return self
 
+    def hide(self):
+        ''''''
+        self.properties.addProperty('view_label', '')
+        return self
+
+    def unHide(self):
+        ''''''
+        self.properties.delProperty('view_label')
+        return self
+
 class Explore(base):
     ''' Represents an explore object in LookML'''
     def __init__(self, input):
@@ -1133,10 +1164,11 @@ class Property(object):
 
     def __add__(self,other):
         if isinstance(self.value, str):
-            pass
+            raise Exception('`+ and - ` not supported for a single value property, try assigning via the `=` operator')
         elif isinstance(self.value, Properties):
-            self.value.addProperty('tags',other)
-        elif isinstance(self.value, list) and self.multiValueSpecialHandling in ('tags','suggestions'):
+            self.value.addProperty(self.name,other)
+
+        elif isinstance(self.value, list):# and self.multiValueSpecialHandling in ('tags','suggestions'):
             self.schema.append(other)
         elif self.properties.multiValueSpecialHandling == 'filters':
             pass
@@ -1146,7 +1178,8 @@ class Property(object):
             pass
 
     def __sub__(self,other):
-        if isinstance(self.value, Properties) and self.value.multiValueSpecialHandling in ('tags','suggestions'):
+        # if isinstance(self.value, Properties) and self.value.multiValueSpecialHandling in ('tags','suggestions'):
+        if isinstance(self.value, Properties):
             self.value.schema.remove(other)
         else:
             pass
@@ -1552,23 +1585,6 @@ class Field(base):
     def setViewLabel(self, viewLabel):
         ''''''
         return self.setProperty('view_label', viewLabel)
-
-    def hide(self):
-        ''''''
-        self.properties.addProperty('hidden', 'yes')
-        return self
-
-    def unHide(self):
-        ''''''
-        self.properties.delProperty('hidden')
-        return self
-
-    def set_Field_Level_Permission(self, access_grant):
-        if isinstance(access_grant,str):
-            self.setProperty('required_access_grants', '[' + ','.join([access_grant]) + ']')
-        elif isinstance(access_grant,list):
-            self.setProperty('required_access_grants', '[' + ','.join(access_grant) + ']')
-        return self
 
     def sql_nvl(self,value_if_null):
         self.sql = "NVL(" + str(self.sql.value) + "," + value_if_null + ")"

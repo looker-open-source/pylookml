@@ -47,6 +47,6 @@ $joins
   $data
   }"""
     _list = """[
-  $data
-  ]"""
+      $data
+    ]"""
 #TODO: change these to configurable parameters via either argparse / config file / both 
