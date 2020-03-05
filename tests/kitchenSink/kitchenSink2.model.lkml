@@ -55,8 +55,8 @@ explore: order_items {
   
   join: order_facts { 
     required_access_grants: [
-  abc,
-  ]
+      abc,
+    ]
     type: left_outer
     view_label: "Orders"
     relationship: many_to_one
@@ -172,8 +172,8 @@ view: order_items {
     type: number
     sql: ${TABLE}.test_sql_change ;;
     required_access_grants: [
-  abc,
-  ]
+      abc,
+    ]
     tags: [
     "a",
     "b",
@@ -288,8 +288,8 @@ form_param: {
     type: tier
     sql: 100*${item_gross_margin_percentage} ;;
     tiers: [
-  0, 10, 20, 30, 40, 50, 60, 70, 80, 90,
-  ]
+      0, 10, 20, 30, 40, 50, 60, 70, 80, 90,
+    ]
     style: interval 
   }
   
@@ -353,24 +353,24 @@ form_param: {
   dimension_group: created { 
     type: time
     timeframes: [
-  time, hour, date, week, month, year, hour_of_day, day_of_week, month_num, month_name, raw, week_of_year,
-  ]
+      time, hour, date, week, month, year, hour_of_day, day_of_week, month_num, month_name, raw, week_of_year,
+    ]
     sql: ${TABLE}.created_at ;; 
   }
   
   dimension_group: delivered { 
     type: time
     timeframes: [
-  date, week, month, raw,
-  ]
+      date, week, month, raw,
+    ]
     sql: ${TABLE}.delivered_at ;; 
   }
   
   dimension_group: first_order_period { 
     type: time
     timeframes: [
-  date,
-  ]
+      date,
+    ]
     hidden: yes
     sql: CAST(DATE_TRUNC({% parameter cohort_by %}, ${user_order_facts.first_order_date}) AS DATE) ;; 
   }
@@ -378,16 +378,16 @@ form_param: {
   dimension_group: returned { 
     type: time
     timeframes: [
-  time, date, week, month, raw,
-  ]
+      time, date, week, month, raw,
+    ]
     sql: ${TABLE}.returned_at ;; 
   }
   
   dimension_group: shipped { 
     type: time
     timeframes: [
-  date, week, month, raw,
-  ]
+      date, week, month, raw,
+    ]
     sql: ${TABLE}.shipped_at ;; 
   } 
   
@@ -398,8 +398,8 @@ form_param: {
     value_format_name: percent_1
     sql: 1.0 * ${count_with_repeat_purchase_within_30d} / NULLIF(${count},0) ;;
     drill_fields: [
-  products.brand, order_count, count_with_repeat_purchase_within_30d, 30_day_repeat_purchase_rate,
-  ] 
+      products.brand, order_count, count_with_repeat_purchase_within_30d, 30_day_repeat_purchase_rate,
+    ] 
   }
   
   measure: average_days_to_process { 
@@ -413,8 +413,8 @@ form_param: {
     value_format_name: usd
     sql: ${gross_margin} ;;
     drill_fields: [
-  detail*,
-  ] 
+      detail*,
+    ] 
   }
   
   measure: average_sale_price { 
@@ -422,8 +422,8 @@ form_param: {
     value_format_name: usd
     sql: ${sale_price} ;;
     drill_fields: [
-  detail*,
-  ] 
+      detail*,
+    ] 
   }
   
   measure: average_shipping_time { 
@@ -437,8 +437,8 @@ form_param: {
     value_format_name: usd
     sql: 1.0 * ${total_sale_price} / NULLIF(${users.count},0) ;;
     drill_fields: [
-  detail*,
-  ] 
+      detail*,
+    ] 
   }
   
   measure: cohort_values_0 { 
@@ -463,8 +463,8 @@ form_param: {
     type: count_distinct
     sql: ${id} ;;
     drill_fields: [
-  detail*,
-  ] 
+      detail*,
+    ] 
   }
   
   measure: count_last_28d { 
@@ -500,8 +500,8 @@ filters: {
   value: "Yes"
   }
     drill_fields: [
-  user_id, order_id, created_date, users.traffic_source,
-  ]
+      user_id, order_id, created_date, users.traffic_source,
+    ]
     
 link: {
   label: "New User's Behavior by Traffic Source"
@@ -547,8 +547,8 @@ filters: {
   value: "Yes"
   }
     drill_fields: [
-  users.traffic_source, user_order_facts.average_lifetime_revenue, user_order_facts.average_lifetime_orders,
-  ] 
+      users.traffic_source, user_order_facts.average_lifetime_revenue, user_order_facts.average_lifetime_orders,
+    ] 
   }
   
   measure: median_sale_price { 
@@ -556,16 +556,16 @@ filters: {
     value_format_name: usd
     sql: ${sale_price} ;;
     drill_fields: [
-  detail*,
-  ] 
+      detail*,
+    ] 
   }
   
   measure: order_count { 
     view_label: "Orders"
     type: count_distinct
     drill_fields: [
-  detail*,
-  ]
+      detail*,
+    ]
     sql: ${order_id} ;; 
   }
   
@@ -584,8 +584,8 @@ filters: {
   value: "yes"
   }
     drill_fields: [
-  detail*,
-  ] 
+      detail*,
+    ] 
   }
   
   measure: returned_total_sale_price { 
@@ -604,8 +604,8 @@ filters: {
     value_format_name: usd
     sql: ${gross_margin} ;;
     drill_fields: [
-  detail*,
-  ] 
+      detail*,
+    ] 
   }
   
   measure: total_gross_margin_percentage { 
@@ -619,8 +619,8 @@ filters: {
     value_format_name: usd
     sql: ${sale_price} ;;
     drill_fields: [
-  detail*,
-  ] 
+      detail*,
+    ] 
   }
   
   measure: values { 
@@ -631,12 +631,12 @@ filters: {
   
 set: detail {
   fields: [
-  id, order_id, status, created_date, sale_price, products.brand, products.item_name, users.portrait, users.name, users.email, user_order_facts.phone_number,
-  ]
+      id, order_id, status, created_date, sale_price, products.brand, products.item_name, users.portrait, users.name, users.email, user_order_facts.phone_number,
+    ]
   }
 set: return_detail {
   fields: [
-  id, order_id, status, created_date, returned_date, sale_price, products.brand, products.item_name, users.portrait, users.name, users.email,
-  ]
+      id, order_id, status, created_date, returned_date, sale_price, products.brand, products.item_name, users.portrait, users.name, users.email,
+    ]
   }
 }
