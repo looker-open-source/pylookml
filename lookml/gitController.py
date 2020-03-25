@@ -2,14 +2,16 @@ import subprocess, os, platform, logging
 from datetime import datetime
 
 
-try:
-    #Python 2.x
-    import ConfigParser as ConfigParser
-except:
-    #Python 3.x
-    import configparser as ConfigParser
+
+import configparser as ConfigParser
 config = ConfigParser.RawConfigParser(allow_no_value=True)
 config.read('settings/settings.ini')
+
+# [git]
+# #needs to be filled out on windows, can be left blank on unix like systems
+# exePath = "C:\\Program Files\\Git\\git-cmd.exe"
+# #refers to the folder holding the projects
+# outputPath = output
 
 CREATE_NEW_PROCESS_GROUP = 512
 

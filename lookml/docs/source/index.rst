@@ -8,7 +8,6 @@ pyLookML
 pyLookML is a metaprogramming interface for the LookML language. It leverages the `lkml <https://pypi.org/project/lkml/>`_ parser to interpret raw lookml files then adds an object oriented API allowing
 easy programitic manipulaiton of the file. Visit the repo `here <https://github.com/llooker/lookml/>`_:
 
-
 Quickstart Examples
 -------------------
 Install pylookml package via pip
@@ -33,7 +32,7 @@ Fetch a viewFile from github and print one of its dimensions
    orderItems = viewFile.views.order_items
    print(orderItems.id)
 
-.. code-block:: json
+.. code-block:: 
 
   dimension: id {
     primary_key: yes
@@ -240,6 +239,46 @@ Convenience Methods
      sql: ${time_in_transit} ;;
    }
 
+
+.. autoclass:: lookml.Project
+    :inherited-members:
+    :members:
+
+.. autoclass:: lookml.File
+    :inherited-members:
+    :members:
+
+.. autoclass:: lookml.View
+    :inherited-members:
+    :members:
+
+.. autoclass:: lookml.Explore
+    :inherited-members:
+    :members:
+
+.. autoclass:: lookml.Join
+    :inherited-members:
+    :members:
+
+.. autoclass:: lookml.Dimension
+    :inherited-members:
+    :members:
+
+.. autoclass:: lookml.Measure
+    :inherited-members:
+    :members:
+
+.. autoclass:: lookml.Filter
+    :inherited-members:
+    :members:
+
+.. autoclass:: lookml.Parameter
+    :inherited-members:
+    :members:
+
+.. autoclass:: lookml.DimensionGroup
+    :inherited-members:
+    :members:
 
 .. toctree::
    :maxdepth: 2
