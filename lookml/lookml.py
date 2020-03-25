@@ -6,22 +6,31 @@ import base64
 import requests
 import time, copy
 from string import Template
-
+import subprocess, os, platform
+ 
 
 #Required for V1:
-# TODO: Whitespace issues 
-# TODO: Implement remaining collections
+# TODO: Implement remaining collections iteration, top level file attributes (data groups, named value format etc)
+# TODO: make __getatt__ consistent across classes
+# TODO: other git providers (create two nested classes?) which implement a similar interface?
 # TODO: Documentation:
+        #Investigate auto doc functionality
         # loop through all the files in a project make a change and update
-        # 
-        #
-        #
+        # Auto - tune your model  
+        # Looker API Query the database and create a new view file
+        # Validate some flexport's rules
 # TODO: bring in old code allowing shell git access
-# TODO: Henry? Auto - tune?
 # TODO: Top N? 
+# TODO: set variables via command line and environment variable
+# TODO: set expressions? ensure those will work
+# TODO: figure out the whole NDT thing
+# TODO: Ancenstor functions? Child function support renaming across all properties (html, links, etc)
 
 
 # ###### V2 ########### 
+# TODO: Remaining Whitespace issues -- big forehead on a file with no properties etc
+# TODO: Allow ancestor and children functions to search the whole project.... (is there a way to make a combined pointer 
+# structre to make theis easier?) Either way will lead to a lot of network traversal
 # TODO: rationally break up the megafile...
 # TODO: rationalize operator overloading
 # get model metadata from API --> go where?
@@ -71,6 +80,14 @@ from string import Template
 
 # TODO: Enhanecement: Make the internal datastructure of the class the JSON.... i.e. as the class state is modified so is the underlying json.
 
+# def ws_buffer(item):
+#     def wrapper(*args,**kwargs):
+#         return splice(
+#                 conf.PRE_FIELD_BUFFER,
+#                 item(*args,**kwargs),
+#                 conf.POST_FIELD_BUFFER
+#                 )
+#     return wrapper
 
 def snakeCase(string):
     str1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', string)
@@ -96,19 +113,114 @@ def stringify(collection,delim=conf.NEWLINEINDENT, prefix=True):
     # return delim + delim.join([str(item) for item in collection])
     return  (delim if prefix else '') + delim.join([str(item) for item in collection])
 
-def ws_buffer(item):
-    def wrapper(*args,**kwargs):
-        return splice(
-                conf.PRE_FIELD_BUFFER,
-                item(*args,**kwargs),
-                conf.POST_FIELD_BUFFER
-                )
-    return wrapper
+
 
 class Project:
     '''
         A LookML Project at a GitHub location or location on the filesytem
-    '''
+        '''
+    # import configparser as ConfigParser
+    # config = ConfigParser.RawConfigParser(allow_no_value=True)
+    # config.read('settings/settings.ini')
+
+    # [git]
+    # #needs to be filled out on windows, can be left blank on unix like systems
+    # exePath = "C:\\Program Files\\Git\\git-cmd.exe"
+    # #refers to the folder holding the projects
+    # outputPath = output
+
+    ### Initialize ###
+    # git = lib.gitController.gitController(projectName='mylookerproject6', branch='master')    
+    # git.clone('git@github.com:llooker/validator_stress_test.git')
+    # outputPath = git.absoluteOutputPath
+    ### Do Work ###
+    ### Deploy ###
+    # git.add().commit().pushRemote()
+
+    class gitController:
+        def __init__(self, *args, **kwargs):
+            self.platform = platform.system()
+            self.preamble = []
+            self.trailers = []
+            if self.platform == 'Windows':
+                self.exe = config.get('git', 'exePath') + ' '
+                self.preamble.append(self.exe)
+                self.trailers.append(' & exit')
+            else:
+                self.exe = ''
+            self.projectName = kwargs.get('projectName','')
+            self.outputPath = config.get('git', 'outputPath') + '/' + self.projectName
+            self.absoluteOutputPath = os.path.abspath(self.outputPath)
+            self.branch = kwargs.get('branch','master')
+            
+                
+            self.deployMessage = kwargs.get('deployMessage','LookML Automated Deployment @' + time.strftime('%h %d %Y @ %I:%M%p %Z')) 
+            
+            if not os.path.exists(self.absoluteOutputPath):
+                os.mkdir(self.absoluteOutputPath,0o777)
+            
+            if self.projectName:
+                self.gitDir = ' --git-dir="' + os.path.abspath(config.get('git', 'outputPath') + '/' + self.projectName + '/.git') + '" '
+            else:
+                self.gitDir = ' --git-dir="' + os.path.abspath(config.get('git', 'outputPath') + '/.git') + '" '
+                
+            self.includeGitDir = kwargs.get('includeGitDir', False)
+            
+            if self.includeGitDir:
+                preamble.append(self.includeGitDir)
+                
+        def call(self, command, gitDir=True):
+            if gitDir:
+                tmp = ' '.join(self.preamble) + 'git ' + self.gitDir + ' ' + command + ' '.join(self.trailers)
+            else:
+                tmp = ' '.join(self.preamble) + 'git ' + command + ' '.join(self.trailers)
+            # logging.info(tmp)
+            print(tmp)
+            # if self.platform == 'Windows':
+            proc = subprocess.Popen(
+                            tmp 
+                            ,shell=True
+                            ,env=os.environ
+                            ,cwd=self.absoluteOutputPath
+                            # ,creationflags=CREATE_NEW_PROCESS_GROUP #previously set to 512 at the begining of the file 
+                            # ,stdout=subprocess.PIPE
+                            # ,stderr=subprocess.PIPE
+                            )
+            # else:
+                            # proc = subprocess.Popen(
+                                # tmp 
+                                # ,shell=False
+                                # ,env=os.environ
+                                # ,cwd=self.absoluteOutputPath
+                                # ,stdout=subprocess.PIPE
+                                # ,stderr=subprocess.PIPE
+                                # )
+            try:
+                outs, errs = proc.communicate(timeout=15) 
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                outs, errs = proc.communicate()
+            return self
+
+        def pull(self):
+            return self.call(' pull origin ' + self.branch + ' ')
+            
+        def clone(self, repoLocation):
+            self.call(' clone ' + repoLocation + ' ' +  self.absoluteOutputPath, gitDir=False)
+            return self.pull()
+            
+        def add(self):
+            return self.call(' add .')
+            
+        def commit(self, message=''):
+            if message:
+                return self.call(' commit -m "' + message + ' ' + self.deployMessage + '"')
+            else:
+                return self.call(' commit -m "' + self.deployMessage + '"')
+            
+        def pushRemote(self):
+            return self.call(' push origin ' + self.branch + ' ')
+
     def __init__(
                     self,
                     repo='',
@@ -439,17 +551,23 @@ class base(object):
         if isinstance(input,str):
             self.setName(input)
         elif isinstance(input,dict):
-            self.bind_lkml(input)
+            self._bind_lkml(input)
         self.templateMap = {}
         
-    def bind_lkml(self, lkmldict):
+    def _bind_lkml(self, lkmldict):
             self.setName(lkmldict.pop('name'))
             for k,v in lkmldict.items():
                 self.setProperty(k,v) 
 
-    def setName(self, identifier):
-        ''' create a synonym with identifier'''
-        self.identifier = identifier
+    def setName(self, name):
+        '''
+        sets the name
+        :param arg1: name
+        :type arg1: string 
+        :return: returns the overall object
+        :rtype: self
+        '''
+        self.identifier = name
         return self
         
     def setLabel(self, label):
@@ -509,7 +627,6 @@ class base(object):
         return len(self.schema)
 
     def __repr__(self):
-        # return "%s (%r) name: %s id: %s" % (self.__class__, self.identifier, len(self), hex(id(self))) 
         return "%s  name: %s id: %s" % (self.__class__, self.identifier, hex(id(self))) 
 
     def __len__(self):
@@ -536,6 +653,16 @@ class base(object):
 
 
 class View(base):
+    '''
+    represents a view onject in LookML
+
+    :param arg1: description
+    :param arg2: description
+    :type arg1: type description
+    :type arg1: type description
+    :return: return description
+    :rtype: the return type description
+    '''
     def __init__(self, input):
         self._fields = {}
         self.primaryKey = ''
@@ -562,7 +689,7 @@ class View(base):
         } 
         return Template(getattr(conf.TEMPLATES,self.token)).substitute(**self.templateMap)
 
-    def bind_lkml(self,jsonDict):
+    def _bind_lkml(self,jsonDict):
         t = 'measures'
         if t in jsonDict.keys():
             for field in jsonDict[t]:
@@ -608,11 +735,21 @@ class View(base):
         else:
             pass
 
-        super().bind_lkml(jsonDict)
+        super()._bind_lkml(jsonDict)
 
 
     def getFieldsSorted(self):
-        ''' returns all the fields sorted first by alpabetical dimensions/filters, then alphabetical measures '''
+        '''
+        represents a view onject in LookML
+
+        :param arg1: description
+        :param arg2: description
+        :type arg1: type description
+        :type arg1: type description
+        :return: return description
+        :rtype: the return type description
+        '''
+        # ''' returns all the fields sorted first by alpabetical dimensions/filters, then alphabetical measures '''
         return sorted(self._fields.values(), key=lambda field: ''.join([str(isinstance(field, Measure)), field.identifier]))
 
     def __repr__(self):
@@ -666,6 +803,10 @@ class View(base):
     def __getattr__(self, key):
         if key in self.__dict__.keys():
             return self.__dict__[key]
+
+        elif key in self.properties.props():
+            return self.getProperty(key)
+
         elif key == 'name':
             return self.identifier
         elif key == 'pk':
@@ -685,37 +826,95 @@ class View(base):
         elif name == 'pk':
             self.setPrimaryKey(value)
             return self
-        elif name == 'sql_table_name':
+        elif name in conf.language_rules.view_props:
             self.setProperty(name, value)
         else:
             object.__setattr__(self, name, value)
 
     def setExtensionRequired(self):
-        ''' Sets the view to be "extension: required" '''
+        '''
+        represents a view onject in LookML
+
+        :param arg1: description
+        :param arg2: description
+        :type arg1: type description
+        :type arg1: type description
+        :return: return description
+        :rtype: the return type description
+        '''
+        # ''' Sets the view to be "extension: required" '''
         self.properties.addProperty('extension','required')
         return self    
 
     def getFieldsByTag(self,tag):
+        '''
+        :param arg1: description
+        :param arg2: description
+        :type arg1: type description
+        :type arg1: type description
+        :return: return description
+        :rtype: the return type description
+        '''
         for field in self.fields():
             if tag in field.tags:
                 yield field
 
     def fields(self):
-        '''Returns all the fields as a generator'''
+        '''
+        represents a view onject in LookML
+
+        :param arg1: description
+        :param arg2: description
+        :type arg1: type description
+        :type arg1: type description
+        :return: return description
+        :rtype: the return type description
+        '''
+        # '''Returns all the fields as a generator'''
         for field, literal in self._fields.items():
             ## Does this yeild only return the first instance it is looped?
             yield literal
 
     def fieldNames(self):
+        '''
+        represents a view onject in LookML
+
+        :param arg1: description
+        :param arg2: description
+        :type arg1: type description
+        :type arg1: type description
+        :return: return description
+        :rtype: the return type description
+        '''
         return list(self._fields.keys())
 
     def getFieldsByType(self, t):
+        '''
+        represents a view onject in LookML
+
+        :param arg1: description
+        :param arg2: description
+        :type arg1: type description
+        :type arg1: type description
+        :return: return description
+        :rtype: the return type description
+        '''
         return filter(lambda field: str(field.type) == 'type: '+ t, list(self._fields.values()))
 
     def sumAllNumDimensions(self):
         '''
-            Adds a "total" measure  to the view for all number dimensions
+        represents a view onject in LookML
+
+        :param arg1: description
+        :param arg2: description
+        :type arg1: type description
+        :type arg1: type description
+        :return: return description
+        :rtype: the return type description
         '''
+        # '''
+        #     Adds a "total" measure  to the view for all number dimensions
+        # '''
         for field in self.getFieldsByType('number'):
             tmpFieldName = 'total_' + field.name 
             if  tmpFieldName not in self.fieldNames() and isinstance(field,Dimension):
@@ -726,7 +925,16 @@ class View(base):
                 })
 
     def field(self, f):
-        ''' retrieve a field, argument can be the name or a field'''
+        '''
+        returns a field from the view
+
+        :param field: Field to return 
+        :type field: String
+        :type field: Field or subtype
+        :return: Returns a subtype of Field
+        :rtype:  Dimension, Measure, Filter or Parameter
+        '''
+        # ''' retrieve a field, argument can be the name or a field'''
         if isinstance(f,str):
             try:
                 return self._fields[f]
@@ -736,7 +944,17 @@ class View(base):
             return self._fields[f.identifier]
 
     def search(self, prop, pattern):
-        ''' pass a regex expression and will return the fields whose sql match '''
+        '''
+        represents a view onject in LookML
+
+        :param arg1: description
+        :param arg2: description
+        :type arg1: type description
+        :type arg1: type description
+        :return: return description
+        :rtype: the return type description
+        '''
+        # ''' pass a regex expression and will return the fields whose sql match '''
         if isinstance(pattern,list):
             pattern = '('+'|'.join(pattern)+')'
         searchString = r''.join([r'.*',pattern,r'.*'])
@@ -745,7 +963,17 @@ class View(base):
                 yield field
 
     def addField(self, field):
-        '''Takes a field object as an argument and adds it to the view, if the field is a dimension and primary key it will be set as the view primary key'''
+        '''
+        represents a view onject in LookML
+
+        :param arg1: description
+        :param arg2: description
+        :type arg1: type description
+        :type arg1: type description
+        :return: return description
+        :rtype: the return type description
+        '''
+        # '''Takes a field object as an argument and adds it to the view, if the field is a dimension and primary key it will be set as the view primary key'''
         # uses the 'setView' method on field which returns self so that field can fully qualify itself and so that field can be a member of view
         self._fields.update({field.identifier: field.setView(self)})
         # If a primary key is added it will overwrite the existing primary key....
@@ -756,7 +984,18 @@ class View(base):
         return self
     
     def removeField(self,field):
-        '''Removes a field, either by object or by string of identifier, safely checks and de-refs primary key'''
+        '''
+        TODO: Complete Desctiption
+        represents a view onject in LookML
+
+        :param arg1: description
+        :param arg2: description
+        :type arg1: type description
+        :type arg1: type description
+        :return: return description
+        :rtype: the return type description
+        '''
+        # '''Removes a field, either by object or by string of identifier, safely checks and de-refs primary key'''
         def pk(k):
             if k.isPrimaryKey():
                 self.unSetPrimaryKey()
@@ -774,13 +1013,35 @@ class View(base):
             raise Exception('Not a string or Field instance provided')
 
     def addFields(self, fields):
-        ''' An iterable collection of field objects will be passed to the add field function. Helpful for adding many fields at once'''
+        '''
+        TODO: Complete Desctiption
+        represents a view onject in LookML
+
+        :param arg1: description
+        :param arg2: description
+        :type arg1: type description
+        :type arg1: type description
+        :return: return description
+        :rtype: the return type description
+        '''
+        # ''' An iterable collection of field objects will be passed to the add field function. Helpful for adding many fields at once'''
         for field in fields:
             self.addField(field)
         return self
 
     def setPrimaryKey(self, f, callFromChild=False):
-        ''' A string identifier or a field object can be passed, and will be set as the new primary key of the view'''
+        '''
+        TODO: Complete Desctiption
+        represents a view onject in LookML
+
+        :param arg1: description
+        :param arg2: description
+        :type arg1: type description
+        :type arg1: type description
+        :return: return description
+        :rtype: the return type description
+        '''
+        # ''' A string identifier or a field object can be passed, and will be set as the new primary key of the view'''
         self.unSetPrimaryKey()
         if isinstance(f, Dimension):
             if not callFromChild:
@@ -796,12 +1057,34 @@ class View(base):
         return self
 
     def getPrimaryKey(self):
-        '''returns the primary key'''
+        '''
+        TODO: Complete Desctiption
+        represents a view onject in LookML
+
+        :param arg1: description
+        :param arg2: description
+        :type arg1: type description
+        :type arg1: type description
+        :return: return description
+        :rtype: the return type description
+        '''
+        # '''returns the primary key'''
         if self.primaryKey:
             return self.field(self.primaryKey)
 
     def unSetPrimaryKey(self):
-        '''Unsets the view primary key returns self'''
+        '''
+        TODO: Complete Desctiption
+        represents a view onject in LookML
+
+        :param arg1: description
+        :param arg2: description
+        :type arg1: type description
+        :type arg1: type description
+        :return: return description
+        :rtype: the return type description
+        '''
+        # '''Unsets the view primary key returns self'''
         # pk = self.field(self.primaryKey)
         pk = self.getPrimaryKey()
         if isinstance(pk, Dimension):
@@ -810,11 +1093,27 @@ class View(base):
         return self
 
     def dims(self):
-        '''returns iterable of Dimension Fields'''
+        '''a description of the function
+        :param arg1: description
+        :param arg2: description
+        :type arg1: type description
+        :type arg1: type description
+        :return: return description
+        :rtype: the return type description
+        '''
+        # '''returns iterable of Dimension Fields'''
         return filter(lambda dim: isinstance(dim, Dimension), self._fields.values())
 
     def dimensionGroups(self):
-        '''returns iterable of DimensionGroup Fields'''
+        '''a description of the function
+        :param arg1: description
+        :param arg2: description
+        :type arg1: type description
+        :type arg1: type description
+        :return: return description
+        :rtype: the return type description
+        '''
+        # '''returns iterable of DimensionGroup Fields'''
         return filter(lambda dim: isinstance(dim, DimensionGroup), self._fields.values())
 
     def measures(self):
@@ -1044,7 +1343,7 @@ class Explore(base):
         self.token = 'explore'
 
             
-    def bind_lkml(self,jsonDict):
+    def _bind_lkml(self,jsonDict):
         self.setName(jsonDict.pop('name'))
         if 'joins' in jsonDict.keys():
             for join in jsonDict['joins']:
@@ -1176,6 +1475,14 @@ class Property(object):
             pass
         else:
             pass
+
+    # def __getattr__(self,key):
+    #     if isinstance(self.value, Properties):
+    #         return self.value[key]
+
+    # def __setattr__(self,key, value):
+    #     if isinstance(self.value, Properties):
+    #         return self.value[key]
 
     def __sub__(self,other):
         # if isinstance(self.value, Properties) and self.value.multiValueSpecialHandling in ('tags','suggestions'):
@@ -1536,7 +1843,7 @@ class Field(base):
             self.setName(value)
             return self
         # elif name in self.properties.props():
-        elif name in conf.FIELD_LEVEL_PROPS:
+        elif name in conf.language_rules.field_props:
             return self.setProperty(name,value)
         else:
             object.__setattr__(self, name, value)

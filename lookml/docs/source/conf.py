@@ -10,14 +10,15 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('../../..'))
+# sys.path.append('/Users/russgarner/OneDrive/Python/lookml_project/lookml')
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'lookml'
+project = 'pylookml'
 copyright = '2020, Russell Garner'
 author = 'Russell Garner'
 
@@ -33,6 +34,8 @@ release = '2.0.0'
 extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.githubpages',
+    'sphinx.ext.autodoc', 
+    'sphinx.ext.coverage',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

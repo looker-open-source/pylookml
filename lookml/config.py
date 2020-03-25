@@ -15,11 +15,11 @@ NEWLINE = '\n'
 NEWLINEINDENT = ''.join([NEWLINE,INDENT])
 PRE_FIELD_BUFFER = NEWLINE
 POST_FIELD_BUFFER = NEWLINE
-FIELD_LEVEL_PROPS = ['action', 'allow_fill', 'alpha_sort', 'bypass_suggest_restrictions', 'can_filter', 'case', 'case_sensitive', 'datatype', 'drill_fields', 'end_location_field', 'fanout_on', 'full_suggestions', 'group_label', 'group_item_label', 'html', 'label_from_parameter', 'link', 'map_layer_name', 'order_by_field', 'primary_key', 'required_fields', 'skip_drill_filter', 'start_location_field', 'suggestions', 'suggest_persist_for', 'style', 'sql', 'sql_end', 'sql_start', 'tiers', 'sql_longitude', 'sql_latitude', 'string_datatype', 'units', 'value_format', 'value_format_name', 'alias', 'convert_tz', 'description', 'hidden', 'label', 'required_access_grants', 'suggestable', 'tags', 'type', 'suggest_dimension', 'suggest_explore', 'view_label']
+class language_rules:
+    field_props = ['action', 'allow_fill', 'alpha_sort', 'bypass_suggest_restrictions', 'can_filter', 'case', 'case_sensitive', 'datatype', 'drill_fields', 'end_location_field', 'fanout_on', 'full_suggestions', 'group_label', 'group_item_label', 'html', 'label_from_parameter', 'link', 'map_layer_name', 'order_by_field', 'primary_key', 'required_fields', 'skip_drill_filter', 'start_location_field', 'suggestions', 'suggest_persist_for', 'style', 'sql', 'sql_end', 'sql_start', 'tiers', 'sql_longitude', 'sql_latitude', 'string_datatype', 'units', 'value_format', 'value_format_name', 'alias', 'convert_tz', 'description', 'hidden', 'label', 'required_access_grants', 'suggestable', 'tags', 'type', 'suggest_dimension', 'suggest_explore', 'view_label']
+    view_props = ("drill_fields", "extends", "extension", "label", "derived_table", "required_access_grants", "set", "sql_table_name","suggestions", "view_label")
 
-#getattr(foo, "b")
-# Template(conf.TEMPLATES[self.token])
-# Template(getattr(conf.TEMPLATES,self.token))
+
 class TEMPLATES:
     default =  """
 $message  $token: $identifier { $props 
