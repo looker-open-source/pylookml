@@ -11,6 +11,7 @@ import subprocess, os, platform
 
 #Required for V1:
 # TODO: Implement remaining collections iteration, top level file attributes (data groups, named value format etc)
+# TODO: Implement string -> lkml -> __add__ i.e.: my
 # TODO: make __getatt__ consistent across classes
 # TODO: other git providers (create two nested classes?) which implement a similar interface?
 # TODO: Documentation:
@@ -99,6 +100,15 @@ def splice(*args):
 def removeSpace(string):  # removing special character / [|]<>,.?}{+=~!$%^&*()-
     return re.sub('(\s|/|\[|\]|\||\,|<|>|\.|\?|\{|\}|#|=|~|!|\+|\$|\%|\^|\&|\*|\(|\)|\-|\:)+', r'', string)
 
+def tidy(string):
+    '''
+    cleans a string to remove multiple linebreaks and spaces (trims excess whitespace)
+
+    :return: returns input string, with excess whitespace removed
+    :rtype: str
+    '''
+    return re.sub('(\n{2})+', r'\n', string)
+
 def lookCase(string):
     return removeSpace(snakeCase(string))
 
@@ -113,143 +123,186 @@ def stringify(collection,delim=conf.NEWLINEINDENT, prefix=True):
     # return delim + delim.join([str(item) for item in collection])
     return  (delim if prefix else '') + delim.join([str(item) for item in collection])
 
+def mkdir_force(dir):
+    if not os.path.exists(dir):
+        os.mkdir(dir,0o777)
+
+class pyLookML(object):
 
 
-class Project:
+    def __init__(self,input):
+        self.identifier = ''
+        self.properties = Properties({})
+        self.message = ''
+        self.token = ''
+        self.indentLevel = 1
+        if isinstance(input,str):
+            self.setName(input)
+        elif isinstance(input,dict):
+            self._bind_lkml(input)
+        self.templateMap = {}
+
+    def __str__(self):
+        self.templateMap = {
+             'message': self.getMessage()
+            ,'identifier': self.identifier
+            ,'props': stringify([ conf.INDENT + str(p) for p in self.getProperties()])
+            ,'token': self.token
+        }
+        return Template(getattr(conf.TEMPLATES,self.token)).substitute(**self.templateMap)
+
+    #CU (much more at once?
+    def __add__(self, other):
+        pass
+    def __sub__(self, other): #←- subtract a key from the model? 
+        pass
+    #R
+    def __getattr__(self, attr): #← model / property getting
+        pass
+    # C,U
+    def __setattr__(self, attr, val):
+        pass
+
+
+    def _bind_lkml(self, lkmldict):
+            self.setName(lkmldict.pop('name'))
+            for k,v in lkmldict.items():
+                self.setProperty(k,v) 
+
+    def setName(self, name):
+        '''
+        sets the name
+        :param arg1: name
+        :type arg1: string 
+        :return: return self (allows call chaining i.e. obj.method().method() )
+        :rtype:  self 
+        '''
+        self.identifier = name
+        return self
+        
+    def setLabel(self, label):
+        ''''''
+        return self.setProperty('label', label)
+
+    def hide(self):
+        ''''''
+        self.properties.addProperty('hidden', 'yes')
+        return self
+
+    def unHide(self):
+        ''''''
+        self.properties.delProperty('hidden')
+        return self
+
+    def setMessage(self,message):
+        self.message = message 
+        return self
+
+    def getMessage(self):
+        if self.message:
+            return splice('#',self.message,conf.NEWLINE)
+        else:
+            return ''
+    
+    def getProperty(self, prop):
+        ''' Get a property from the properties collection '''
+        return self.properties[prop]
+
+    def setProperty(self, name, value):
+        ''' Set a property in the properties collection '''
+        self.properties.addProperty(name, value)
+        return self
+
+    def unSetProperty(self, name):
+        ''''''
+        self.properties.__del__(name)
+        return self
+
+    def getProperties(self):
+        return self.properties.getProperties()
+
+    def hasProp(self, property):
+        return property in self.properties.props()
+
+    def props(self):
+        return self.properties.props()
+
+    def rawProp(self,key):
+        '''
+            if dict type schema, needs a prop name. If list type schema needs a number index
+        '''
+        return self.properties.rawPropValue(key)
+
+    # def __len__(self):
+    #     return len(self.schema)
+
+    def __repr__(self):
+        return "%s  name: %s id: %s" % (self.__class__, self.identifier, hex(id(self))) 
+
+    def __len__(self):
+        return len([f for f in self.getProperties()])
+
+    def __iter__(self):
+        self.valueiterator = iter(self.getProperties())
+        return self
+
+    def __next__(self):
+        try:
+            return next(self.valueiterator)
+        except:
+            raise StopIteration
+
+def Project(repo='',access_token='',branch="master",git_url="",commitMessage="",looker_host="",looker_project_name="",outputPath='.tmp'):
+    '''
+        A LookML Project at a GitHub location or location on the filesytem [Factory Function]
+        '''
+    if access_token and repo:
+        return _githubProject(repo=repo,access_token=access_token,branch=branch,git_url=git_url,commitMessage=commitMessage,looker_host=looker_host,looker_project_name=looker_project_name,outputPath=outputPath)
+    elif git_url:
+        return _shellProject(repo=repo,access_token=access_token,branch=branch,git_url=git_url,commitMessage=commitMessage,looker_host=looker_host,looker_project_name=looker_project_name,outputPath=outputPath)
+
+class _Project:
     '''
         A LookML Project at a GitHub location or location on the filesytem
         '''
-    # import configparser as ConfigParser
-    # config = ConfigParser.RawConfigParser(allow_no_value=True)
-    # config.read('settings/settings.ini')
 
-    # [git]
-    # #needs to be filled out on windows, can be left blank on unix like systems
-    # exePath = "C:\\Program Files\\Git\\git-cmd.exe"
-    # #refers to the folder holding the projects
-    # outputPath = output
 
-    ### Initialize ###
-    # git = lib.gitController.gitController(projectName='mylookerproject6', branch='master')    
-    # git.clone('git@github.com:llooker/validator_stress_test.git')
-    # outputPath = git.absoluteOutputPath
-    ### Do Work ###
-    ### Deploy ###
-    # git.add().commit().pushRemote()
-
-    class gitController:
-        def __init__(self, *args, **kwargs):
-            self.platform = platform.system()
-            self.preamble = []
-            self.trailers = []
-            if self.platform == 'Windows':
-                self.exe = config.get('git', 'exePath') + ' '
-                self.preamble.append(self.exe)
-                self.trailers.append(' & exit')
-            else:
-                self.exe = ''
-            self.projectName = kwargs.get('projectName','')
-            self.outputPath = config.get('git', 'outputPath') + '/' + self.projectName
-            self.absoluteOutputPath = os.path.abspath(self.outputPath)
-            self.branch = kwargs.get('branch','master')
-            
-                
-            self.deployMessage = kwargs.get('deployMessage','LookML Automated Deployment @' + time.strftime('%h %d %Y @ %I:%M%p %Z')) 
-            
-            if not os.path.exists(self.absoluteOutputPath):
-                os.mkdir(self.absoluteOutputPath,0o777)
-            
-            if self.projectName:
-                self.gitDir = ' --git-dir="' + os.path.abspath(config.get('git', 'outputPath') + '/' + self.projectName + '/.git') + '" '
-            else:
-                self.gitDir = ' --git-dir="' + os.path.abspath(config.get('git', 'outputPath') + '/.git') + '" '
-                
-            self.includeGitDir = kwargs.get('includeGitDir', False)
-            
-            if self.includeGitDir:
-                preamble.append(self.includeGitDir)
-                
-        def call(self, command, gitDir=True):
-            if gitDir:
-                tmp = ' '.join(self.preamble) + 'git ' + self.gitDir + ' ' + command + ' '.join(self.trailers)
-            else:
-                tmp = ' '.join(self.preamble) + 'git ' + command + ' '.join(self.trailers)
-            # logging.info(tmp)
-            print(tmp)
-            # if self.platform == 'Windows':
-            proc = subprocess.Popen(
-                            tmp 
-                            ,shell=True
-                            ,env=os.environ
-                            ,cwd=self.absoluteOutputPath
-                            # ,creationflags=CREATE_NEW_PROCESS_GROUP #previously set to 512 at the begining of the file 
-                            # ,stdout=subprocess.PIPE
-                            # ,stderr=subprocess.PIPE
-                            )
-            # else:
-                            # proc = subprocess.Popen(
-                                # tmp 
-                                # ,shell=False
-                                # ,env=os.environ
-                                # ,cwd=self.absoluteOutputPath
-                                # ,stdout=subprocess.PIPE
-                                # ,stderr=subprocess.PIPE
-                                # )
-            try:
-                outs, errs = proc.communicate(timeout=15) 
-            except subprocess.TimeoutExpired:
-                proc.kill()
-                outs, errs = proc.communicate()
-            return self
-
-        def pull(self):
-            return self.call(' pull origin ' + self.branch + ' ')
-            
-        def clone(self, repoLocation):
-            self.call(' clone ' + repoLocation + ' ' +  self.absoluteOutputPath, gitDir=False)
-            return self.pull()
-            
-        def add(self):
-            return self.call(' add .')
-            
-        def commit(self, message=''):
-            if message:
-                return self.call(' commit -m "' + message + ' ' + self.deployMessage + '"')
-            else:
-                return self.call(' commit -m "' + self.deployMessage + '"')
-            
-        def pushRemote(self):
-            return self.call(' push origin ' + self.branch + ' ')
-
-    def __init__(
-                    self,
-                    repo='',
-                    access_token='', 
-                    branch="master", 
-                    commitMessage="", 
-                    rootDir="", 
-                    looker_host="",
-                    looker_project_name=""
-                ):
+    def __init__(self,repo='',access_token='',branch="master",git_url="",commitMessage="",looker_host="",looker_project_name="",outputPath='.tmp'):
         ''' 
             Can be constructed with a github access token and repository name
         '''
-        self.type = "github"
-        self.gitsession = github.Github(access_token)
-        self.repo = self.gitsession.get_repo(repo)
+        #  self
+        # ,repo=''
+        # ,access_token=''
+        # ,branch="master"
+        # ,git_url=""
+        # ,commitMessage=""
+        # ,looker_host=""
+        # ,looker_project_name=""
+        # ,outputPath='.tmp'
+        self.outputPath = outputPath
         self.branch = branch
-        if not commitMessage:
-            self.commitMessage = "PyLookML Auto Updated: " + time.strftime('%h %d %Y @ %I:%M%p %Z')
+        self.looker_project_name = looker_project_name
+        self.commitMessage = "PyLookML Auto Updated: " + time.strftime('%h %d %Y @ %I:%M%p %Z') if not commitMessage else commitMessage
         
+        #host setup
         self.looker_host = looker_host
         if self.looker_host and not looker_host.startswith('https://'):
             self.looker_host = 'https://' + looker_host 
             if not self.looker_host.endswith('/'):
                 self.looker_host = self.looker_host + '/'
-    
-        self.looker_project_name = looker_project_name
         self.deploy_url = ""
         self.constructDeployUrl()
+
+        #type inference, and subtype specific properties 
+        # if access_token and repo:
+        #     self.type = "github"
+        #     self.gitsession = github.Github(access_token)
+        #     self.repo = self.gitsession.get_repo(repo)
+        # elif git_url:
+        #     self.type = "ssh_shell"
+        #     self.gitControllerSession =  self.gitController(projectName=self.looker_project_name, branch=self.branch, deployMessage=self.commitMessage, outputPath=outputPath)    
+        #     self.gitControllerSession.clone(git_url)
 
     def constructDeployUrl(self):
         '''
@@ -301,7 +354,6 @@ class Project:
         else:
             self.add(f)
         
-
     def exists(self,f):
         '''
             returns boolean if the file exists on 
@@ -326,6 +378,106 @@ class Project:
             f = self.getFile(f)
         self.repo.delete_file(f.path, self.commitMessage, sha=f.sha, branch=self.branch)
         return self
+
+class _shellProject(_Project):
+    '''
+        Project subtype that interfaces with git via its command line interface. SSH git access must be working on the machine
+        files will be cloned into a subfolder of .tmp by default
+    '''
+    class gitController:
+        def __init__(
+                     self  
+                    ,outputPath=''
+                    ,projectName=''
+                    ,branch='master'
+                    ,deployMessage=''
+                    ,exePath=''
+                    ,includeGitDir=False
+                ):
+
+            self.platform = platform.system()
+            self.preamble = []
+            self.trailers = []
+            if self.platform == 'Windows':
+                self.exe = exePath + ' '
+                self.preamble.append(self.exe)
+                self.trailers.append(' & exit')
+            else:
+                self.exe = ''
+            self.projectName = projectName
+
+            mkdir_force(outputPath)
+
+            self.outputPath = outputPath + '/' + self.projectName
+            self.absoluteOutputPath = os.path.abspath(self.outputPath)
+            self.branch = branch
+            
+                
+            self.deployMessage = deployMessage
+            
+            mkdir_force(self.absoluteOutputPath)
+            
+            if self.projectName:
+                self.gitDir = ' --git-dir="' + os.path.abspath(outputPath + '/' + self.projectName + '/.git') + '" '
+            else:
+                self.gitDir = ' --git-dir="' + os.path.abspath(outputPath + '/.git') + '" '
+                
+            self.includeGitDir = includeGitDir
+            
+            if self.includeGitDir:
+                self.preamble.append(self.includeGitDir)
+                
+        def call(self, command, gitDir=True):
+            if gitDir:
+                tmp = ' '.join(self.preamble) + 'git ' + self.gitDir + ' ' + command + ' '.join(self.trailers)
+            else:
+                tmp = ' '.join(self.preamble) + 'git ' + command + ' '.join(self.trailers)
+            print(tmp)
+            proc = subprocess.Popen(
+                            tmp 
+                            ,shell=True
+                            ,env=os.environ
+                            ,cwd=self.absoluteOutputPath
+                            )
+            try:
+                outs, errs = proc.communicate(timeout=15) 
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                outs, errs = proc.communicate()
+            return self
+
+        def pull(self):
+            return self.call(' pull origin ' + self.branch + ' ')
+            
+        def clone(self, repoLocation):
+            self.call(' clone ' + repoLocation + ' ' +  self.absoluteOutputPath, gitDir=False)
+            return self.pull()
+            
+        def add(self):
+            return self.call(' add .')
+            
+        def commit(self, message=''):
+            if message:
+                return self.call(' commit -m "' + message + ' ' + self.deployMessage + '"')
+            else:
+                return self.call(' commit -m "' + self.deployMessage + '"')
+            
+        def pushRemote(self):
+            return self.call(' push origin ' + self.branch + ' ')
+
+    def __init__(self,*args, **kwargs):
+        super(_shellProject, self).__init__(*args,**kwargs)
+        self.type = "ssh_shell"
+        self.gitControllerSession =  self.gitController(projectName=self.looker_project_name, branch=self.branch, deployMessage=self.commitMessage, outputPath=self.outputPath)    
+        assert(kwargs['git_url'] is not None)
+        self.gitControllerSession.clone(kwargs['git_url'])
+
+class _githubProject(_Project):
+    def __init__(self, *args, **kwargs):
+        super(_githubProject, self).__init__(*args,**kwargs)
+        self.type = "github"
+        self.gitsession = github.Github(kwargs['access_token'])
+        self.repo = self.gitsession.get_repo(kwargs['repo'])
 
 class File:
     class view_collection:
@@ -477,7 +629,6 @@ class File:
         self.properties = Properties(self.json_data)
         self.props = self.properties.props()
 
-
     def __getattr__(self, key):
         if key in self.__dict__.keys():
             return self.__dict__[key]
@@ -520,8 +671,7 @@ class File:
             self.addExplore(other)
 
     def setFolder(self,folder):
-        self.outputFolder = folder
-        self.path = self.outputFolder + self.fileName if self.outputFolder.endswith('/') else self.outputFolder  + '/' +  self.fileName
+        self.path = folder + self.name if folder.endswith('/') else folder  + '/' +  self.name
         return self
 
     def write(self,overWriteExisting=True):
@@ -542,6 +692,30 @@ class File:
                     opened_file.write(self.__str__())
 
 class base(object):
+    class _model:
+        pass
+		# Put it under a namespace in __dict__?
+		# Define types of collections for special types. Fields for example should be unique (but lkml itself passes these split out -- how to define uniqueness across  3-4 dictionaries etc)
+    class _view:
+        pass
+		# Bind model to __str__ (should be kept relatively simple)
+    class _cont:
+        ''' '''
+        pass
+		# 
+
+    #CU (much more at once?
+    def __add__(self, other):
+        self._bind_lkml(lkml.load(other))
+    # def __sub__(self, other): #←- subtract a key from the model? 
+    #     pass
+    # #R
+    # def __getattr__(self, attr): #← model / property getting
+    #     pass
+    # # C,U
+    # def __setattr__(self, attr, val):
+    #     pass
+
     def __init__(self,input):
         self.identifier = ''
         self.properties = Properties({})
@@ -555,7 +729,9 @@ class base(object):
         self.templateMap = {}
         
     def _bind_lkml(self, lkmldict):
-            self.setName(lkmldict.pop('name'))
+            # self.setName(lkmldict.pop('name'))
+            if 'name' in lkmldict.keys():
+                self.setName(lkmldict.pop('name'))
             for k,v in lkmldict.items():
                 self.setProperty(k,v) 
 
@@ -623,8 +799,8 @@ class base(object):
         '''
         return self.properties.rawPropValue(key)
 
-    def __len__(self):
-        return len(self.schema)
+    # def __len__(self):
+    #     return len(self.schema)
 
     def __repr__(self):
         return "%s  name: %s id: %s" % (self.__class__, self.identifier, hex(id(self))) 
@@ -650,7 +826,6 @@ class base(object):
             ,'token': self.token
         }
         return Template(getattr(conf.TEMPLATES,self.token)).substitute(**self.templateMap)
-
 
 class View(base):
     '''
@@ -687,7 +862,7 @@ class View(base):
             ,'sets': stringify([str(p) for p in self.getProperties() if p.name == "sets"]) 
             ,'children': stringify(self.children.values()) if self.children else ''
         } 
-        return Template(getattr(conf.TEMPLATES,self.token)).substitute(**self.templateMap)
+        return tidy(Template(getattr(conf.TEMPLATES,self.token)).substitute(**self.templateMap))
 
     def _bind_lkml(self,jsonDict):
         t = 'measures'
@@ -762,7 +937,11 @@ class View(base):
         if isinstance(other, Field):
             return self.addField(other)
         elif isinstance(other, str):
-            return self.addDimension(dbColumn=other)
+            # if re.match(other,)
+            if len(other) < 10:
+                return self.addDimension(dbColumn=other)
+            else:
+                self._bind_lkml(lkml.load(other))
         else: 
             raise Exception(str(type(other)) + ' cannot be added to View')
 
@@ -926,11 +1105,10 @@ class View(base):
 
     def field(self, f):
         '''
-        returns a field from the view
+        get a field (most commonly, will pass in a field name)
 
         :param field: Field to return 
-        :type field: String
-        :type field: Field or subtype
+        :type field: str or Field (or Dimension, Measure...) object
         :return: Returns a subtype of Field
         :rtype:  Dimension, Measure, Filter or Parameter
         '''
@@ -945,16 +1123,15 @@ class View(base):
 
     def search(self, prop, pattern):
         '''
-        represents a view onject in LookML
+        pass a regex expression and will return the fields whose sql match
 
-        :param arg1: description
-        :param arg2: description
-        :type arg1: type description
-        :type arg1: type description
-        :return: return description
-        :rtype: the return type description
+        :param prop: name of proprty you'd like to search
+        :param pattern: the regex pattern
+        :type prop: str
+        :type patter: a regex search string
+        :return: a generator / iteratble set of fields who have a member property matching the pattern
+        :rtype: Field
         '''
-        # ''' pass a regex expression and will return the fields whose sql match '''
         if isinstance(pattern,list):
             pattern = '('+'|'.join(pattern)+')'
         searchString = r''.join([r'.*',pattern,r'.*'])
@@ -962,16 +1139,17 @@ class View(base):
             if re.match(searchString,str(field.getProperty(prop))):
                 yield field
 
+
     def addField(self, field):
         '''
-        represents a view onject in LookML
+        add a field to the view
+            * if the field is a dimension and primary key it will be set as the view primary key
+            * the field will have its view set to so that the view may be referenced from the field object
 
-        :param arg1: description
-        :param arg2: description
-        :type arg1: type description
-        :type arg1: type description
-        :return: return description
-        :rtype: the return type description
+        :param arg1: Field 
+        :type arg1: Field (or subtype)
+        :return: return self (allows call chaining i.e. obj.method().method() )
+        :rtype:  self 
         '''
         # '''Takes a field object as an argument and adds it to the view, if the field is a dimension and primary key it will be set as the view primary key'''
         # uses the 'setView' method on field which returns self so that field can fully qualify itself and so that field can be a member of view
@@ -985,15 +1163,13 @@ class View(base):
     
     def removeField(self,field):
         '''
-        TODO: Complete Desctiption
-        represents a view onject in LookML
+            Removes a field from the View
+            * also unsets primary key
 
-        :param arg1: description
-        :param arg2: description
-        :type arg1: type description
-        :type arg1: type description
-        :return: return description
-        :rtype: the return type description
+        :param arg1: field to remove
+        :type arg1: Field object or str name of field
+        :return: returns the removed field
+        :rtype: Field or None
         '''
         # '''Removes a field, either by object or by string of identifier, safely checks and de-refs primary key'''
         def pk(k):
@@ -1014,17 +1190,13 @@ class View(base):
 
     def addFields(self, fields):
         '''
-        TODO: Complete Desctiption
-        represents a view onject in LookML
-
-        :param arg1: description
-        :param arg2: description
-        :type arg1: type description
-        :type arg1: type description
-        :return: return description
-        :rtype: the return type description
+        Add multiple fields to a view. An iterable collection of field objects will be passed to the add field function. Helpful for adding many fields at once
+        
+        :param fields: set or list of fields [field1, field2 ...]
+        :type fields: type description
+        :return: return self (allows call chaining i.e. obj.method().method() )
+        :rtype:  self 
         '''
-        # ''' An iterable collection of field objects will be passed to the add field function. Helpful for adding many fields at once'''
         for field in fields:
             self.addField(field)
         return self
@@ -1038,8 +1210,8 @@ class View(base):
         :param arg2: description
         :type arg1: type description
         :type arg1: type description
-        :return: return description
-        :rtype: the return type description
+        :return: return self (allows call chaining i.e. obj.method().method() )
+        :rtype:  self 
         '''
         # ''' A string identifier or a field object can be passed, and will be set as the new primary key of the view'''
         self.unSetPrimaryKey()
@@ -1081,8 +1253,8 @@ class View(base):
         :param arg2: description
         :type arg1: type description
         :type arg1: type description
-        :return: return description
-        :rtype: the return type description
+        :return: return self (allows call chaining i.e. obj.method().method() )
+        :rtype:  self 
         '''
         # '''Unsets the view primary key returns self'''
         # pk = self.field(self.primaryKey)
@@ -1129,33 +1301,52 @@ class View(base):
         return filter(lambda par: isinstance(par, Parameter), self._fields.values())
 
     def addDimension(self,dbColumn, type='string'):
-        ''' '''
+        ''' 
+
+        :return: return self (allows call chaining i.e. obj.method().method() )
+        :rtype:  self 
+        '''
         dim = Dimension(dbColumn)
         dim.setType(type)
         self.addField(dim)
         return self
 
     def sum(self,f):
-        ''' A Synonym for addSum '''
+        ''' A Synonym for addSum 
+        :return: return self (allows call chaining i.e. obj.method().method() )
+        :rtype:  self 
+        '''
         return self.addSum(f)
 
     def count(self):
-        ''' A Synonym for addCount'''
+        ''' A Synonym for addCount
+        :return: return self (allows call chaining i.e. obj.method().method() )
+        :rtype:  self 
+        '''
         return self.addCout()
 
     def countDistinct(self,f):
-        ''' A Synonym for addCountDistinct'''
+        ''' A Synonym for addCountDistinct
+        :return: return self (allows call chaining i.e. obj.method().method() )
+        :rtype:  self 
+        '''
         return self.addCountDistinct(f)
 
     def addCount(self):
-        '''Add a count measure to the view, returns self'''
+        '''Add a count measure to the view, returns self
+        :return: return self (allows call chaining i.e. obj.method().method() )
+        :rtype:  self 
+        '''
         measure = Measure( 'count' )
         measure.setType('count')
         self.addField(measure)
         return self
 
     def addCountDistinct(self, f):
-        '''Add a count distinct to the view based on a field object or field name/identifier. returns self'''
+        '''Add a count distinct to the view based on a field object or field name/identifier. returns self
+        :return: return self (allows call chaining i.e. obj.method().method() )
+        :rtype:  self 
+        '''
         if isinstance(f, Field):
             field = f
         else:
@@ -1448,7 +1639,7 @@ class Property(object):
         # 'bind_filter', 'map_layer', 'parameter', 'set', 'column', 'derived_column', 'include', 
         # 'explore', 'link', 'when', 'allowed_value', 'named_value_format', 'join', 'datagroup', 'access_grant', 
         # 'sql_step', 'action', 'param', 'form_param', 'option', 'user_attribute_param', 'assert', 'test')
-        elif name in ('links','filters','tags','suggestions', 'actions', 'sets', 'options', 'form_params', 'access_grants','params','allowed_values', 'named_value_formats', 'datagroups', 'map_layers'):
+        elif name in ('links','filters','tags','suggestions', 'actions', 'sets', 'options', 'form_params', 'access_grants','params','allowed_values', 'named_value_formats', 'datagroups', 'map_layers', "columns", "derived_columns"):
         # elif name+'s' in lkml.keys.PLURAL_KEYS:
             self.value = Properties(value, multiValueSpecialHandling=name)
 
@@ -1640,11 +1831,11 @@ class Properties(object):
                             '\n    '.join(['"' + str(p) + '",' for p in self.getProperties()]) ,
                             '\n    ]' 
                             )
+        # elif self.multiValueSpecialHandling in ('filters', 'links', 'actions', 'options', 'form_params','params'):
         elif self.multiValueSpecialHandling in ('filters', 'links', 'actions', 'options', 'form_params','params'):
             return process_plural_unnamed_constructs()
 
-
-        elif self.multiValueSpecialHandling in ("access_grants","datagroups","map_layers","named_value_formats","sets"):
+        elif self.multiValueSpecialHandling in ("access_grants","datagroups","map_layers","named_value_formats","sets", "columns", "derived_columns"):
             return process_plural_named_constructs()
 
         elif self.multiValueSpecialHandling == 'allowed_values':
