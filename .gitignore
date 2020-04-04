@@ -1,16 +1,19 @@
 ## LookMLAutomation specific Gitignore configurations ##
 .app_data/
+.tmp
+.tmp/*
 log.log
 .vscode/
 config/settings.ini
 settings.ini
 old_code_fragments
 settings/templates/*
-output/*
+lookml/.output/*
 run.py
 msi_run.py
 # *.lkml
 testclient.py
+.DS_Store
 ############## Generic Python Gitignore configurations ##############
 # Byte-compiled / optimized / DLL files
 __pycache__/

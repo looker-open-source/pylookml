@@ -129,7 +129,8 @@ class testKitchenSinkLocal(unittest.TestCase):
         self.f_copy = copy.copy(self.f)
         #### Modifications ###
         self.f_copy.views.order_items.id.sql = "${TABLE}.test_sql_change"
-        self.f_copy.views.order_items + 'test_add_dimension'
+        # self.f_copy.views.order_items + 'test_add_dimension'
+        self.f_copy.views.order_items.addDimension('test_add_dimension') #+ 'test_add_dimension'
         self.f_copy.views.order_items.shipping_time.change_name_and_child_references('time_in_transit')
         #Check tag addition and subtraction
         self.f_copy.views.order_items.id.addTag('x')
@@ -190,23 +191,23 @@ class testKitchenSinkLocal(unittest.TestCase):
     #     '''
     #     pass
         
-    # def test_github_loop(self):
-    #     proj = lookml.Project(
-    #              repo= config['github']['repo']
-    #             ,access_token=config['github']['access_token']
-    #             ,looker_host="https://profservices.dev.looker.com/"
-    #             ,looker_project_name="russ_sanbox"
-    #     )
-    #     vf = proj.file('simple/tests.view.lkml')
-    #     mf = proj.file('simple/test1.model.lkml')
-    #     proj.update(vf)
-    #     proj.update(mf)
-    #     myNewView = lookml.View('great_test2') + 'id' + 'count_of_total'
-    #     myNewView.id.sql = "${TABLE}.`id`"
-    #     myNewView.id.setType('string')
-    #     myNewFile = lookml.File(myNewView)
-    #     proj.put(myNewFile)
-    #     proj.deploy()
+    def test_github_loop(self):
+        proj = lookml.Project(
+                 repo= config['github']['repo']
+                ,access_token=config['github']['access_token']
+                ,looker_host="https://profservices.dev.looker.com/"
+                ,looker_project_name="russ_sanbox"
+        )
+        vf = proj.file('simple/tests.view.lkml')
+        mf = proj.file('simple/test1.model.lkml')
+        proj.update(vf)
+        proj.update(mf)
+        myNewView = lookml.View('great_test2').addDimension('id').addDimension('count_of_total')
+        myNewView.id.sql = "${TABLE}.`id`"
+        myNewView.id.setType('string')
+        myNewFile = lookml.File(myNewView)
+        proj.put(myNewFile)
+        proj.deploy()
 
 class whitespaceTest(unittest.TestCase):
     '''
@@ -241,59 +242,59 @@ class whitespaceTest(unittest.TestCase):
         # for i in self.f.views.order_items.dims():
         #     print(i)
 
-    # def test_create_view_from_info_schema(self):
-    #     def column_to_dimension(col):
-    #         if col['LOOKER_TYPE'] == 'time':
-    #             tmpDim = lookml.DimensionGroup(
-    #                     lookml.lookCase(col['COLUMN_NAME'])
-    #                     )
-    #         else:
-    #             tmpDim = lookml.Dimension(lookml.lookCase(col['COLUMN_NAME']))
-    #         tmpDim.setType(col['LOOKER_TYPE'])
-    #         tmpDim.sql = "${TABLE}." + col['COLUMN_NAME']
-    #         return tmpDim
+    def test_create_view_from_info_schema(self):
+        def column_to_dimension(col):
+            if col['LOOKER_TYPE'] == 'time':
+                tmpDim = lookml.DimensionGroup(
+                        lookml.lookCase(col['COLUMN_NAME'])
+                        )
+            else:
+                tmpDim = lookml.Dimension(lookml.lookCase(col['COLUMN_NAME']))
+            tmpDim.setType(col['LOOKER_TYPE'])
+            tmpDim.sql = "${TABLE}." + col['COLUMN_NAME']
+            return tmpDim
 
-    #     sdk = client.setup("api.ini")
-    #     sql = """
-    #             SELECT 
-    #                 t.TABLE_NAME
-    #                 ,t.TABLE_SCHEMA
-    #                 ,t.COLUMN_NAME
-    #                 ,t.DATA_TYPE
-    #                 , CASE 
-    #                     WHEN t.DATA_TYPE IN ('TIMESTAMP_LTZ') THEN 'time'
-    #                     WHEN t.DATA_TYPE IN ('FLOAT','NUMBER') THEN 'number'
-    #                     ELSE 'string' END as "LOOKER_TYPE"
-    #             FROM 
-    #                 information_schema.COLUMNS as t
-    #             WHERE
-    #                 1=1
-    #                 AND t.table_name = 'ORDER_ITEMS'
-    #                 AND t.table_schema = 'PUBLIC'
-    #             LIMIT 100
-    #     """
-    #     query_config = models.WriteSqlQueryCreate(sql=sql, connection_id="snowlooker")
-    #     query = sdk.create_sql_query(query_config)
-    #     response = sdk.run_sql_query(slug=query.slug, result_format="json")
-    #     response_json = json.loads(response)
-    #     order_items = lookml.View('order_items_3')
-    #     order_items.sql_table_name = 'PUBLIC.ORDER_ITEMS'
+        sdk = client.setup("api.ini")
+        sql = """
+                SELECT 
+                    t.TABLE_NAME
+                    ,t.TABLE_SCHEMA
+                    ,t.COLUMN_NAME
+                    ,t.DATA_TYPE
+                    , CASE 
+                        WHEN t.DATA_TYPE IN ('TIMESTAMP_LTZ') THEN 'time'
+                        WHEN t.DATA_TYPE IN ('FLOAT','NUMBER') THEN 'number'
+                        ELSE 'string' END as "LOOKER_TYPE"
+                FROM 
+                    information_schema.COLUMNS as t
+                WHERE
+                    1=1
+                    AND t.table_name = 'ORDER_ITEMS'
+                    AND t.table_schema = 'PUBLIC'
+                LIMIT 100
+        """
+        query_config = models.WriteSqlQueryCreate(sql=sql, connection_id="snowlooker")
+        query = sdk.create_sql_query(query_config)
+        response = sdk.run_sql_query(slug=query.slug, result_format="json")
+        response_json = json.loads(response)
+        order_items = lookml.View('order_items_3')
+        order_items.sql_table_name = 'PUBLIC.ORDER_ITEMS'
 
-    #     for column in response_json:
-    #         order_items + column_to_dimension(column)
+        for column in response_json:
+            order_items + column_to_dimension(column)
 
-    #     order_items.sumAllNumDimensions()
-    #     order_items.addCount()
+        order_items.sumAllNumDimensions()
+        order_items.addCount()
 
-    #     proj = lookml.Project(
-    #              repo= config['github']['repo']
-    #             ,access_token=config['github']['access_token']
-    #             ,looker_host="https://profservices.dev.looker.com/"
-    #             ,looker_project_name="russ_sanbox"
-    #     )
-    #     myNewFile = lookml.File(order_items)
-    #     proj.put(myNewFile)
-    #     proj.deploy()
+        proj = lookml.Project(
+                 repo= config['github']['repo']
+                ,access_token=config['github']['access_token']
+                ,looker_host="https://profservices.dev.looker.com/"
+                ,looker_project_name="russ_sanbox"
+        )
+        myNewFile = lookml.File(order_items)
+        proj.put(myNewFile)
+        proj.deploy()
 
     def test_cool(self):
         v = lookml.View('cool')
@@ -304,8 +305,22 @@ class whitespaceTest(unittest.TestCase):
         # v.derived_table.datagroup_trigger = 'etl_24_hour'
         print(v)
         
+    def test_refinement(self):
+        exp = lookml.Explore('exp')
+        lookml.mkdir_force('.tmp/scratch')
+        with open('.tmp/scratch/refinement_test.model.lkml', 'w') as f:
+            f.write(
+                '''explore: refine_ex {}'''
+            )
+        myFile = lookml.File('.tmp/scratch/refinement_test.model.lkml')
+        refine_ex = myFile.exps.refine_ex
+        print(type(refine_ex))
+        # refine_ex.addProperty('aggregate_table',{'materialization':{'datagroup_trigger':'orders_datagroup'}})
+        print(refine_ex)
+        # refine_ex.addProperty('aggregate_table','foo')
+        print(myFile)
 
-
+# TODO: Write a test that would use materialization and refinements
 # Meterialization:
 # explore: event {
 #   aggregate_table: monthly_orders {
@@ -329,6 +344,82 @@ class whitespaceTest(unittest.TestCase):
 #   }
 # }
 
+
+
+class testShellGitController(unittest.TestCase):
+    '''
+        Objective: test project instantiation and file crud, add commit
+    '''
+
+    def setUp(self):
+        pass
+
+    def test_step1(self):
+        proj = lookml.Project(
+                #  repo= config['github']['repo']
+                # ,access_token=config['github']['access_token']
+                 git_url='git@github.com:llooker/russ_sandbox.git'
+                ,looker_host="https://profservices.dev.looker.com/"
+                ,looker_project_name="russ_sanbox"
+        )
+        ## Do Work ###
+        myNewView = lookml.View('great_test55').addDimension('id').addDimension('count_of_total')
+        # myNewView = lookml.View('great_test55') + 'id' + 'count_of_total'
+        myNewView.id.sql = "${TABLE}.`id`"
+        myNewView.id.setType('string')
+        myNewFile = lookml.File(myNewView)
+        myNewFile.setFolder(proj.gitControllerSession.absoluteOutputPath)
+        myNewFile.write()
+
+    #     myNewFile = lookml.File(order_items)
+    #     proj.put(myNewFile)
+    #     proj.deploy()
+
+
+        myOldFile = lookml.File('.tmp/russ_sanbox/02_users.view.lkml')
+        myOldFile.views.users.hello.setType("number")
+        myOldFile.write()
+
+        ## Deploy ###
+        proj.gitControllerSession.add().commit().pushRemote()
+
+class testMicroUnits(unittest.TestCase):
+
+    def test_filtered_measure(self):
+        meas = lookml.Measure('total_money')
+        meas.setProperty('group_label','foo')
+        # meas.properties.addProperty('filters',{'field':'order_items.price','value':'>100'})
+        # meas.setProperty('filters',[{'field':'order_items.price','value':'>100'}])
+        meas +  ('filters: { field: order_items.price value:">' + str(5) + '" }')
+        # print(filt)
+        # meas + filt
+        print(meas)
+
+    def test_add_micro_units(self):
+        testView = lookml.View('testView')
+        testView + 'id'
+        testView + 'dimension: success {}'
+        testView + '''
+                derived_table: {
+                    explore_source: order_items {
+                    column: order_id {field: order_items.order_id_no_actions }
+                    column: items_in_order { field: order_items.count }
+                    column: order_amount { field: order_items.total_sale_price }
+                    column: order_cost { field: inventory_items.total_cost }
+                    column: user_id {field: order_items.user_id }
+                    column: created_at {field: order_items.created_raw}
+                    column: order_gross_margin {field: order_items.total_gross_margin}
+                    derived_column: order_sequence_number {
+                        sql: RANK() OVER (PARTITION BY user_id ORDER BY created_at) ;;
+                    }
+                    }
+                    datagroup_trigger: ecommerce_etl
+                }
+        '''
+        print(testView)
+
+    # measure + 'filters: { field: cool value:">' + filter_threshold + '"}'
+    # view + 'dimension: id {}'
 
 
 
