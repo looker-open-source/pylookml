@@ -733,7 +733,7 @@ class testMicroUnits(unittest.TestCase):
              lookml.Project(**config['project1'])
             ,'order_items.view.lkml' #ordinarily should be my view file
             ,'order_items'
-            ,{'Brand':'products.brand','Category':'products.category','State':'users.state'}
+            ,{'Brand':'${products.brand}','Category':'${products.category}','State':'${users.state}'}
             ,'total_sale_price'
             ,'order_items.model.lkml' 
             ,'order_items'
