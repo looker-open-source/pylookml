@@ -8,87 +8,69 @@ import time, copy
 from string import Template
 import subprocess, os, platform
  
-
-#Required for V1:
+######### V3 #########
+# TODO: Complete shell git implementation.... iterate over files etc
+# TODO: ensure the top level stuff for file works, i.e. accessors for plurals like data groups etc
+# TODO: Extends bug --> render issue
+# TODO: figure out the whole NDT thing
+# TODO: Whitespace for column / derived column
+# TODO: Implement MVC? 
+        # * model -> could eliminate the "phanton property" in that a class instance is only created on get / observation.... (getters and setters should mutate the underlying json at all times to ensure conssistency)
+        # TODO: Rationalize View rendering
+        # TODO: elimnate property / properties classes? -> replace with model? Think through getter / setter / render 
 # TODO: Implement remaining collections iteration, top level file attributes (data groups, named value format etc)
 # TODO: Implement string -> lkml -> __add__ i.e.: my
-# TODO: make __getatt__ consistent across classes
-# TODO: other git providers (create two nested classes?) which implement a similar interface?
+# TODO: make __getatt__ / __setattr__ consistent across classes
 # TODO: Documentation:
-        #Investigate auto doc functionality
-        # loop through all the files in a project make a change and update
-        # Auto - tune your model  
-        # Looker API Query the database and create a new view file
-        # Validate some flexport's rules
-# TODO: bring in old code allowing shell git access
-# TODO: Top N? 
-# TODO: set variables via command line and environment variable
-# TODO: set expressions? ensure those will work
-# TODO: figure out the whole NDT thing
-# TODO: Ancenstor functions? Child function support renaming across all properties (html, links, etc)
+        # Document every funtion
+        # Usecase oriented documentation (move to the.rst file):
+            # loop through all the files in a project make a change and update
+            # Auto - tune your model  
+            # Looker API Query the database and create a new view file / EAV unnest (superview & multi-model approach)
+            # BQ Unnest
+            # Use dependency tracing
+            # BQML   
+            # Top N 
+            # Aggregate Awareness Macro (materialization + refinements)
+            # Calendar Table
+            # SFDC Waterfall
+            # Multi Grain period over period 
+            # Drill to vis with constants
+            # Incremental PDTs? --> This breaks as of Looker 7?
+            # Negative Intervals Hacking
+            # Linking macro, Intel linking block?
+            # Fancy Conditional Formatting examples
+            # Something with slowly changing dimensions
+            # lambda / cloud function example?
 
+# TODO: set configurations via command line and environment variable
+# Dependency Graphing:
+    # TODO: Ancenstor functions? 
+    # TODO: Child function support renaming across all properties (html, links, etc)
+    # TODO: Multi-generation dependency tracing (ancestor / decendangt)
+    # TODO: cross file / whole project?
 
-# ###### V2 ########### 
-# TODO: Remaining Whitespace issues -- big forehead on a file with no properties etc
-# TODO: Allow ancestor and children functions to search the whole project.... (is there a way to make a combined pointer 
-# structre to make theis easier?) Either way will lead to a lot of network traversal
+# Code Cleanliness / pip:
 # TODO: rationally break up the megafile...
-# TODO: rationalize operator overloading
-# get model metadata from API --> go where?
-# TODO: Constants
-# TODO: use lkml.keys to define parameter / property specific behavior
-# TODO: customize attibute access on JOIN class
-# TODO: get a better handle on __getattr__ infite loops and fix consitently
-# TODO: leverage inheretance on the dunder methods
-# TODO: go back and add slots optimizations
-# TODO: track all ancestors, all decendants (grandchildren) in a file
-# TODO: equality operator for object comparison | complete some of the dundermethod operator overloading schemes
-# TODO: parse manifest file
-# TODO: parse locale json file (i.e. localizaiton)
-# TODO: Add support for defining a user's config file in the working directory which allows easy configuration / scripting 
-# TODO: internal optimizations: good abstractions, no unnecessary memory, better internal class structure / data strcuture  
-# TODO: better whitespace and style control
-# TODO: adding comment messages at the top of all object types: view, file, explore etc
-# TODO: documentation standards in code -- docstrings, function descriptions etc...
-# TODO: go through and create / optimize slots for performance
+# TODO: use the _variable name for all private variables
+# TODO: change "identifier" to _name
+
+# Unit Testing:
+# TODO: Redesign / modularize test suite
+        #* Basic parsing loop, 
+        #* network enabled loop, github / shell
+# TODO: test iteration behaviors
+
+######### V3 #########
 # TODO: Common Sql Functions added to the SQL paramter
-# TODO: use lkml.json_data to serve as the underlying data structure (plural keys, keys with name fields etc)
-# TODO: eliminate the "phanton property" in that a class instance is only created on get / observation.... (getters and setters should mutate the underlying json at all times to ensure conssistency)
+# TODO: Common html Functions added to the html paramter
+# TODO: Manifest
+# TODO: contants
+# TODO: locale
+# TODO: slots / performance optimizaiton
+# TODO: Interactive CLI
+# TODO: Update LKML to support new filters syntax
 
-# ###### Post V2 #######
-# TODO: Boilerplate Code for this... [super view example...multi-model example...liveupdate service (lambda / cloud funcitons)]
-# TODO: Common Macros --> i.e. fast blocks 
-#         # Ideas:
-#         #  BigQuery table JSON auto creates the LookML
-#         #  Aggregate Awareness Macro
-#         #  Auto EAV Unnester
-#         #  Automatic Creation of NDT for pivot by rank type stuff
-#         #  Calendar Table
-#         #  SFDC Waterfall
-#         #  Guided Star Schema Generation?
-#         #  Multi Grain period over period 
-#         #  Drill to vis with constants
-#         #  Incremental PDTs? --> This breaks as of Looker 7?
-#         #  Negative Intervals Hacking
-#         #  Linking macro, Intel linking block?
-#         #  Fancy Conditional Formatting examples
-#         #  Something with slowly changing dimensions
-# TODO: Interactive block construction macro --> i.e. fast blocks 
-# TODO: Parse the Manifest file
-# TODO: Common HTML Functions added to the HTML paramter
-# ### Long term or debatable ###
-# TODO: Preserve initial ordering?
-
-# TODO: Enhanecement: Make the internal datastructure of the class the JSON.... i.e. as the class state is modified so is the underlying json.
-
-# def ws_buffer(item):
-#     def wrapper(*args,**kwargs):
-#         return splice(
-#                 conf.PRE_FIELD_BUFFER,
-#                 item(*args,**kwargs),
-#                 conf.POST_FIELD_BUFFER
-#                 )
-#     return wrapper
 
 def snakeCase(string):
     str1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', string)
@@ -127,131 +109,6 @@ def mkdir_force(dir):
     if not os.path.exists(dir):
         os.mkdir(dir,0o777)
 
-class pyLookML(object):
-
-
-    def __init__(self,input):
-        self.identifier = ''
-        self.properties = Properties({})
-        self.message = ''
-        self.token = ''
-        self.indentLevel = 1
-        if isinstance(input,str):
-            self.setName(input)
-        elif isinstance(input,dict):
-            self._bind_lkml(input)
-        self.templateMap = {}
-
-    def __str__(self):
-        self.templateMap = {
-             'message': self.getMessage()
-            ,'identifier': self.identifier
-            ,'props': stringify([ conf.INDENT + str(p) for p in self.getProperties()])
-            ,'token': self.token
-        }
-        return Template(getattr(conf.TEMPLATES,self.token)).substitute(**self.templateMap)
-
-    #CU (much more at once?
-    def __add__(self, other):
-        pass
-    def __sub__(self, other): #←- subtract a key from the model? 
-        pass
-    #R
-    def __getattr__(self, attr): #← model / property getting
-        pass
-    # C,U
-    def __setattr__(self, attr, val):
-        pass
-
-
-    def _bind_lkml(self, lkmldict):
-            self.setName(lkmldict.pop('name'))
-            for k,v in lkmldict.items():
-                self.setProperty(k,v) 
-
-    def setName(self, name):
-        '''
-        sets the name
-        :param arg1: name
-        :type arg1: string 
-        :return: return self (allows call chaining i.e. obj.method().method() )
-        :rtype:  self 
-        '''
-        self.identifier = name
-        return self
-        
-    def setLabel(self, label):
-        ''''''
-        return self.setProperty('label', label)
-
-    def hide(self):
-        ''''''
-        self.properties.addProperty('hidden', 'yes')
-        return self
-
-    def unHide(self):
-        ''''''
-        self.properties.delProperty('hidden')
-        return self
-
-    def setMessage(self,message):
-        self.message = message 
-        return self
-
-    def getMessage(self):
-        if self.message:
-            return splice('#',self.message,conf.NEWLINE)
-        else:
-            return ''
-    
-    def getProperty(self, prop):
-        ''' Get a property from the properties collection '''
-        return self.properties[prop]
-
-    def setProperty(self, name, value):
-        ''' Set a property in the properties collection '''
-        self.properties.addProperty(name, value)
-        return self
-
-    def unSetProperty(self, name):
-        ''''''
-        self.properties.__del__(name)
-        return self
-
-    def getProperties(self):
-        return self.properties.getProperties()
-
-    def hasProp(self, property):
-        return property in self.properties.props()
-
-    def props(self):
-        return self.properties.props()
-
-    def rawProp(self,key):
-        '''
-            if dict type schema, needs a prop name. If list type schema needs a number index
-        '''
-        return self.properties.rawPropValue(key)
-
-    # def __len__(self):
-    #     return len(self.schema)
-
-    def __repr__(self):
-        return "%s  name: %s id: %s" % (self.__class__, self.identifier, hex(id(self))) 
-
-    def __len__(self):
-        return len([f for f in self.getProperties()])
-
-    def __iter__(self):
-        self.valueiterator = iter(self.getProperties())
-        return self
-
-    def __next__(self):
-        try:
-            return next(self.valueiterator)
-        except:
-            raise StopIteration
-
 def Project(repo='',access_token='',branch="master",git_url="",commitMessage="",looker_host="",looker_project_name="",outputPath='.tmp'):
     '''
         A LookML Project at a GitHub location or location on the filesytem [Factory Function]
@@ -266,20 +123,10 @@ class _Project:
         A LookML Project at a GitHub location or location on the filesytem
         '''
 
-
     def __init__(self,repo='',access_token='',branch="master",git_url="",commitMessage="",looker_host="",looker_project_name="",outputPath='.tmp'):
         ''' 
             Can be constructed with a github access token and repository name
         '''
-        #  self
-        # ,repo=''
-        # ,access_token=''
-        # ,branch="master"
-        # ,git_url=""
-        # ,commitMessage=""
-        # ,looker_host=""
-        # ,looker_project_name=""
-        # ,outputPath='.tmp'
         self.outputPath = outputPath
         self.branch = branch
         self.looker_project_name = looker_project_name
@@ -294,15 +141,8 @@ class _Project:
         self.deploy_url = ""
         self.constructDeployUrl()
 
-        #type inference, and subtype specific properties 
-        # if access_token and repo:
-        #     self.type = "github"
-        #     self.gitsession = github.Github(access_token)
-        #     self.repo = self.gitsession.get_repo(repo)
-        # elif git_url:
-        #     self.type = "ssh_shell"
-        #     self.gitControllerSession =  self.gitController(projectName=self.looker_project_name, branch=self.branch, deployMessage=self.commitMessage, outputPath=outputPath)    
-        #     self.gitControllerSession.clone(git_url)
+    def __getitem__(self, key):
+        return self.file(key)
 
     def constructDeployUrl(self):
         '''
@@ -480,6 +320,11 @@ class _githubProject(_Project):
         self.repo = self.gitsession.get_repo(kwargs['repo'])
 
 class File:
+    '''
+        A file object represents a file within a LookML project. It can be several types, can contain views, explores 
+        or other properties such as inlcude or data groups
+        It can be instantiated with a View, an Explore, a filepath on disk, or content from the Github API
+    '''
     class view_collection:
         '''
             A container for views which allows us to use .operator syntax 
@@ -491,6 +336,9 @@ class File:
 
         def __getattr__(self,key):
             return self.views[key]
+
+        def __getitem__(self,key):
+            return self.__getattr__(key)
 
         def add(self, v):
             if isinstance(v,dict):
@@ -524,6 +372,9 @@ class File:
 
         def __getattr__(self,key):
             return self.explores[key]
+
+        def __getitem__(self,key):
+            return self.__getattr__(key)
 
         def add(self, e):
             if isinstance(e,dict):
@@ -583,7 +434,7 @@ class File:
         def exploreBootstrap():
             #custom initialization for path type
             #Set Basic Attributes
-            self.name = f.name + '.explore.lkml'
+            self.name = f.name + '.model.lkml'
             self.base_name = f.name
             self.path = self.name
             self.sha = ''
@@ -642,6 +493,12 @@ class File:
         else:
             # raise KeyError
             return object.__getattr__(key)
+
+    def __getitem__(self,key):
+        if key == 'views':
+            return self.vws
+        elif key == 'explores':
+            return self.exps
 
     def __str__(self):
         return splice(
@@ -937,7 +794,7 @@ class View(base):
         if isinstance(other, Field):
             return self.addField(other)
         elif isinstance(other, str):
-            # if re.match(other,)
+            #TODO: decide if still want to support view + 'id' behavior, and if so check regex first. Maybe a regex string to just ask: is snake str -> dim
             if len(other) < 10:
                 return self.addDimension(dbColumn=other)
             else:
@@ -1444,34 +1301,6 @@ class View(base):
             self.children.update({child.identifier: child})
         return child
 
-class ndt(View):
-    def __init__(self,explore_source, *args, **kwargs):
-        super(ndt, self).__init__(self, *args, **kwargs)
-        self._columns = {}
-        self._dcolumns = {}
-
-        if isinstance(explore_source,Explore):
-            self._explore_source = explore_source.identifier
-        else:
-            self._explore_source = explore_source
-
-    def addColumn(self,name,field):
-        self._columns.update({name:field})
-        return self
-
-    def addDerivedColumn(self,name,field):
-        self._dcolumns.update({name:field})
-        return self
-
-    def __str__(self):
-        return splice(
-            'derived_table: {\n',
-            'explore_source: ' + self._explore_source + ' ' , ' {',conf.NEWLINEINDENT
-             ,conf.NEWLINEINDENT.join(['column: ' + k + ' { field: ' + v + '}' for k,v in self._columns.items()]),conf.NEWLINEINDENT
-             ,conf.NEWLINEINDENT.join(['derived_column: ' + k + ' { sql: ' + v + ';; }' for k,v in self._dcolumns.items()])
-            ,conf.NEWLINEINDENT,'}',conf.NEWLINE,'}'
-        )
-
 class Join(base):
     ''' Instantiates a LookML join object... '''
 
@@ -1535,7 +1364,8 @@ class Explore(base):
 
             
     def _bind_lkml(self,jsonDict):
-        self.setName(jsonDict.pop('name'))
+        if 'name' in jsonDict.keys():
+            self.setName(jsonDict.pop('name'))
         if 'joins' in jsonDict.keys():
             for join in jsonDict['joins']:
                 self + Join(join)        
@@ -1559,6 +1389,8 @@ class Explore(base):
     def __add__(self,other):
         if isinstance(other,View) or isinstance(other,Join):
             self.addJoin(other) 
+        elif isinstance(other, str):
+            self._bind_lkml(lkml.load(other))
         else:
             raise TypeError 
         return self
@@ -1586,20 +1418,22 @@ class Explore(base):
         return self.getJoin(identifier)
 
     def createNDT(self,explore_source='', name='',fields=[]):
-        if name:
-            tmpView = View(name)
-        else:
-            tmpView = View(self.identifier + 'ndt')
+        pass
+        # TODO: re-impliment
+        # if name:
+        #     tmpView = View(name)
+        # else:
+        #     tmpView = View(self.identifier + 'ndt')
 
-        tmpndt = ndt(explore_source)
+        # tmpndt = ndt(explore_source)
 
-        for field in fields: 
-            tmpndt.addColumn(field.__refrs__,field.__refr__)
-            tmpView + field.__refrs__
+        # for field in fields: 
+        #     tmpndt.addColumn(field.__refrs__,field.__refr__)
+        #     tmpView + field.__refrs__
     
-        tmpView.derived_table = tmpndt
-        tmpView.tableSource = False
-        return tmpView
+        # tmpView.derived_table = tmpndt
+        # tmpView.tableSource = False
+        # return tmpView
 
     def setViewName(self,view):
         self.properties.addProperty('view_name',view)
@@ -1628,7 +1462,6 @@ class Explore(base):
 class Property(object):
     ''' A basic property / key value pair. 
     If the value is a dict it will recusively instantiate properties within itself '''
-    __slots__ = ['name', 'value','num']
     def __init__(self, name, value):
         self.name = name
         self.num = 0
@@ -1639,7 +1472,10 @@ class Property(object):
         # 'bind_filter', 'map_layer', 'parameter', 'set', 'column', 'derived_column', 'include', 
         # 'explore', 'link', 'when', 'allowed_value', 'named_value_format', 'join', 'datagroup', 'access_grant', 
         # 'sql_step', 'action', 'param', 'form_param', 'option', 'user_attribute_param', 'assert', 'test')
-        elif name in ('links','filters','tags','suggestions', 'actions', 'sets', 'options', 'form_params', 'access_grants','params','allowed_values', 'named_value_formats', 'datagroups', 'map_layers', "columns", "derived_columns"):
+        elif name in ('links','filters','tags','suggestions', 
+        'actions', 'sets', 'options', 'form_params', 'access_grants','params',
+        'allowed_values', 'named_value_formats', 'datagroups', 'map_layers', 'columns', 
+        'derived_columns', 'explore_source', 'includes'):
         # elif name+'s' in lkml.keys.PLURAL_KEYS:
             self.value = Properties(value, multiValueSpecialHandling=name)
 
@@ -1700,8 +1536,22 @@ class Property(object):
         #TODO: plain
         #TODO: SQL / HTML Block ;;
 
+        #TODO
         def quote_pair():
-            pass
+            return splice(self.name, ': "', str(self.value), '"')
+        def expression_block():
+            return splice(self.name, ': ', str(self.value), ' ;;')
+        def brackets():
+            return splice(self.name, ': [', str(self.value), ']')
+        def braces():
+            return splice(self.name, ': {', str(self.value), '}')
+        def default():
+            return splice(self.name , ': ' , str(self.value))
+        def list_member_training_comma():
+            return splice(str(self.value),',')
+        def simple():
+            return str(self.value)
+
         
     # lkml.keys.PLURAL_KEYS
     # ('view', 'measure', 'dimension', 'dimension_group', 'filter', 'access_filter', 
@@ -1728,41 +1578,43 @@ class Property(object):
                 'links','filters','actions','options', 
                 'form_params','sets', 'access_grants',
                 'params', 'allowed_values', 'named_value_formats', 
-                'datagroups', 'map_layers'):
-                return str(self.value)
-        #This one since it is a multi-value key, shouldn't be quoted literal
+                'datagroups', 'map_layers', 'derived_columns','columns'):
+                
+                return simple()
+
+        elif self.name == 'explore_source':
+            shadow = copy.copy(self.value)
+            return splice(self.name , ': ' + shadow.schema.pop('name') + ' ', str(shadow))
+
         elif self.name in ('tags'):
-            return splice(self.name , ': ' , str(self.value))
+            return default()
+        
         elif self.name in lkml.keys.EXPR_BLOCK_KEYS:
-            return splice(self.name, ': ', str(self.value), ' ;;')
-        # Not needed? does a default case
-        # elif self.name == "strict_value_format":
-        #     return splice(self.name, ': ', str(self.value))
+            return expression_block()
+
         elif self.name in lkml.keys.QUOTED_LITERAL_KEYS:
-            return splice(self.name, ': "', str(self.value), '"')
-        # replace with quote literal
-        # elif self.name in ['include', 'connection', 'description','value', "name","default","file"]:
-        #     return splice(self.name, ': "', str(self.value), '"')
-        # elif self.name.endswith('url') or self.name.endswith('label') or self.name.endswith('format') or self.name.endswith('persist_for'):
-        #     return splice(self.name, ': "', str(self.value), '"')
+            return quote_pair()
 
         elif self.name in ('extends', 'alias'):
-            return splice(self.name, ': [', str(self.value), ']')
-        elif self.name.startswith('explore_source'):
-            return splice(self.name, str(self.value))
+            return brackets()
+
         elif self.name == "includes":
             return splice('include: "',str(self.value),'"')
+
         elif self.name in conf.MULTIVALUE_PROPERTIES:
-            return splice(self.name , ': ' , str(self.value))
+            return default()
 
         elif self.name == ('list_member') and isinstance(self.value,str):
-            return splice(str(self.value),',')
+            return list_member_training_comma()
+
         elif self.name == 'list_member':
-            return splice(str(self.value))
+            return simple()
+
         elif self.name == 'list_member_quoted':
-            return str(self.value)
+            return simple()
+
         else:
-            return splice(self.name , ': ' , str(self.value))
+            return default()
 
 class Properties(object):
     '''
@@ -1835,7 +1687,7 @@ class Properties(object):
         elif self.multiValueSpecialHandling in ('filters', 'links', 'actions', 'options', 'form_params','params'):
             return process_plural_unnamed_constructs()
 
-        elif self.multiValueSpecialHandling in ("access_grants","datagroups","map_layers","named_value_formats","sets", "columns", "derived_columns"):
+        elif self.multiValueSpecialHandling in ("access_grants","datagroups","map_layers","named_value_formats","sets", "columns", "derived_columns", "explore_source"):
             return process_plural_named_constructs()
 
         elif self.multiValueSpecialHandling == 'allowed_values':

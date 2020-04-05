@@ -391,6 +391,7 @@ class testMicroUnits(unittest.TestCase):
         # meas.properties.addProperty('filters',{'field':'order_items.price','value':'>100'})
         # meas.setProperty('filters',[{'field':'order_items.price','value':'>100'}])
         meas +  ('filters: { field: order_items.price value:">' + str(5) + '" }')
+        meas.setViewLabel('test_viewLabel')
         # print(filt)
         # meas + filt
         print(meas)
@@ -418,8 +419,326 @@ class testMicroUnits(unittest.TestCase):
         '''
         print(testView)
 
-    # measure + 'filters: { field: cool value:">' + filter_threshold + '"}'
-    # view + 'dimension: id {}'
+    def test_adding_property(self):
+        v = lookml.View('test')
+        v + '''
+                derived_table: {
+                    explore_source: order_items {
+                    column: order_id {field: order_items.order_id_no_actions }
+                    column: items_in_order { field: order_items.count }
+                    column: order_amount { field: order_items.total_sale_price }
+                    column: order_cost { field: inventory_items.total_cost }
+                    column: user_id {field: order_items.user_id }
+                    column: created_at {field: order_items.created_raw}
+                    column: order_gross_margin {field: order_items.total_gross_margin}
+                    derived_column: order_sequence_number {
+                        sql: RANK() OVER (PARTITION BY user_id ORDER BY created_at) ;;
+                    }
+                    }
+                    datagroup_trigger: ecommerce_etl
+                }
+        '''
+        v + 'dimension: id {}'
+        v.id + 'sql: ${TABLE}.id ;;'
+        for item in ('a', 'b', 'c'):
+            v + f'''
+                dimension: {item}_id {{ 
+                        sql: {v.id.__refs__} + {item} ;;
+                    }}'''
+
+            v + f'''measure: sum_of_{item} {{
+                type: sum
+                sql: ${{{item}_id}};;
+            }}
+            '''
+        for f in v.measures():
+            if f.type.value == 'sum':
+                f.addTag('my function is to add') 
+        
+        ex = lookml.Explore(v.name)
+        ex + '''join: test_2 {
+                    from: test
+                    type: left_outer
+                    relationship: one_to_many
+                    sql_on: ${testid} = ${test_2.id};;
+                 }
+        '''
+        ex.test_2 + 'sql_on: foo ;;'
+        F = lookml.File(ex)
+        F + v
+        print(F)
+
+    def test_join_back_an_ndt(self):
+        v = lookml.View('order_items')
+        v + '''
+            sql_table_name: public.order_items ;;
+            dimension: id {
+                primary_key: yes
+            }
+            dimension: state {}
+            dimension: sale_price {}
+            parameter: {dynamic_dim_selector} {
+                type: unquoted
+            #     suggestions: ["Brand","Category","Department"]
+                allowed_value: {
+                label: "Category"
+                value: "Category"
+                }
+                allowed_value: {
+                label: "Brand"
+                value: "Brand"
+                }
+                allowed_value: {
+                label: "Department"
+                value: "Department"
+                }
+                allowed_value: {
+                label: "State"
+                value: "State"
+                }
+            }
+            dimension: user_id {}
+            dimension: inventory_item_id { 
+                sql: ${TABLE}.inventory_item_id ;; 
+            }
+            dimension: new_dimension {
+                type: string
+                sql:
+                    {% if order_items.dynamic_dim_selector._parameter_value == 'Brand' %} ${products.brand}
+                    {% elsif order_items.dynamic_dim_selector._parameter_value == 'Category' %}  ${products.category}
+                    {% elsif order_items.dynamic_dim_selector._parameter_value == 'Department' %} ${products.department}
+                    {% elsif order_items.dynamic_dim_selector._parameter_value == 'State' %} ${users.state}
+                    {% else %} 'N/A'
+                    {% endif %}
+                ;;
+            }
+            measure: total_sale_price {
+                type: sum
+                sql: ${sale_price} ;;
+            }
+        '''
+        ex = lookml.Explore(v.name)
+        agg = lookml.View('agg')
+        agg + '''
+                derived_table: {
+                    explore_source: order_items {
+                    column: new_dimension {field: order_items.new_dimension}
+                    column: total_sale_price {field: order_items.total_sale_price}
+                    derived_column: rank {
+                        sql: ROW_NUMBER() OVER (ORDER BY total_sale_price DESC) ;;
+                    }
+                    # bind_all_filters: yes
+                    bind_filters: {
+                        from_field: order_items.{dynamic_dim_selector}
+                        to_field: order_items.{dynamic_dim_selector}
+                    }
+                    # bind_filters: {
+                    #     from_field: order_items.created_date
+                    #     to_field: order_items.created_date
+                    # }
+                    }
+                }
+                dimension: new_dimension {
+                    sql: ${TABLE}.new_dimension ;;
+                }
+                dimension: rank {
+                    type: number
+                    hidden: yes
+                }
+
+                filter: tail_threshold {
+                    type: number
+                    hidden: yes
+                }
+
+                dimension: stacked_rank {
+                    type: string
+                    sql:
+                            CASE
+                            WHEN ${rank} < 10 then '0' || ${rank} || ') '|| ${new_dimension}
+                            ELSE ${rank} || ') ' || ${new_dimension}
+                            END
+                    ;;
+                }
+
+                dimension: ranked_brand_with_tail {
+                    type: string
+                    sql:
+                        CASE WHEN {% condition tail_threshold %} ${rank} {% endcondition %} THEN ${stacked_rank}
+                        ELSE 'x) Other'
+                        END
+
+                    ;;
+                }
+
+                dimension: total_sale_price {
+                    value_format: "$#,##0.00"
+                    type: number
+                }
+        '''
+
+        ex + '''
+            join: inventory_items {
+                type: left_outer
+                relationship: one_to_many
+                sql_on: ${order_items.inventory_item_id} = ${inventory_items.id} ;;
+            }
+            join: products {
+                type: left_outer
+                sql_on: ${inventory_items.product_id} = ${products.id} ;;
+                relationship: many_to_one
+            }
+              join: users {
+                type: left_outer
+                sql_on: ${order_items.user_id} = ${users.id} ;;
+                relationship: many_to_one
+                      }
+              join: agg {
+                type: left_outer
+                relationship: many_to_one
+                sql_on: ${order_items.new_dimension}  = ${agg.new_dimension};;
+            }
+        '''
+        myModel = lookml.File(ex)
+        myModel + v
+        myModel + agg
+        myModel.properties.addProperty('connection', 'snowlooker')
+        myModel.properties.addProperty('include', 'views/*.lkml')
+        myModel.name = 'core2.model.lkml'
+        proj = lookml.Project(
+                 repo= 'russlooker/oi'
+                ,access_token=config['github']['access_token']
+                ,looker_host="https://profservices.dev.looker.com/"
+                ,looker_project_name="test_pylookml"
+        )
+
+        proj.put(myModel)
+        proj.deploy()
+
+    def test_one_line_access_github(self):
+        print(   
+        lookml.Project(**config['project1'])['order_items.view.lkml']['views']['order_items']['id'].primary_key.value
+        # lookml.Project(**config['project1']).file('order_items.view.lkml').views.order_items.id.primary_key.value
+        )
+
+    def test_topN(self):
+
+
+        def apply_top_n(project, view_file, view, rank_by_dims, rank_by_meas, model_file, explore, agg_view='rank_ndt', dynamic_dim_name='dynamic_dim', dynamic_dim_selector='dynamic_dim_selector'):
+            #### SETUP ####
+            p = project
+            mf = p[model_file]
+            vf = p[view_file]
+            v = vf['views'][view]
+            e = mf['explores'][explore]
+            #### DO WORK ####
+            #Add the parameter to the initial view file
+            dynamic_dim_sql = ''
+            i = 0
+            for key,val in rank_by_dims.items():
+                if i == 0:
+                    dynamic_dim_sql = f"{{% if {v.name}.{dynamic_dim_selector}._parameter_value == '{key}' %}} {val}"
+                else:
+                    dynamic_dim_sql = dynamic_dim_sql + '\n' + f"{{% elsif {v.name}.{dynamic_dim_selector}._parameter_value == '{key}' %}} {val}"
+                i = 1 + 1
+            dynamic_dim_sql = dynamic_dim_sql + f"""
+                    {{% else %}} 'N/A' 
+                    {{% endif %}}
+                """
+            allowed_values = ''
+            for key in rank_by_dims.keys():
+                allowed_values = allowed_values + f'allowed_value: {{ label: "{key}" value: "{key}"}}'
+
+            v + f'''
+                parameter: {dynamic_dim_selector} {{
+                    type: unquoted
+
+                    {allowed_values}
+                }}'''
+
+            v + f'''
+                dimension: {dynamic_dim_name} {{
+                    type: string
+                    hidden: yes
+                    sql: {dynamic_dim_sql};;
+                }}
+
+            '''
+            #create the aggregate ndt
+            agg = lookml.View(agg_view)
+            agg + f'''
+                derived_table: {{
+                    explore_source: {e.name} {{
+                    column: {dynamic_dim_name} {{field: {v.name}.{dynamic_dim_name}}}
+                    column: {rank_by_meas} {{field: {v.name}.{rank_by_meas}}}
+                    derived_column: rank {{
+                        sql: ROW_NUMBER() OVER (ORDER BY {rank_by_meas} DESC) ;;
+                    }}
+                    # bind_all_filters: yes
+                    bind_filters: {{
+                        from_field: {v.name}.{dynamic_dim_selector}
+                        to_field: {v.name}.{dynamic_dim_selector}
+                    }}
+                    }}
+                }}
+                dimension: {dynamic_dim_name} {{
+                    sql: ${{TABLE}}.{dynamic_dim_name} ;;
+                    hidden: yes
+                }}
+                dimension: rank {{
+                    type: number
+                    hidden: yes
+                }}
+                filter: tail_threshold {{
+                    type: number
+                    hidden: yes
+                }}
+                dimension: stacked_rank {{
+                    type: string
+                    sql:
+                            CASE
+                            WHEN ${{rank}} < 10 then '0' || ${{rank}} || ') '|| ${{{dynamic_dim_name}}}
+                            ELSE ${{rank}} || ') ' || ${{{dynamic_dim_name}}}
+                            END
+                    ;;
+                }}
+                dimension: ranked_by_with_tail {{
+                    type: string
+                    sql:
+                        CASE WHEN {{% condition tail_threshold %}} ${{rank}} {{% endcondition %}} THEN ${{stacked_rank}}
+                        ELSE 'x) Other'
+                        END
+                    ;;
+                }}
+            '''
+            #add our new aggregate view to the view file
+            vf + agg
+            #join in our aggregate table to the explore
+            e + f'''
+              join: {agg.name} {{
+                type: left_outer
+                relationship: many_to_one
+                sql_on: ${{{v.name}.{dynamic_dim_name}}}  = ${{{agg.name}.{dynamic_dim_name}}};;
+             }}
+            '''
+
+            #### SAVE ####
+            p.put(vf)
+            p.put(mf)
+            p.deploy()
+
+
+
+        apply_top_n(
+             lookml.Project(**config['project1'])
+            ,'order_items.view.lkml' #ordinarily should be my view file
+            ,'order_items'
+            ,{'Brand':'products.brand','Category':'products.category','State':'users.state'}
+            ,'total_sale_price'
+            ,'order_items.model.lkml' 
+            ,'order_items'
+            )
+
 
 
 

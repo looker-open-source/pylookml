@@ -102,9 +102,7 @@ explore: order_items {
 }
 
 
-
 view: order_items {
-
   sql_table_name: ecomm.order_items ;; 
   
   parameter: foo { 
@@ -317,11 +315,9 @@ form_param: {
         WHEN date_part('year',${created_raw}) = date_part('year',current_date)
         AND ${created_raw} < CURRENT_DATE
         THEN 'This Year to Date'
-
         WHEN date_part('year',${created_raw}) + 1 = date_part('year',current_date)
         AND date_part('dayofyear',${created_raw}) <= date_part('dayofyear',current_date)
         THEN 'Last Year to Date'
-
       END ;; 
   }
   
