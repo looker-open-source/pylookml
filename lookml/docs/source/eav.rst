@@ -43,7 +43,7 @@ Here is the LookML starting point (the script assumes that you have already crea
 We have a usr table which tracks basic information about our user accounts eav_source (which would be pointed at public.custom_profile_fields) and usr_profile which will track the extended profile attributes from custom_profile_fields (we'll also permission the fields at the org level).
 The explore usr, just associates our usr table to the usr profile table which will contain the un-packed EAV values. We have also added an access filter, so that our orgs can only see thier own records.
 
-.. code-block::
+.. code-block:: javascript
 
     connection: "snowlooker"
 
@@ -89,9 +89,9 @@ And we'll install our pyLookML package as well.
 
    pip install lookml, looker_sdk
 
-create a file called api.ini in the directory where your python script will run: 
+create a file called api.ini in the directory where your python script will run to house the Looker API connection parameters: 
 
-.. code-block:: 
+.. code-block:: bash
 
     # Base URL for API. Do not include /api/* in the url
     base_url = https://mylooker.looker.com:19999
@@ -101,15 +101,31 @@ create a file called api.ini in the directory where your python script will run:
     client_secret=put_your_sectret_here
     # Set to false if testing locally against self-signed certs. Otherwise leave True
 
+
+
+The automation python file follows these high level steps.
+
+    1. connect to the Looker API to pull a list of EAV fields
+    2. create a pyLookML project connection to your github
+    3. Set up the objects we'll be manipulating (some are just strings which will be added back to the LookML at the end)
+    4. loop over the list of EAV k,v pairs and do work
+    5. loop over the distinct raw columns (obtained in the full k,v loop) for adding columns to the NDT
+    6. loop over the distinct org ids to add the model's access grants
+    7. add all the final objects back to the model file
+    8. save the file back to the project in github 
+    9. hit the looker deploy URL to sync Looker production mode with the github master branch
+
 .. code-block:: python
    :linenos:
 
     import lookml
     from looker_sdk import client, models, methods
+
+    # step 1 -- connect to the Looker API to pull a list of EAV fields
     sdk = client.setup("api.ini")
     sql_for_fields = f"""
             SELECT 
-                    cpf.org_id
+                 cpf.org_id
                 ,cpf.value
                 ,cpf.datatype
                 ,cpf.field_name as "FIELD_NAME"
@@ -138,6 +154,7 @@ create a file called api.ini in the directory where your python script will run:
     query = sdk.create_sql_query(query_config)
     response = json.loads(sdk.run_sql_query(slug=query.slug, result_format="json"))
 
+    # step 2 -- create a pyLookML project connection to your github
     proj = lookml.Project(
             #the github location of the repo
                 repo= 'llooker/russ_sanbox'
@@ -154,12 +171,14 @@ create a file called api.ini in the directory where your python script will run:
     #For simplicity of this example, all of the objects we're tracking will be contained in the model file, but for your needs can be split across the project.
     modelFile = proj['eav_example/eav.model.lkml']
 
+    # step 3 -- Set up the objects we'll be manipulating (some are just strings which will be added back to the LookML at the end)
     #the EAV source view points to our custom_profile_fields database table
     eavSource = modelFile['views']['eav_source']
     #the user profile we'll call the "flattening NDT" since that's where our flattening logic lives
     flatteningNDT = modelFile['views']['usr_profile']
 
-    #Step Ensure there is a hidden explore to expose the eav_souce transformations to our user_profile NDT
+
+    #Ensure there is a hidden explore to expose the eav_souce transformations to our user_profile NDT
     modelFile + f'''
         explore: _eav_flattener {{
             from: {eavSource.name}
@@ -178,6 +197,7 @@ create a file called api.ini in the directory where your python script will run:
     #since the api query will be at a org / column level this allows us to "de-dupe"
     orgIds, columns = [], []
 
+    # step 4 -- loop over the list of EAV k,v pairs and do work
     for column in response:
         dimName = lookml.lookCase(column['FIELD_NAME'])
         orgIds.append(column['ORG_ID'])
@@ -190,7 +210,7 @@ create a file called api.ini in the directory where your python script will run:
                 }}
         '''
 
-        #Step 2) Add to the NDT fields
+        # Add to the NDT fields
         flatteningNDT + f'''
                 dimension: {dimName}_org_{column['ORG_ID']} {{
                     label: "{dimName}"
@@ -208,12 +228,12 @@ create a file called api.ini in the directory where your python script will run:
                     required_access_grants: [org_{column['ORG_ID']}]
                 }}
             '''
-    #Finalize / add the completed derived table string to the NDT:
+    # step 5 -- loop over the distinct raw columns (obtained in the full k,v loop) for adding columns to the NDT 
     for col in set(columns):
         drivedtableString += f' column: {col} {{ field: _eav_flattener.{col} }}'
     drivedtableString += '}}'
 
-    #Create the access grants for each org
+    # step 6 -- loop over the distinct org ids to add the model's access grants
     accessGrants = ''
     for org in set(orgIds):
         accessGrants += f'''
@@ -224,15 +244,15 @@ create a file called api.ini in the directory where your python script will run:
             ]
             }}
         '''
-
+    # step 7 -- add all the final objects back to the model file
     #Finish by adding some of the strings we've been tracking:
     flatteningNDT + drivedtableString
     #Add access grants to the model
     modelFile + accessGrants
 
-    #save the file back to the project
+    # step 8 -- save the file back to the project in github 
     proj.put(modelFile)
-    #syncs the looker instance with the master branch in your github account
+    #s step 9 -- hit the looker deploy URL to sync Looker production mode with the github master branch
     proj.deploy()
 
 
@@ -393,3 +413,20 @@ The Completed LookML output to the eav.model.lkml file
     }
 
 
+
+More information and resources
+***************
+    1. `2019 Looker JOIN presentation on EAV and LookML Generation <https://www.youtube.com/watch?v=cdyn-KLwyfc>`_
+    2. `More about modeling EAV data in Looker <https://discourse.looker.com/t/three-ways-to-model-eav-schemas-and-many-to-many-relationships/1780>`_ 
+
+As an alternative to the MAX(CASE WHEN NAME='foo' THEN VALUE END) construct, you can use first / last value window functions. The specifics of the implementation may look slightly different.
+
+.. code-block:: sql
+
+            FIRST_VALUE(
+                CASE
+                    WHEN attributename = 'single_type' THEN attributevalue
+                    ELSE NULL
+                END
+            IGNORE NULLS)
+            OVER (partition by sessionid order by sessionid)

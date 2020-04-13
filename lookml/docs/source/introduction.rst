@@ -14,17 +14,20 @@ Install pylookml package via pip
 
 `Make a github access token <https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line>`_
 
-Fetch a viewFile from github and print one of its dimensions
+Fetch a viewFile from Github and print one of its dimensions
 
 .. code-block:: python
    :linenos:
 
    import lookml
    proj = lookml.Project(
-         repo= "llooker/russ_sandbox",
+         repo= "llooker/pyLookMLExample",
          access_token="your_github_access_token",
+         #Optional args for the deploy URL (for deploying directly to prodcution mode)
+        ,looker_host="https://mylooker.looker.com/"
+        ,looker_project_name="my_project"
    )
-   viewFile = proj.getFile('01_order_items.view.lkml')
+   viewFile = proj.file('01_order_items.view.lkml')
    orderItems = viewFile.views.order_items
    print(orderItems.id)
 
@@ -35,6 +38,23 @@ Fetch a viewFile from github and print one of its dimensions
     type: number
     sql: ${TABLE}.id ;;
   }
+
+
+Or do the same thing from any other git service (as long as you have SSH git access on the machine pyLookML is running on):
+
+.. code-block:: python
+   :linenos:
+
+        self.proj = lookml.Project(
+                 git_url='git@bitbucket.org:myorg/russ_sandbox.git'
+                 #Optional args for the deploy URL (for deploying directly to prodcution mode)
+                ,looker_host="https://mylooker.looker.com/"
+                ,looker_project_name="my_project"
+        )
+
+
+This works for bitbucket, gitlab, or private git servers.
+
 
 **How to reference objects**
 The taxonomy is basically as follows
@@ -54,12 +74,33 @@ project>file>'explores'>explorename>joinname>property
     myProject['order_items.view.lkml']['views']['order_items']['id'].primary_key.value
 
 
-
-**Looping over stuff**
+Get all the way down to property values in one line of code
 
 .. code-block:: python
 
     lookml.Project(**config['project1'])['order_items.view.lkml']['views']['order_items']['id'].primary_key.value
+
+
+**Looping over stuff**
+
+.. code-block:: javascript
+
+    dimension: id {
+        type: string
+        sql: ${TABLE}.id ;;
+        tags: ["a","b","c"]
+    }
+
+.. code-block:: python
+
+    for tag in order_items.id.tags:
+        print(tag)
+    >>> 'a'
+    >>> 'b'
+    >>> 'c'
+
+
+
 
 
 **Updating things**

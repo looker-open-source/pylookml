@@ -21,8 +21,7 @@ class language_rules:
 
 
 class TEMPLATES:
-    default =  """
-$message  $token: $identifier { $props }"""
+    default =  """$message$token: $identifier { $props }"""
     join = default
     dimension = default
     measure = default
@@ -30,21 +29,11 @@ $message  $token: $identifier { $props }"""
     filter = default
     dimension_group = default
     view = """$message
-view: $identifier {
-$props$parameters$filters$dimensions$dimensionGroups$measures$sets
-}
+view: $identifier {$props$parameters$filters$dimensions$dimensionGroups$measures$sets}
 $children"""
     explore = """
-$message
-$token: $identifier {
-$props
-$joins
-}
+$message $token: $identifier { $props $joins }
 """
-    array = """{
-  $data
-  }"""
-    _list = """[
-      $data
-    ]"""
+    array = """{ $data }"""
+    _list = """[ $data] """
 #TODO: change these to configurable parameters via either argparse / config file / both 

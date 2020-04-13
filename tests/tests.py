@@ -352,36 +352,60 @@ class testShellGitController(unittest.TestCase):
     '''
 
     def setUp(self):
-        pass
-
-    def test_step1(self):
-        proj = lookml.Project(
+        self.proj = lookml.Project(
                 #  repo= config['github']['repo']
                 # ,access_token=config['github']['access_token']
                  git_url='git@github.com:llooker/russ_sandbox.git'
                 ,looker_host="https://profservices.dev.looker.com/"
                 ,looker_project_name="russ_sanbox"
         )
+
+    def test_step1(self):
+
         ## Do Work ###
         myNewView = lookml.View('great_test55').addDimension('id').addDimension('count_of_total')
         # myNewView = lookml.View('great_test55') + 'id' + 'count_of_total'
         myNewView.id.sql = "${TABLE}.`id`"
         myNewView.id.setType('string')
         myNewFile = lookml.File(myNewView)
-        myNewFile.setFolder(proj.gitControllerSession.absoluteOutputPath)
+        myNewFile.setFolder(self.proj.gitControllerSession.absoluteOutputPath)
         myNewFile.write()
 
     #     myNewFile = lookml.File(order_items)
     #     proj.put(myNewFile)
     #     proj.deploy()
 
-
         myOldFile = lookml.File('.tmp/russ_sanbox/02_users.view.lkml')
         myOldFile.views.users.hello.setType("number")
         myOldFile.write()
 
         ## Deploy ###
-        proj.gitControllerSession.add().commit().pushRemote()
+        self.proj.gitControllerSession.add().commit().pushRemote()
+
+    def test_step2(self):
+        for f in self.proj.files('simple'):
+            print(f.path)
+
+        # print(self.proj.file('simple/tests.view.lkml'))
+        tests = self.proj.file('simple/tests.view.lkml') 
+        tests + lookml.View('shell')
+        tests.views.test1.bar.sql = 'WHOA'
+        # tests.write()
+        self.proj.update(tests)
+        x = lookml.View('hello_world') 
+        x + 'dimension: id {}'
+        xf = lookml.File(x)
+        self.proj.put(xf)
+        self.proj.delete(xf)
+        self.proj.deploy()
+
+    def test_extends_bug(self):
+        cool = lookml.View('cool')
+        cool + 'extends: [wut]'
+        print(cool)
+        
+
+
 
 class testMicroUnits(unittest.TestCase):
 
@@ -875,166 +899,8 @@ class testMicroUnits(unittest.TestCase):
         # proj.deploy()
 
 
-#Begining LookML File:
-'''
-connection: "snowlooker"
-
-explore: usr {
-    access_filter: {
-      field: usr_profile.org_id
-      user_attribute: org_id
-    }
-    join: usr_profile {
-      type: left_outer
-      relationship: one_to_one
-      sql_on: ${usr.id} =  ${usr_profile.user_id} ;;
-      }
-  }
-
-view: usr {
-  sql_table_name: public.users ;;
-  dimension: email {}
-  dimension: id {}
-  dimension_group: created { timeframes: [raw,date,month,year] }
-}
-
-view: usr_profile {
-  dimension: org_id {}
-  dimension: user_id {}
-}
-
-view: eav_source {
-  sql_table_name: (
-      SELECT 1 as user_id, 8 as org_id, 'c_donation_amount' as field_name, '40' as value, 'int' as datatype UNION ALL
-      SELECT 1, 8, 'c_highest_achievement', 'gold badge', 'varchar' UNION ALL
-      SELECT 2, 101, 'c_highest_achievement', 'silver badge', 'varchar' UNION ALL
-      SELECT 2, 101, 'c_monthly_contribution', '300', 'int' UNION ALL
-      SELECT 3, 101, 'c_highest_achievement', 'bronze badge', 'varchar' UNION ALL
-      SELECT 3, 101, 'c_monthly_contribution', '350', 'int' UNION ALL
-      SELECT 4, 101, 'c_monthly_contribution', '350', 'int' UNION ALL
-      SELECT 4, 101, 'age', '32', 'int' UNION ALL
-      SELECT 5, 102, 'c_monthly_contribution', '100', 'int'
-  ) ;;
-  dimension: datatype { type: string }
-  dimension: field_name { type: string }
-  dimension: org_id { type: number }
-  dimension: user_id { type: number }
-  dimension: value { type: string }
-}
-
-'''
-#END:
-'''
-connection: "snowlooker"
 
 
-access_grant: cust_101 {
-  user_attribute: brand
-  allowed_values: [
-    "Calvin Klein"
-  ]
-}
-
-explore: usr {
-  join: usr_profile {
-    type: left_outer
-    relationship: one_to_one
-    sql_on: ${usr.id} =  ${usr_profile.user_id} ;;
-  }
-}
-
-explore: unfold_eav {
-  from: custom_profile_fields_raw
-  hidden: yes
-}
-
-view: usr {
-  sql_table_name: (select * from public.users where id in (1,2,3)) ;;
-  dimension: email {}
-  dimension: id { type: number }
-  dimension_group: created {
-    timeframes: [raw
-              ,year
-              ,quarter
-              ,month
-              ,week
-              ,date
-  ]
-    type: time
-    sql: ${TABLE}.`id` ;;
-  }
-}
-
-view: custom_profile_fields_raw {
-  sql_table_name: 
-    (
-        SELECT 1 as user_id, 8 as cust_id, 'c_donation_amount' as field_name, '40' as value, 'int' as datatype UNION ALL
-        SELECT 1, 8, 'c_highest_achievement', 'gold badge', 'varchar' UNION ALL
-        SELECT 2, 101, 'c_highest_achievement', 'silver badge', 'varchar' UNION ALL
-        SELECT 2, 101, 'c_maximum_monthly_contribution', '300', 'int' UNION ALL
-        SELECT 3, 101, 'c_highest_achievement', 'bronze badge', 'varchar' UNION ALL
-        SELECT 3, 101, 'c_maximum_monthly_contribution', '350', 'int'
-    )
-  ;;
-  dimension: user_id { type: number }
-  dimension: cust_id { type: number }
-  dimension: field_name { type: string }
-  dimension: value { type: string }
-  dimension: datatype { type: string }
-  measure: c_donation_amount {
-    type: max
-    sql: CASE WHEN ${field_name} =  'c_donation_amount' THEN ${value} ELSE NULL END;;
-  }
-  measure: c_highest_achievement {
-    type: max
-    sql: CASE WHEN ${field_name} =  'c_highest_achievement' THEN ${value} ELSE NULL END;;
-  }
-  measure: c_maximum_monthly_contribution {
-    type: max
-    sql: CASE WHEN ${field_name} =  'c_maximum_monthly_contribution' THEN ${value} ELSE NULL END;;
-  }
-}
-
-view: usr_profile {
-  derived_table: {
-    explore_source: unfold_eav {
-      column: user_id { field: unfold_eav.user_id }
-      column: cust_id { field: unfold_eav.cust_id }
-      column: c_donation_amount {field: unfold_eav.c_donation_amount }
-      column: c_highest_achievement {field: unfold_eav.c_highest_achievement }
-      column: c_maximum_monthly_contribution {field: unfold_eav.c_maximum_monthly_contribution }
-    }
-  }
-
-  dimension: c_donation_amount {
-    type: number
-    sql: ${TABLE}.c_donation_amount ;;
-  }
-  dimension: c_highest_achievement {
-    type: string
-    sql: ${TABLE}.c_highest_achievement ;;
-    required_access_grants: [cust_101]
-  }
-  dimension: c_maximum_monthly_contribution {
-    type: number
-    sql: ${TABLE}.c_maximum_monthly_contribution ;;
-  }
-  dimension: cust_id { }
-
-  dimension: user_id { hidden: yes }
-
-}
-'''
-
-
-# Alternative implementation?
-#         FIRST_VALUE(
-#               CASE
-#                 WHEN attributename = 'single_type' THEN attributevalue
-#                 ELSE NULL
-#               END
-#           IGNORE NULLS)
-#         OVER (partition by sessionid order by sessionid)
 
 
 
