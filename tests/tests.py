@@ -3,7 +3,7 @@ import lookml
 import configparser, json
 from looker_sdk import client, models, methods
 config = configparser.ConfigParser()
-config.read('lookml/tests/settings.ini')
+config.read('settings.ini')
 
 #TODO: Define Essential Test Suite:
     # create "kitchen sink" model file with every obscure problematic parameter, fetch it from a project parse everything, put it back, parse it again.

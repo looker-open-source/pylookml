@@ -18,8 +18,6 @@ import subprocess, os, platform
 # DONE: Documentation:
         # Good Initial Uscases: EAV, good basic cookbook coverage
 
-
-
 #next Minor release::
 # TODO: set configurations via command line and environment variable
 # TODO: make __getatt__ / __setattr__ consistent across classes
