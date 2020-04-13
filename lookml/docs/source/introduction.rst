@@ -1,10 +1,10 @@
 
-pyLookML 
+Introduction 
 =========================================
 pyLookML is a metaprogramming interface for the LookML language. It leverages the `lkml <https://pypi.org/project/lkml/>`_ parser to interpret raw lookml files then adds an object oriented API allowing
-easy programitic manipulaiton of the file. Visit the repo `here <https://github.com/llooker/lookml/>`_:
+easy programitic manipulaiton of the file. Visit the repo `here <https://github.com/llooker/lookml/>`_.
 
-Quickstart Examples
+Quickstart
 -------------------
 Install pylookml package via pip
 
@@ -36,6 +36,73 @@ Fetch a viewFile from github and print one of its dimensions
     sql: ${TABLE}.id ;;
   }
 
+**How to reference objects**
+The taxonomy is basically as follows
+project>file>'views'>viewname>fieldname>property  
+project>file>'explores'>explorename>joinname>property  
+
+.. code-block:: python
+
+    myProject = lookml.Project(
+         repo= "llooker/russ_sandbox",
+         access_token="your_github_access_token",
+    )
+    #Use a dot operator syntax:
+    myProject.file('order_items.view.lkml').views.order_items.id.primary_key.value
+
+    #Use a dictionary like syntax:
+    myProject['order_items.view.lkml']['views']['order_items']['id'].primary_key.value
+
+
+
+**Looping over stuff**
+
+.. code-block:: python
+
+    lookml.Project(**config['project1'])['order_items.view.lkml']['views']['order_items']['id'].primary_key.value
+
+
+**Updating things**
+
+The `+` operator in pyLookML is significant, it allows us to add a string of LookML to our object like so. 
+Also notice the way we change the primary key paramter.
+
+.. code-block:: python
+   :linenos:
+
+    order_items = lookml.View('order_items')
+    order_items + '''
+        dimension: id {
+            type: string
+            sql: ${TABLE}.id ;;
+            }
+    '''
+    order_items.id.primary_key = 'yes'
+    print(order_items)
+
+.. code-block::
+
+    view: order_items {
+        dimension: id { 
+            type: string
+            sql: ${TABLE}.id ;;
+            primary_key: yes 
+        }   
+    }
+
+after your object is updated, you need to save it back to github, and optionally hit the looker deploy URL
+
+
+.. code-block:: python
+   :linenos:
+
+    newFile = lookml.File(order_items)
+    #the put method, creates or overwrites 
+    myProject.put(newFile)
+    #optionally hitting the Looker deploy URL (requires that you set your instance URL on project creation)
+    myProject.deploy() 
+
+    
 
 Build from a developer version
 ------------------------------

@@ -739,6 +739,303 @@ class testMicroUnits(unittest.TestCase):
             ,'order_items'
             )
 
+    # def test_derived_table_object_access_and_whitespace(self):
+    #     v = lookml.View('v')
+    #     v + '''
+    #         derived_table: {
+    #             explore_source: x {
+    #                 column: a { field: a.cool }
+    #                 column: b {field: b.cool }
+    #                 derived_column: c { sql: foo! ;;}
+    #             }
+    #         }
+    #     '''
+    #     # print(v)
+    #     # print(v)
+    #     # v.derived_table = {}
+    #     # print(v)
+
+    def test_eav_unnester(self):
+        sdk = client.setup("api.ini")
+        sql_for_fields = f"""
+                SELECT 
+                     cpf.org_id
+                    ,cpf.value
+                    ,cpf.datatype
+                    ,cpf.field_name as "FIELD_NAME"
+                    , CASE 
+                        WHEN cpf.datatype IN ('TIMESTAMP_LTZ') THEN 'time'
+                        WHEN cpf.datatype IN ('FLOAT','NUMBER', 'int') THEN 'number'
+                        ELSE 'string' END as "LOOKER_TYPE"
+                FROM 
+                    -- public.custom_profile_fields as cpf
+                    (
+                        SELECT 1 as user_id, 8 as org_id, 'c_donation_amount' as field_name, '40' as value, 'int' as datatype UNION ALL
+                        SELECT 1, 8, 'c_highest_achievement', 'gold badge', 'varchar' UNION ALL
+                        SELECT 2, 101, 'c_highest_achievement', 'silver badge', 'varchar' UNION ALL
+                        SELECT 2, 101, 'c_monthly_contribution', '300', 'int' UNION ALL
+                        SELECT 3, 101, 'c_highest_achievement', 'bronze badge', 'varchar' UNION ALL
+                        SELECT 3, 101, 'c_monthly_contribution', '350', 'int' UNION ALL
+                        SELECT 4, 101, 'c_monthly_contribution', '350', 'int' UNION ALL
+                        SELECT 4, 101, 'age', '32', 'int' UNION ALL
+                        SELECT 5, 102, 'c_monthly_contribution', '100', 'int'
+                    ) as cpf
+                WHERE
+                    1=1
+                GROUP BY 1,2,3,4,5
+                LIMIT 100
+        """
+        query_config = models.WriteSqlQueryCreate(sql=sql_for_fields, connection_id="snowlooker")
+        query = sdk.create_sql_query(query_config)
+        response = json.loads(sdk.run_sql_query(slug=query.slug, result_format="json"))
+
+        proj = lookml.Project(
+                 repo= config['github']['repo']
+                ,access_token=config['github']['access_token']
+                ,looker_host="https://profservices.dev.looker.com/"
+                ,looker_project_name="russ_sanbox"
+                ,branch='dev-russell-garner-b7gj'
+        )
+
+        modelFile = proj['eav_example/eav.model.lkml']
+
+        eavSource = modelFile['views']['eav_source']
+        flatteningNDT = modelFile['views']['usr_profile']
+
+        #Step 0) Ensure there is a hidden explore to expose the eav_souce for NDT
+        modelFile + f'''
+            explore: _eav_flattener {{
+                from: {eavSource.name}
+                hidden: yes
+            }}
+        '''
+        #Begin the derived table, will be added to as we loop through the fields
+        drivedtableString = f'''
+            derived_table: {{
+                explore_source: _eav_flattener {{
+                    column: user_id {{ field: _eav_flattener.user_id }}
+                    column: org_id {{ field: _eav_flattener.org_id }}
+        '''
+
+        #Set up a list to track the unique org ids and column names
+        orgIds, columns = [], []
+
+        for column in response:
+            dimName = lookml.lookCase(column['FIELD_NAME'])
+            orgIds.append(column['ORG_ID'])
+            columns.append(dimName)
+            #Step 1) Add flattening measure to the EAV source table
+            eavSource + f'''
+                  measure: {dimName} {{
+                        type: max
+                        sql: CASE WHEN ${{field_name}} = '{column['FIELD_NAME']}' THEN ${{value}} ELSE NULL END;;
+                    }}
+            '''
+
+            #Step 2) Add to the NDT fields
+            flatteningNDT + f'''
+                    dimension: {dimName}_org_{column['ORG_ID']} {{
+                        label: "{dimName}"
+                        type: {column['LOOKER_TYPE']}
+                        sql: ${{TABLE}}.{dimName} ;;
+                        required_access_grants: [org_{column['ORG_ID']}]
+                    }}
+            '''
+            if column['LOOKER_TYPE'] == "number":
+                flatteningNDT + f'''
+                    measure: {dimName}_total_org_{column['ORG_ID']} {{
+                        label: "{dimName}_total"
+                        type: sum
+                        sql: ${{{dimName}_org_{column['ORG_ID']}}} ;;
+                        required_access_grants: [org_{column['ORG_ID']}]
+                    }}
+                '''
+        #Finalize / add the completed derived table string to the NDT:
+        for col in set(columns):
+            drivedtableString += f' column: {col} {{ field: _eav_flattener.{col} }}'
+        drivedtableString += '}}'
+
+        #Create the access grants for each org
+        accessGrants = ''
+        for org in set(orgIds):
+            accessGrants += f'''
+                access_grant: org_{org} {{
+                user_attribute: org_id
+                allowed_values: [
+                    "{org}"
+                ]
+                }}
+            '''
+
+        #Finish by adding the derived table to the 
+        flatteningNDT + drivedtableString
+        modelFile + accessGrants
+
+        proj.put(modelFile)
+        # proj.deploy()
+
+
+#Begining LookML File:
+'''
+connection: "snowlooker"
+
+explore: usr {
+    access_filter: {
+      field: usr_profile.org_id
+      user_attribute: org_id
+    }
+    join: usr_profile {
+      type: left_outer
+      relationship: one_to_one
+      sql_on: ${usr.id} =  ${usr_profile.user_id} ;;
+      }
+  }
+
+view: usr {
+  sql_table_name: public.users ;;
+  dimension: email {}
+  dimension: id {}
+  dimension_group: created { timeframes: [raw,date,month,year] }
+}
+
+view: usr_profile {
+  dimension: org_id {}
+  dimension: user_id {}
+}
+
+view: eav_source {
+  sql_table_name: (
+      SELECT 1 as user_id, 8 as org_id, 'c_donation_amount' as field_name, '40' as value, 'int' as datatype UNION ALL
+      SELECT 1, 8, 'c_highest_achievement', 'gold badge', 'varchar' UNION ALL
+      SELECT 2, 101, 'c_highest_achievement', 'silver badge', 'varchar' UNION ALL
+      SELECT 2, 101, 'c_monthly_contribution', '300', 'int' UNION ALL
+      SELECT 3, 101, 'c_highest_achievement', 'bronze badge', 'varchar' UNION ALL
+      SELECT 3, 101, 'c_monthly_contribution', '350', 'int' UNION ALL
+      SELECT 4, 101, 'c_monthly_contribution', '350', 'int' UNION ALL
+      SELECT 4, 101, 'age', '32', 'int' UNION ALL
+      SELECT 5, 102, 'c_monthly_contribution', '100', 'int'
+  ) ;;
+  dimension: datatype { type: string }
+  dimension: field_name { type: string }
+  dimension: org_id { type: number }
+  dimension: user_id { type: number }
+  dimension: value { type: string }
+}
+
+'''
+#END:
+'''
+connection: "snowlooker"
+
+
+access_grant: cust_101 {
+  user_attribute: brand
+  allowed_values: [
+    "Calvin Klein"
+  ]
+}
+
+explore: usr {
+  join: usr_profile {
+    type: left_outer
+    relationship: one_to_one
+    sql_on: ${usr.id} =  ${usr_profile.user_id} ;;
+  }
+}
+
+explore: unfold_eav {
+  from: custom_profile_fields_raw
+  hidden: yes
+}
+
+view: usr {
+  sql_table_name: (select * from public.users where id in (1,2,3)) ;;
+  dimension: email {}
+  dimension: id { type: number }
+  dimension_group: created {
+    timeframes: [raw
+              ,year
+              ,quarter
+              ,month
+              ,week
+              ,date
+  ]
+    type: time
+    sql: ${TABLE}.`id` ;;
+  }
+}
+
+view: custom_profile_fields_raw {
+  sql_table_name: 
+    (
+        SELECT 1 as user_id, 8 as cust_id, 'c_donation_amount' as field_name, '40' as value, 'int' as datatype UNION ALL
+        SELECT 1, 8, 'c_highest_achievement', 'gold badge', 'varchar' UNION ALL
+        SELECT 2, 101, 'c_highest_achievement', 'silver badge', 'varchar' UNION ALL
+        SELECT 2, 101, 'c_maximum_monthly_contribution', '300', 'int' UNION ALL
+        SELECT 3, 101, 'c_highest_achievement', 'bronze badge', 'varchar' UNION ALL
+        SELECT 3, 101, 'c_maximum_monthly_contribution', '350', 'int'
+    )
+  ;;
+  dimension: user_id { type: number }
+  dimension: cust_id { type: number }
+  dimension: field_name { type: string }
+  dimension: value { type: string }
+  dimension: datatype { type: string }
+  measure: c_donation_amount {
+    type: max
+    sql: CASE WHEN ${field_name} =  'c_donation_amount' THEN ${value} ELSE NULL END;;
+  }
+  measure: c_highest_achievement {
+    type: max
+    sql: CASE WHEN ${field_name} =  'c_highest_achievement' THEN ${value} ELSE NULL END;;
+  }
+  measure: c_maximum_monthly_contribution {
+    type: max
+    sql: CASE WHEN ${field_name} =  'c_maximum_monthly_contribution' THEN ${value} ELSE NULL END;;
+  }
+}
+
+view: usr_profile {
+  derived_table: {
+    explore_source: unfold_eav {
+      column: user_id { field: unfold_eav.user_id }
+      column: cust_id { field: unfold_eav.cust_id }
+      column: c_donation_amount {field: unfold_eav.c_donation_amount }
+      column: c_highest_achievement {field: unfold_eav.c_highest_achievement }
+      column: c_maximum_monthly_contribution {field: unfold_eav.c_maximum_monthly_contribution }
+    }
+  }
+
+  dimension: c_donation_amount {
+    type: number
+    sql: ${TABLE}.c_donation_amount ;;
+  }
+  dimension: c_highest_achievement {
+    type: string
+    sql: ${TABLE}.c_highest_achievement ;;
+    required_access_grants: [cust_101]
+  }
+  dimension: c_maximum_monthly_contribution {
+    type: number
+    sql: ${TABLE}.c_maximum_monthly_contribution ;;
+  }
+  dimension: cust_id { }
+
+  dimension: user_id { hidden: yes }
+
+}
+'''
+
+
+# Alternative implementation?
+#         FIRST_VALUE(
+#               CASE
+#                 WHEN attributename = 'single_type' THEN attributevalue
+#                 ELSE NULL
+#               END
+#           IGNORE NULLS)
+#         OVER (partition by sessionid order by sessionid)
+
 
 
 

@@ -11,9 +11,10 @@ import subprocess, os, platform
 ######### V3 #########
 # TODO: Complete shell git implementation.... iterate over files etc
 # TODO: ensure the top level stuff for file works, i.e. accessors for plurals like data groups etc
+# TODO: implement length of field to be the number of it's properties (will help with formatting. Dense lookml when only one prop)
 # TODO: Extends bug --> render issue
-# TODO: figure out the whole NDT thing
-# TODO: Whitespace for column / derived column
+# DONE: figure out the whole NDT thing
+# DONE: Whitespace for column / derived column
 # TODO: Implement MVC? 
         # * model -> could eliminate the "phanton property" in that a class instance is only created on get / observation.... (getters and setters should mutate the underlying json at all times to ensure conssistency)
         # TODO: Rationalize View rendering
@@ -62,6 +63,7 @@ import subprocess, os, platform
 # TODO: test iteration behaviors
 
 ######### V3 #########
+# TODO: Integrate Tom's script for dependency graphing OO
 # TODO: Common Sql Functions added to the SQL paramter
 # TODO: Common html Functions added to the html paramter
 # TODO: Manifest
@@ -89,7 +91,8 @@ def tidy(string):
     :return: returns input string, with excess whitespace removed
     :rtype: str
     '''
-    return re.sub('(\n{2})+', r'\n', string)
+    return re.sub(r'\s{11,}', r'\n  ', string)
+    # return string
 
 def lookCase(string):
     return removeSpace(snakeCase(string))
@@ -521,11 +524,37 @@ class File:
         self.exps.add(e)
         return self
 
+    def _bind_lkml(self, lkmldictraw):
+        lkmldict = copy.deepcopy(lkmldictraw)
+        if 'views' in lkmldict.keys():
+            for view in lkmldict['views']:
+                self.vws.add(View(view))
+            lkmldict.pop('views')
+
+        if 'explores' in lkmldict.keys():
+            for explore in lkmldict['explores']:
+                self.exps.add(Explore(explore))
+            lkmldict.pop('explores')
+
+        for k,v in lkmldict.items():
+            self.setProperty(k,v) 
+
     def __add__(self, other):
         if isinstance(other, View):
             self.addView(other)
         elif isinstance(other, Explore):
             self.addExplore(other)
+        else:
+            self._bind_lkml(lkml.load(other))
+
+    def getProperty(self, prop):
+        ''' Get a property from the properties collection '''
+        return self.properties[prop]
+
+    def setProperty(self, name, value):
+        ''' Set a property in the properties collection '''
+        self.properties.addProperty(name, value)
+        return self
 
     def setFolder(self,folder):
         self.path = folder + self.name if folder.endswith('/') else folder  + '/' +  self.name
@@ -682,7 +711,7 @@ class base(object):
             ,'props': stringify([ conf.INDENT + str(p) for p in self.getProperties()])
             ,'token': self.token
         }
-        return Template(getattr(conf.TEMPLATES,self.token)).substitute(**self.templateMap)
+        return tidy(Template(getattr(conf.TEMPLATES,self.token)).substitute(**self.templateMap))
 
 class View(base):
     '''
@@ -1175,12 +1204,12 @@ class View(base):
         '''
         return self.addSum(f)
 
-    def count(self):
-        ''' A Synonym for addCount
-        :return: return self (allows call chaining i.e. obj.method().method() )
-        :rtype:  self 
-        '''
-        return self.addCout()
+    # def count(self):
+    #     ''' A Synonym for addCount
+    #     :return: return self (allows call chaining i.e. obj.method().method() )
+    #     :rtype:  self 
+    #     '''
+    #     return self.addCout()
 
     def countDistinct(self,f):
         ''' A Synonym for addCountDistinct
@@ -1475,7 +1504,7 @@ class Property(object):
         elif name in ('links','filters','tags','suggestions', 
         'actions', 'sets', 'options', 'form_params', 'access_grants','params',
         'allowed_values', 'named_value_formats', 'datagroups', 'map_layers', 'columns', 
-        'derived_columns', 'explore_source', 'includes'):
+        'derived_columns', 'explore_source', 'includes', 'access_filters'):
         # elif name+'s' in lkml.keys.PLURAL_KEYS:
             self.value = Properties(value, multiValueSpecialHandling=name)
 
@@ -1578,12 +1607,11 @@ class Property(object):
                 'links','filters','actions','options', 
                 'form_params','sets', 'access_grants',
                 'params', 'allowed_values', 'named_value_formats', 
-                'datagroups', 'map_layers', 'derived_columns','columns'):
-                
+                'datagroups', 'map_layers', 'derived_columns','columns','access_filters'):
                 return simple()
 
         elif self.name == 'explore_source':
-            shadow = copy.copy(self.value)
+            shadow = copy.deepcopy(self.value)
             return splice(self.name , ': ' + shadow.schema.pop('name') + ' ', str(shadow))
 
         elif self.name in ('tags'):
@@ -1612,7 +1640,8 @@ class Property(object):
 
         elif self.name == 'list_member_quoted':
             return simple()
-
+        elif self.name == 'field':
+            return (' '*4 + default())
         else:
             return default()
 
@@ -1624,8 +1653,6 @@ class Properties(object):
     Things that should be their own class:
     data_groups, named_value_format, sets
     '''
-    # __slots__ = ['schema','multiValueSpecialHandling','num','valueiterator']
-
     def __init__(self, schema, multiValueSpecialHandling=False):
         self.schema = schema
         self.num = 0
@@ -1637,10 +1664,10 @@ class Properties(object):
         def process_plural_named_constructs():
             singular = self.multiValueSpecialHandling[:-1]
             buildString = ""
-            schemaDeepCopy = copy.copy(self.schema)
+            schemaDeepCopy = copy.deepcopy(self.schema)
             for fset in schemaDeepCopy:
-                buildString = buildString + conf.NEWLINE + singular + ': ' + fset.pop('name') + ' '
-                buildString = buildString + str(Property('list_member',fset))
+                buildString += conf.NEWLINEINDENT + conf.INDENT + singular + ': ' + fset.pop('name') + ' '
+                buildString += str(Property('list_member',fset))
             return buildString
 
         def process_plural_unnamed_constructs():
@@ -1648,8 +1675,12 @@ class Properties(object):
                 singular = conf.NEWLINE + self.multiValueSpecialHandling[:-1] + ': '
             else:
                 singular = conf.NEWLINE + self.multiValueSpecialHandling + ': '
-            
-            return splice( singular , singular.join([str(p) for p in self.getProperties()]))
+
+            x = splice( singular , singular.join([str(p) for p in self.getProperties()]))
+            # x = splice(  singular.join([str(p) for p in self.getProperties()]))
+
+            # return splice( singular , singular.join([str(p) for p in self.getProperties()]))
+            return x
 
         def render(template,delim=' '):
             self.templateMap = {
@@ -1657,34 +1688,19 @@ class Properties(object):
             }
             return Template(getattr(conf.TEMPLATES,template)).substitute(self.templateMap)
 
-            # splice(
-            #                 '{\n    ' , 
-            #                 '\n    '.join([str(p) for p in self.getProperties()]) ,
-            #                 '\n    }' 
-            #                 )
-
         if isinstance(self.schema, dict):
             return render('array', delim=conf.NEWLINEINDENT)
-            # return splice(
-            #                 '{\n    ' , 
-            #                 '\n    '.join([str(p) for p in self.getProperties()]) ,
-            #                 '\n    }' 
-            #                 )
+
         elif isinstance(self.schema, list) and not self.multiValueSpecialHandling:
             return render('_list', delim=' ')
-            # return splice(
-            #                 '[\n    ' , 
-            #                 '\n    '.join([str(p) for p in self.getProperties()]) ,
-            #                 '\n    ]' 
-            #                 )
+
         elif isinstance(self.schema, list) and self.multiValueSpecialHandling in ('tags','suggestions'):
             return splice(
                             '[\n    ' , 
                             '\n    '.join(['"' + str(p) + '",' for p in self.getProperties()]) ,
                             '\n    ]' 
                             )
-        # elif self.multiValueSpecialHandling in ('filters', 'links', 'actions', 'options', 'form_params','params'):
-        elif self.multiValueSpecialHandling in ('filters', 'links', 'actions', 'options', 'form_params','params'):
+        elif self.multiValueSpecialHandling in ('filters', 'links', 'actions', 'options', 'form_params','params', "access_filters"):
             return process_plural_unnamed_constructs()
 
         elif self.multiValueSpecialHandling in ("access_grants","datagroups","map_layers","named_value_formats","sets", "columns", "derived_columns", "explore_source"):
@@ -1821,9 +1837,9 @@ class Field(base):
             Change the name of the field and references to it in sql (does not yet perform the same for HTML / Links / Drill Fields / Sets / Actions etc)
         '''
         #TODO: complete checking all places for dependencies. 
-        old = copy.copy(self.name)
-        oldrefsre = copy.copy(self.__refsre__)
-        oldrefre = copy.copy(self.__refre__)
+        old = copy.deepcopy(self.name)
+        oldrefsre = copy.deepcopy(self.__refsre__)
+        oldrefre = copy.deepcopy(self.__refre__)
         self.setName(newName)
         for f in self.view.search('sql',[oldrefsre,oldrefre]):
             f.sql = re.sub(oldrefsre, self.__refs__, str(f.sql.value))
@@ -1831,15 +1847,6 @@ class Field(base):
         self.view.removeField(old)
         self.view + self
         return self
-
-    # def __str__(self):
-    #     self.templateMap = {
-    #          'message': self.message
-    #         ,'identifier':self.identifier
-    #         ,'props': stringify([str(p) for p in self.getProperties()])
-    #     }
-    #     return Template(getattr(conf.TEMPLATES,self.token)).substitute(self.templateMap)
- 
 
     def __getattr__(self, key):
 
@@ -1998,8 +2005,8 @@ class DimensionGroup(Field):
             self.properties.addProperty('timeframes', splice('[','{},'.format(conf.NEWLINEINDENT).join(conf.TIMEFRAMES),']'))
         if not self.properties.isMember('type'):
             self.properties.addProperty('type', 'time')
-        if not self.properties.isMember('sql'):
-            self.properties.addProperty('sql', splice('${TABLE}.' , conf.DB_FIELD_DELIMITER_START , self.db_column , conf.DB_FIELD_DELIMITER_END))
+        # if not self.properties.isMember('sql'):
+        #     self.properties.addProperty('sql', splice('${TABLE}.' , conf.DB_FIELD_DELIMITER_START , self.db_column , conf.DB_FIELD_DELIMITER_END))
         self.token = 'dimension_group'
 
     def setDBColumn(self, dbColumn, changeIdentifier=True):
