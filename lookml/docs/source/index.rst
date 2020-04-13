@@ -8,8 +8,8 @@
 
    introduction
    examples
+   eav
    reference
-   changes
 
 
 

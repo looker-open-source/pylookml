@@ -1,5 +1,7 @@
-Basic Recipes
+Cookbook / Examples
 ------------------------------
+
+** Basic Recipes **
 
 * connect to your github project
 
@@ -63,8 +65,9 @@ Basic Recipes
 .. code-block:: python
    :linenos:
 
-   orderItems.id.setMessage("Hello I'm Automated")
    #results in a comment above the dimension
+   orderItems.id.setMessage("Hello I'm Automated")
+   
 
 
 
@@ -111,6 +114,7 @@ Basic Recipes
      label: "Foobar"
      sql: ${TABLE}.bar2 ;;
    }
+
 
 
 Fields
@@ -172,5 +176,6 @@ Convenience Methods
      value_format_name: decimal_2
      sql: ${time_in_transit} ;;
    }
+
 
 

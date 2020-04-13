@@ -1,7 +1,7 @@
     # includes, links, filters, bind_filters
     # Things that should be their own class:
     # data_groups, named_value_format, sets
-NONUNIQUE_PROPERTIES = {'include','link', 'filters', 'bind_filters', 'data_groups', 'named_value_format', 'sets', 'column','includes', "allowed_value", "actions"}
+NONUNIQUE_PROPERTIES = {'include','link', 'filters', 'bind_filters', 'data_groups', 'named_value_format', 'sets', 'column','derived_column','includes', "allowed_value", "actions"}
 MULTIVALUE_PROPERTIES = ['drill_fields', 'timeframes', 'tiers','suggestions','tags']
 KEYS_WITH_NAME_FIELDS = ("user_attribute_param", "param", "form_param", "option")
 TIMEFRAMES = ['raw', 'year', 'quarter', 'month', 'week', 'date', 'day_of_week', 'hour', 'hour_of_day', 'minute', 'time', 'time_of_day']
@@ -22,18 +22,16 @@ class language_rules:
 
 class TEMPLATES:
     default =  """
-$message  $token: $identifier { $props 
-  }"""
+$message  $token: $identifier { $props }"""
     join = default
     dimension = default
     measure = default
     parameter = default
     filter = default
     dimension_group = default
-    view = """
-$message
+    view = """$message
 view: $identifier {
-$props $parameters $filters $dimensions $dimensionGroups $measures $sets
+$props$parameters$filters$dimensions$dimensionGroups$measures$sets
 }
 $children"""
     explore = """
