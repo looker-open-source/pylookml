@@ -1,6 +1,7 @@
 Full API Reference
 ------------------------------
-.. autoclass:: lookml.Project
+
+.. autoclass:: lookml.project
     :inherited-members:
     :members:
 

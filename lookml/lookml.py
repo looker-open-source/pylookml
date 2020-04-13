@@ -1,4 +1,4 @@
-import re, os
+import re, os, shutil
 import lookml.config as conf
 import lkml
 import github
@@ -9,42 +9,23 @@ from string import Template
 import subprocess, os, platform
  
 ######### V3 #########
-# TODO: Complete shell git implementation.... iterate over files etc
-# TODO: ensure the top level stuff for file works, i.e. accessors for plurals like data groups etc
 # TODO: implement length of field to be the number of it's properties (will help with formatting. Dense lookml when only one prop)
-# TODO: Extends bug --> render issue
+# DONE: Complete shell git implementation.... iterate over files etc
+# DONE: Extends bug --> render issue
 # DONE: figure out the whole NDT thing
 # DONE: Whitespace for column / derived column
-# TODO: Implement MVC? 
-        # * model -> could eliminate the "phanton property" in that a class instance is only created on get / observation.... (getters and setters should mutate the underlying json at all times to ensure conssistency)
-        # TODO: Rationalize View rendering
-        # TODO: elimnate property / properties classes? -> replace with model? Think through getter / setter / render 
-# TODO: Implement remaining collections iteration, top level file attributes (data groups, named value format etc)
-# TODO: Implement string -> lkml -> __add__ i.e.: my
-# TODO: make __getatt__ / __setattr__ consistent across classes
-# TODO: Documentation:
-        # Document every funtion
-        # Usecase oriented documentation (move to the.rst file):
-            # loop through all the files in a project make a change and update
-            # Auto - tune your model  
-            # Looker API Query the database and create a new view file / EAV unnest (superview & multi-model approach)
-            # BQ Unnest
-            # Use dependency tracing
-            # BQML   
-            # Top N 
-            # Aggregate Awareness Macro (materialization + refinements)
-            # Calendar Table
-            # SFDC Waterfall
-            # Multi Grain period over period 
-            # Drill to vis with constants
-            # Incremental PDTs? --> This breaks as of Looker 7?
-            # Negative Intervals Hacking
-            # Linking macro, Intel linking block?
-            # Fancy Conditional Formatting examples
-            # Something with slowly changing dimensions
-            # lambda / cloud function example?
+# DONE: Implement string -> lkml -> __add__ i.e.: my
+# DONE: Documentation:
+        # Good Initial Uscases: EAV, good basic cookbook coverage
 
+
+
+#next Minor release::
 # TODO: set configurations via command line and environment variable
+# TODO: make __getatt__ / __setattr__ consistent across classes
+# TODO: Implement remaining collections iteration, top level file attributes (data groups, named value format etc)
+# TODO: ensure the top level stuff for file works, i.e. accessors for plurals like data groups etc
+
 # Dependency Graphing:
     # TODO: Ancenstor functions? 
     # TODO: Child function support renaming across all properties (html, links, etc)
@@ -62,7 +43,11 @@ import subprocess, os, platform
         #* network enabled loop, github / shell
 # TODO: test iteration behaviors
 
-######### V3 #########
+######### V3+ #########
+# TODO: Implement MVC? 
+        # * model -> could eliminate the "phanton property" in that a class instance is only created on get / observation.... (getters and setters should mutate the underlying json at all times to ensure conssistency)
+        # TODO: Rationalize View rendering
+        # TODO: elimnate property / properties classes? -> replace with model? Think through getter / setter / render 
 # TODO: Integrate Tom's script for dependency graphing OO
 # TODO: Common Sql Functions added to the SQL paramter
 # TODO: Common html Functions added to the html paramter
@@ -72,6 +57,27 @@ import subprocess, os, platform
 # TODO: slots / performance optimizaiton
 # TODO: Interactive CLI
 # TODO: Update LKML to support new filters syntax
+# TODO: additional documentation
+        # Finish Documenting every funtion for the autodocs
+        # Usecase oriented documentation (move to the.rst file):
+            # loop through all the files in a project make a change and update
+            # Auto - tune your model  
+            # Looker API Query the database and create a new view file / EAV unnest (superview & multi-model approach)
+            # BQ Unnest
+            # Use dependency tracing
+            # BQML   
+            # DONE: Top N 
+            # Aggregate Awareness Macro (materialization + refinements)
+            # Calendar Table
+            # SFDC Waterfall
+            # Multi Grain period over period 
+            # Drill to vis with constants
+            # Incremental PDTs? --> This breaks as of Looker 7?
+            # Negative Intervals Hacking
+            # Linking macro, Intel linking block?
+            # Fancy Conditional Formatting examples
+            # Something with slowly changing dimensions
+            # lambda / cloud function example?
 
 
 def snakeCase(string):
@@ -91,7 +97,7 @@ def tidy(string):
     :return: returns input string, with excess whitespace removed
     :rtype: str
     '''
-    return re.sub(r'\s{11,}', r'\n  ', string)
+    return re.sub(r'\s{10,}', r'\n  ', string)
     # return string
 
 def lookCase(string):
@@ -101,12 +107,12 @@ def sortMe(func):
     ''' returns all the fields sorted first by alpabetical dimensions/filters, then alphabetical measures '''
     return sorted(list(func), key=lambda field: field.identifier)
 
-def stringify(collection,delim=conf.NEWLINEINDENT, prefix=True):
+def stringify(collection,delim=conf.NEWLINEINDENT, prefix=True, postfix=False):
     '''
         calls string and concatinates each item in a collection
     '''
     # return delim + delim.join([str(item) for item in collection])
-    return  (delim if prefix else '') + delim.join([str(item) for item in collection])
+    return  (delim if prefix else '') + delim.join([str(item) for item in collection]) + (delim if postfix else '')
 
 def mkdir_force(dir):
     if not os.path.exists(dir):
@@ -115,13 +121,14 @@ def mkdir_force(dir):
 def Project(repo='',access_token='',branch="master",git_url="",commitMessage="",looker_host="",looker_project_name="",outputPath='.tmp'):
     '''
         A LookML Project at a GitHub location or location on the filesytem [Factory Function]
+        see _Project for subclass details
         '''
     if access_token and repo:
-        return _githubProject(repo=repo,access_token=access_token,branch=branch,git_url=git_url,commitMessage=commitMessage,looker_host=looker_host,looker_project_name=looker_project_name,outputPath=outputPath)
+        return githubProject(repo=repo,access_token=access_token,branch=branch,git_url=git_url,commitMessage=commitMessage,looker_host=looker_host,looker_project_name=looker_project_name,outputPath=outputPath)
     elif git_url:
-        return _shellProject(repo=repo,access_token=access_token,branch=branch,git_url=git_url,commitMessage=commitMessage,looker_host=looker_host,looker_project_name=looker_project_name,outputPath=outputPath)
+        return shellProject(repo=repo,access_token=access_token,branch=branch,git_url=git_url,commitMessage=commitMessage,looker_host=looker_host,looker_project_name=looker_project_name,outputPath=outputPath)
 
-class _Project:
+class project:
     '''
         A LookML Project at a GitHub location or location on the filesytem
         '''
@@ -160,33 +167,64 @@ class _Project:
             requests.get(self.deploy_url)
 
     def files(self,path=''):
-        ''' Iteratively returns all the files at a path in the project '''
+        '''
+        Iteratively returns all the lkml files at a path in the project
+
+        :param path: directory you would like to return the files from
+        :type arg1: str
+        :return: generator of LookML file objects
+        :rtype: generator of lookml File objects
+        '''
         for f in  self.repo.get_contents(path):
             yield File(f)
 
     def file(self,path):
-        '''  
-            returns a single lookml File object 
+        '''
+        returns a single LookML file at the specified path.
+        examples: 
+        file('order_items.view.lkml')
+        file('my_folder/users.view.lkml')
+
+        :param path: path file location
+        :type arg1: str
+        :return: a single lookml File
+        :rtype: File
         '''
         return File(self.repo.get_contents(path))
 
     def update(self,f):
-        '''  
-            takes a File object and attempts to re-upload it to the project. 
+        '''
+        updates an existing file to git
+
+        :param f: the file to update
+        :type f: File
+        :return: self (for method chaining)
+        :rtype: self
         '''
         self.repo.update_file(f.path, self.commitMessage, str(f), sha=f.sha, branch=self.branch)
         return self
 
     def add(self,f):
         '''
-            creates a new file in the project and uploads it to github
+        adds a new file to git
+
+        :param f: the file to add
+        :type f: File
+        :return: self (for method chaining)
+        :rtype: self
         '''
         self.repo.create_file(f.path, self.commitMessage, str(f), branch=self.branch)
         return self
 
     def put(self,f):
-        ''' add or update '''
-        # print(f.path)
+        '''
+        adds or updates file to git. Safe to use either use case
+
+        :param f: the file to add/update
+        :type f: File
+        :return: self (for method chaining)
+        :rtype: self
+        '''
         if self.exists(f):
             if f.sha:
                 self.update(f)
@@ -196,10 +234,16 @@ class _Project:
                 self.update(f)
         else:
             self.add(f)
+        return self
         
     def exists(self,f):
         '''
-            returns boolean if the file exists on 
+        returns a boolean if the file or file path exists
+
+        :param f: the file or path
+        :type f: File or str path
+        :return: None
+        :rtype: None
         '''
         def checkgithub(f0):
             try:
@@ -215,14 +259,19 @@ class _Project:
 
     def delete(self,f):
         '''
-            deletes a file from a repository at a specific path
+        deletes a file from a repository at a specific path
+
+        :param f: the file or path
+        :type f: File or str path
+        :return: self
+        :rtype: self
         '''
         if isinstance(f,str):
             f = self.getFile(f)
         self.repo.delete_file(f.path, self.commitMessage, sha=f.sha, branch=self.branch)
         return self
 
-class _shellProject(_Project):
+class shellProject(project):
     '''
         Project subtype that interfaces with git via its command line interface. SSH git access must be working on the machine
         files will be cloned into a subfolder of .tmp by default
@@ -258,8 +307,11 @@ class _shellProject(_Project):
                 
             self.deployMessage = deployMessage
             
+            if os.path.exists(self.absoluteOutputPath):
+                shutil.rmtree(self.absoluteOutputPath)
+
             mkdir_force(self.absoluteOutputPath)
-            
+
             if self.projectName:
                 self.gitDir = ' --git-dir="' + os.path.abspath(outputPath + '/' + self.projectName + '/.git') + '" '
             else:
@@ -296,8 +348,8 @@ class _shellProject(_Project):
             self.call(' clone ' + repoLocation + ' ' +  self.absoluteOutputPath, gitDir=False)
             return self.pull()
             
-        def add(self):
-            return self.call(' add .')
+        def add(self,path='.'):
+            return self.call(' add ' + path)
             
         def commit(self, message=''):
             if message:
@@ -309,15 +361,124 @@ class _shellProject(_Project):
             return self.call(' push origin ' + self.branch + ' ')
 
     def __init__(self,*args, **kwargs):
-        super(_shellProject, self).__init__(*args,**kwargs)
+        super(shellProject, self).__init__(*args,**kwargs)
         self.type = "ssh_shell"
+        
         self.gitControllerSession =  self.gitController(projectName=self.looker_project_name, branch=self.branch, deployMessage=self.commitMessage, outputPath=self.outputPath)    
+        
         assert(kwargs['git_url'] is not None)
         self.gitControllerSession.clone(kwargs['git_url'])
 
-class _githubProject(_Project):
+
+#proj.gitControllerSession.add().commit().pushRemote()
+    def files(self,path=''):
+        '''
+        Iteratively returns all the lkml files at a path in the project
+
+        :param path: directory you would like to return the files from
+        :type arg1: str
+        :return: generator of LookML file objects
+        :rtype: generator of lookml File objects
+        '''
+        for root, dirs, files in os.walk(self.gitControllerSession.absoluteOutputPath + '/' + path, topdown=False):
+            for name in files:
+                if name.endswith('.lkml'):
+                    yield File(os.path.join(root, name))
+
+
+
+    def file(self,path):
+        '''
+        returns a single LookML file at the specified path.
+        examples: 
+        file('order_items.view.lkml')
+        file('my_folder/users.view.lkml')
+
+        :param path: path file location
+        :type arg1: str
+        :return: a single lookml File
+        :rtype: File
+        '''
+        return File(self.gitControllerSession.absoluteOutputPath + '/' + path)
+
+    def update(self,f):
+        '''
+        updates an existing file to git
+
+        :param f: the file to update
+        :type f: File
+        :return: self (for method chaining)
+        :rtype: self
+        '''
+        f.write()
+        self.gitControllerSession.add().commit().pushRemote()
+        return self
+
+    def add(self,f):
+        '''
+        adds a new file to git
+
+        :param f: the file to add
+        :type f: File
+        :return: self (for method chaining)
+        :rtype: self
+        '''
+        f.setFolder(self.gitControllerSession.absoluteOutputPath)
+        f.write()
+        self.gitControllerSession.add().commit().pushRemote()
+        return self
+
+    def put(self,f):
+        '''
+        adds or updates file to git. Safe to use either use case
+
+        :param f: the file to add/update
+        :type f: File
+        :return: self (for method chaining)
+        :rtype: self
+        '''
+        if os.path.exists(f.path):
+            self.update(f)
+        else:
+            self.add(f)
+        
+    def exists(self,f):
+        '''
+        returns a boolean if the file or file path exists
+
+        :param f: the file or path
+        :type f: File or str path
+        :return: None
+        :rtype: None
+        '''
+        if isinstance(f,File):
+            return os.path.exists(f.path)
+        elif isinstance(f,str):
+            return os.path.exists(f)
+
+
+    def delete(self,f):
+        '''
+        deletes a file from a repository at a specific path
+
+        :param f: the file or path
+        :type f: File or str path
+        :return: self
+        :rtype: self
+        '''
+        if isinstance(f,str):
+            os.remove(f)
+        elif isinstance(f,File):
+            os.remove(f.path)
+        else:
+            raise Exception('Not a lookml.File Insance or path')
+        self.gitControllerSession.add().commit().pushRemote()
+        return self
+
+
+class githubProject(project):
     def __init__(self, *args, **kwargs):
-        super(_githubProject, self).__init__(*args,**kwargs)
+        super(githubProject, self).__init__(*args,**kwargs)
         self.type = "github"
         self.gitsession = github.Github(kwargs['access_token'])
         self.repo = self.gitsession.get_repo(kwargs['repo'])
@@ -685,8 +846,6 @@ class base(object):
         '''
         return self.properties.rawPropValue(key)
 
-    # def __len__(self):
-    #     return len(self.schema)
 
     def __repr__(self):
         return "%s  name: %s id: %s" % (self.__class__, self.identifier, hex(id(self))) 
@@ -708,7 +867,8 @@ class base(object):
         self.templateMap = {
              'message': self.getMessage()
             ,'identifier': self.identifier
-            ,'props': stringify([ conf.INDENT + str(p) for p in self.getProperties()])
+            # ,'props': stringify([ conf.INDENT + str(p) for p in self.getProperties() if len(self) == 2])
+            ,'props': stringify([ conf.INDENT + str(p) for p in self.getProperties()], prefix=(len(self) > 2))
             ,'token': self.token
         }
         return tidy(Template(getattr(conf.TEMPLATES,self.token)).substitute(**self.templateMap))
@@ -1572,6 +1732,8 @@ class Property(object):
             return splice(self.name, ': ', str(self.value), ' ;;')
         def brackets():
             return splice(self.name, ': [', str(self.value), ']')
+        def svbrackets():
+            return splice(self.name, ': [', ''.join(self.value.schema), ']')
         def braces():
             return splice(self.name, ': {', str(self.value), '}')
         def default():
@@ -1623,8 +1785,9 @@ class Property(object):
         elif self.name in lkml.keys.QUOTED_LITERAL_KEYS:
             return quote_pair()
 
+        #single Value brackets
         elif self.name in ('extends', 'alias'):
-            return brackets()
+            return svbrackets()
 
         elif self.name == "includes":
             return splice('include: "',str(self.value),'"')
@@ -1675,12 +1838,7 @@ class Properties(object):
                 singular = conf.NEWLINE + self.multiValueSpecialHandling[:-1] + ': '
             else:
                 singular = conf.NEWLINE + self.multiValueSpecialHandling + ': '
-
-            x = splice( singular , singular.join([str(p) for p in self.getProperties()]))
-            # x = splice(  singular.join([str(p) for p in self.getProperties()]))
-
-            # return splice( singular , singular.join([str(p) for p in self.getProperties()]))
-            return x
+            return splice( singular , singular.join([str(p) for p in self.getProperties()]))
 
         def render(template,delim=' '):
             self.templateMap = {
