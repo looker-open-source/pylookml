@@ -899,6 +899,16 @@ class testMicroUnits(unittest.TestCase):
         # proj.deploy()
 
 
+    def test_local_file(self):
+        x = lookml.File('lookml/tests/kitchenSink/kitchenSink.model.lkml')
+        for v in x.views:
+            for f in v.measures():
+                if f.type.value == 'sum' and not f.name.endswith('_total'):
+                    f.name = f.name + '_total'
+        #Optionally Change the location
+        x.setFolder('.tmp')
+        #Write the file
+        x.write()
 
 
 
