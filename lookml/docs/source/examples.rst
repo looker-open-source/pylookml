@@ -207,8 +207,8 @@ Convenience Methods
      value_format_name: decimal_2
      sql: ${shipping_time} ;;
    }
-
-   >>> order_items2.shipping_time.change_name_and_child_references('time_in_transit')
+   #The setName_safe method previously change_name_and_child_references, use that if setName_safe not found
+   >>> order_items2.shipping_time.setName_safe('time_in_transit')
    >>> print(time_in_transit)
    dimension: time_in_transit {
      type: number
@@ -221,6 +221,22 @@ Convenience Methods
      value_format_name: decimal_2
      sql: ${time_in_transit} ;;
    }
+
+
+* working with a local file (The setName_safe method previously change_name_and_child_references, use that if setName_safe not found)
+
+
+.. code-block:: python
+
+   myFile = lookml.File('example.view.lkml')
+      for v in myFile.views:
+         for f in v.measures():
+               if f.type.value == 'sum' and not f.name.endswith('_total'):
+                  f.name = f.setName_safe(f.name + '_total')
+      #Optionally Change the location
+      myFile.setFolder('pathto/other/folder')
+      #Write the file
+      x.write()
 
 
 

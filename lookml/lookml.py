@@ -1988,7 +1988,7 @@ class Field(base):
             for dependent in self.view.search('sql',[self.__refsre__,self.__refre__]):
                 yield dependent
 
-    def change_name_and_child_references(self, newName):
+    def setName_safe(self, newName):
         '''
             Change the name of the field and references to it in sql (does not yet perform the same for HTML / Links / Drill Fields / Sets / Actions etc)
         '''
