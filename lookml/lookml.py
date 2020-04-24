@@ -619,12 +619,8 @@ class File:
             filepathBootstrap()
 
         #Step 2 -- set a lookml "file type" mostly only used for path info 
-        if self.name.endswith(".model.lkml"):
-            self.filetype = 'model'
-        elif self.name.endswith(".view.lkml"):
-            self.filetype = 'view'
-        elif self.name.endswith(".explore.lkml"):
-            self.filetype = 'explore'
+        if self.name.endswith('lkml'):
+            self.filetype = self.name.split('.')[-2]
         else:
             raise Exception("Unsupported filename " + self.name)
             
