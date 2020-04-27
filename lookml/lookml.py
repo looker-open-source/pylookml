@@ -575,7 +575,13 @@ class File:
             #custom initialization for path type
             #Set Basic Attributes
             self.name = os.path.basename(f)
-            self.base_name = self.name.replace(".model.lkml", "").replace(".explore.lkml", "").replace(".view.lkml", "")
+            self.name_components = self.name.split('.')
+            if len(self.name_components) <= 1:
+                self.base_name = self.name
+            elif len(self.name_components) == 2:
+                self.base_name = self.name_components[0]
+            else:
+                self.base_name = '.'.join(self.name_components[:-2])
             self.path = os.path.relpath(f)
             self.sha = ''
             #Parse Step: file is provided 
