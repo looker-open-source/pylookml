@@ -173,7 +173,7 @@ class project:
         :return: generator of LookML file objects
         :rtype: generator of lookml File objects
         '''
-        for f in  self.repo.get_contents(path):
+        for f in self.repo.get_contents(path):
             yield File(f)
 
     def file(self,path):
