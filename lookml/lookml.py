@@ -843,6 +843,9 @@ class base(object):
         elif isinstance(input,dict):
             self._bind_lkml(input)
         self.templateMap = {}
+        # For LookML interdependence
+        self.extends = []
+        self.extended_by = []
         
     def _bind_lkml(self, lkmldict):
             # self.setName(lkmldict.pop('name'))
@@ -915,6 +918,16 @@ class base(object):
         '''
         return self.properties.rawPropValue(key)
 
+    # For LookML interdependence
+    def add_extension(self, ref):
+        """Add a link to an object that extends this one"""
+        self.extended_by.append(ref)
+        self.extended_by = list(set(self.extended_by))
+
+    def add_extend(self, ref):
+        """Add a link to an explore that this extends"""
+        self.extends.append(ref)
+        self.extends = list(set(self.extends))
 
     def __repr__(self):
         return "%s  name: %s id: %s" % (self.__class__, self.identifier, hex(id(self))) 
@@ -961,7 +974,11 @@ class View(base):
         self.parent = None
         super(View, self).__init__(input)
         self.token = 'view'
-
+        # For LookML interdependence
+        self.ndt_dependencies = [] # If it's an NDT, what's the explore source
+        self.dt_dependencies = [] # If it's a derived table, does it reference any sql table names
+        self.dt_references = [] # Where this view appears with SQL TABLE NAME
+        self.explore_appearances = [] # Where this is joined in to an explore
 
     def __str__(self):
         self.templateMap = {
@@ -1026,7 +1043,6 @@ class View(base):
             pass
 
         super()._bind_lkml(jsonDict)
-
 
     def getFieldsSorted(self):
         '''
@@ -1253,7 +1269,6 @@ class View(base):
         for field in self.fields():
             if re.match(searchString,str(field.getProperty(prop))):
                 yield field
-
 
     def addField(self, field):
         '''
@@ -1559,6 +1574,27 @@ class View(base):
             self.children.update({child.identifier: child})
         return child
 
+    # For LookML interdependence
+    def add_ndt_dependency(self, ref):
+        """Add a link to an explore that this is based on"""
+        self.ndt_dependencies.append(ref)
+        self.ndt_dependencies = list(set(self.ndt_dependencies))
+
+    def add_dt_dependency(self, ref):
+        """Add a link to a view that this queries"""
+        self.dt_dependencies.append(ref)
+        self.dt_dependencies = list(set(self.dt_dependencies)) 
+
+    def add_dt_reference(self, ref):
+        """Add a link to a view that references this one in SQL_TABLE_NAME"""
+        self.dt_references.append(ref)
+        self.dt_references = list(set(self.dt_references))
+    
+    def add_explore_appearance(self, ref):
+        """Add a link to an explore that this appears in"""
+        self.explore_appearances.append(ref)
+        self.explore_appearances = list(set(self.explore_appearances))
+
 class Join(base):
     ''' Instantiates a LookML join object... '''
 
@@ -1619,7 +1655,9 @@ class Explore(base):
         self.base_view = ''
         super(Explore, self).__init__(input)
         self.token = 'explore'
-
+        # For LookML interdependence
+        self.view_names = [] # LookML object names for base table and all joins
+        self.ndt_references = [] # Where this is referenced as an explore source in an NDT
             
     def _bind_lkml(self,jsonDict):
         if 'name' in jsonDict.keys():
@@ -1716,6 +1754,17 @@ class Explore(base):
 
     def getJoin(self, key):
         return self.joins.get(key, {})
+
+    # For LookML interdependence
+    def add_ndt_reference(self, ref):
+        """Add a view that references this explore in an NDT"""
+        self.ndt_references.append(ref)
+        self.ndt_references = list(set(self.ndt_references))
+
+    def add_view(self, ref):
+        """Add a view that this explore references"""
+        self.view_names.append(ref)
+        self.view_names = list(set(self.view_names))
 
 class Property(object):
     ''' A basic property / key value pair. 
