@@ -34,6 +34,7 @@ import subprocess, os, platform
 # TODO: rationally break up the megafile...
 # TODO: use the _variable name for all private variables
 # TODO: change "identifier" to _name
+# TODO: use python naming conventions -> CamelCase for Class names, snake_case for functions
 
 # Unit Testing:
 # TODO: Redesign / modularize test suite
@@ -602,7 +603,7 @@ class File:
         def exploreBootstrap():
             #custom initialization for path type
             #Set Basic Attributes
-            self.name = f.name + '.model.lkml'
+            self.name = f.name + '.model.lkml' # What about explore filetypes?
             self.base_name = f.name
             self.path = self.name
             self.sha = ''
