@@ -25,6 +25,7 @@ import subprocess, os, platform
 # TODO: ensure the top level stuff for file works, i.e. accessors for plurals like data groups etc
 
 # Dependency Graphing:
+    # TODO: Use 'locator' functions for __get_item__?
     # TODO: Ancenstor functions? 
     # TODO: Child function support renaming across all properties (html, links, etc)
     # TODO: Multi-generation dependency tracing (ancestor / decendangt)
@@ -149,6 +150,33 @@ class project:
                 self.looker_host = self.looker_host + '/'
         self.deploy_url = ""
         self.constructDeployUrl()
+        
+        # Create an internal representation of all objects for looking up by name or ID
+        self.id_to_obj_mapping = {}
+        self.name_to_id_mapping = {}
+        self.generate_map()
+
+
+    def generate_map(self):
+        for file in self.files():
+            for v in file.vws:
+                self.id_to_obj_mapping[id(v)] = v
+                if self.name_to_id_mapping.get(v.name):
+                    if self.name_to_id_mapping[v.name].get('view'):
+                        self.name_to_id_mapping[v.name]['view'].append(id(v))
+                    else:
+                        self.name_to_id_mapping[v.name]['view'] = [id(v)]
+                else:
+                    self.name_to_id_mapping[v.name] = {'view': [id(v)]}
+            for ex in file.explores:
+                self.id_to_obj_mapping[id(ex)] = ex
+                if self.name_to_id_mapping.get(ex.name):
+                    if self.name_to_id_mapping[ex.name].get('explore'):
+                        self.name_to_id_mapping[ex.name]['explore'].append(id(ex))
+                    else:
+                        self.name_to_id_mapping[ex.name]['explore'] = [id(ex)]
+                else:
+                    self.name_to_id_mapping[ex.name] = {'explore': [id(ex)]}
 
     def __getitem__(self, key):
         return self.file(key)
