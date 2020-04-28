@@ -26,6 +26,8 @@ import subprocess, os, platform
 
 # Dependency Graphing:
     # TODO: Use 'locator' functions for __get_item__?
+    # TODO: Better object resolution when there are multiple matches
+        # Ideally we would trace the import paths to see which objects are legally referenceable
     # TODO: Ancenstor functions? 
     # TODO: Child function support renaming across all properties (html, links, etc)
     # TODO: Multi-generation dependency tracing (ancestor / decendangt)
@@ -200,6 +202,10 @@ class project:
         '''
         if obj_type not in ('view', 'explore'):
             raise ValueError("Lookup is only supported for views and explores")
+        if not self.name_to_id_mapping.get(name):
+            return None # Nothing of this name
+        if not self.name_to_id_mapping[name].get(obj_type):
+            return None # No views/explores of this name
         results = self.name_to_id_mapping[name][obj_type]
         if len(results) > 1 and not first:
             ## TODO: Must be a better way to do this than user input?
