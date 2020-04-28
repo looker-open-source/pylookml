@@ -158,6 +158,19 @@ class project:
 
 
     def generate_map(self):
+        '''
+        This generates two internal representations of the LookML objects within the project
+        ------------------------------------------------------------------------------------
+        id_to_obj_mapping:          Dict
+                                    Keys:   Unique object ids from inbuilt id() function
+                                    Values: View or Explore Objects within the project
+
+        name_to_id_mapping:         Dict
+                                    Keys:   Object names as defined in LookML
+                                    Values: Dict containing unique object ids separated into
+                                            views and explores, like so:
+                                            {view: [id, id], explore: [id, id]}
+        '''
         for file in self.files():
             for v in file.vws:
                 self.id_to_obj_mapping[id(v)] = v
@@ -177,6 +190,27 @@ class project:
                         self.name_to_id_mapping[ex.name]['explore'] = [id(ex)]
                 else:
                     self.name_to_id_mapping[ex.name] = {'explore': [id(ex)]}
+
+    def locate_obj_by_name(self, name, obj_type='view', first=False):
+        '''
+        Pass an LookML object name and this returns the python object that represents it.
+        By default this will assume the object is a view but explores can also be chosen using
+        obj_type. If multiple results are found then you can choose the correct one by index.
+        Or use first=True to always return the first result
+        '''
+        if obj_type not in ('view', 'explore'):
+            raise ValueError("Lookup is only supported for views and explores")
+        results = self.name_to_id_mapping[name][obj_type]
+        if len(results) > 1 and not first:
+            ## TODO: Must be a better way to do this than user input?
+            print("Multiple options found, please choose")
+            for ix, obj in enumerate(results):
+                print(ix + 1, obj)
+            choice = input("")
+            return self.id_to_obj_mapping[results[choice]]
+        else:
+            return self.id_to_obj_mapping[results[0]]
+
 
     def __getitem__(self, key):
         return self.file(key)
