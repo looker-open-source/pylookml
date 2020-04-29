@@ -7,7 +7,12 @@ import requests
 import time, copy
 from string import Template
 import subprocess, os, platform
- 
+from graphviz import Digraph
+
+# TODO - move this
+MAX_DEPTH = 50
+COLOURS = {'view':'#F2E6E6', 'dt':'#C8BFF2', 'ndt':'#92DBEF', 'explore':'#FFE587'}
+TITLE = 'my fun chart'
 ######### V3 #########
 # TODO: implement length of field to be the number of it's properties (will help with formatting. Dense lookml when only one prop)
 # DONE: Complete shell git implementation.... iterate over files etc
@@ -156,12 +161,11 @@ class project:
         # Create an internal representation of all objects for looking up by name or ID
         self.id_to_obj_mapping = {}
         self.name_to_id_mapping = {}
-        self.generate_map()
-
 
     def generate_map(self):
         '''
-        This generates two internal representations of the LookML objects within the project
+        This generates two internal representations of the LookML objects within the project.
+        Once finished, it prompts all of the objects to generate interdependencies between themselves
         ------------------------------------------------------------------------------------
         id_to_obj_mapping:          Dict
                                     Keys:   Unique object ids from inbuilt id() function
@@ -192,8 +196,44 @@ class project:
                         self.name_to_id_mapping[ex.name]['explore'] = [id(ex)]
                 else:
                     self.name_to_id_mapping[ex.name] = {'explore': [id(ex)]}
+        # Now make links between all objects
+        table_name_match = re.compile(r'\$\{([\w_]*?)\.SQL_TABLE_NAME\}')
+        for target in self.id_to_obj_mapping.values():
+            # Extends
+            if target.hasProp('extends'):
+                extends = target.properties.schema.get('extends')
+                for ex in extends:
+                    obj = self.locate_obj_by_name(ex, target.token, first=True)
+                    if obj:
+                        target.add_extend(obj)
+                        obj.add_extension(target)
+            # View specific
+            if target.token == 'view':
+                # Get any derived tables
+                if target.hasProp('derived_table'):
+                    if target.properties.schema['derived_table'].get('explore_source'):
+                        obj = self.locate_obj_by_name(target.properties.schema['derived_table']['explore_source']['name'], 'explore', first=True)
+                        if obj:
+                            target.add_ndt_dependency(obj)
+                            obj.add_ndt_reference(target)
+                    elif target.properties.schema['derived_table'].get('sql'):
+                        table_names = re.findall(table_name_match, target.properties.schema['derived_table'].get('sql'))
+                        for table in table_names:
+                            obj = self.locate_obj_by_name(table, 'view', first=True)
+                            if obj:
+                                target.add_dt_dependency(obj)
+                                obj.add_dt_reference(target)
+            #  Explore specific
+            elif target.token == 'explore':
+                for view in target.view_names:
+                    obj = self.locate_obj_by_name(view, 'view', first=True)
+                    if obj:
+                        target.add_view(obj)
+                        obj.add_explore_appearance(target)
 
-    def locate_obj_by_name(self, name, obj_type='view', first=False):
+    def locate_obj_by_name(self, name,
+                           obj_type='view',
+                           first=False):
         '''
         Pass an LookML object name and this returns the python object that represents it.
         By default this will assume the object is a view but explores can also be chosen using
@@ -203,9 +243,9 @@ class project:
         if obj_type not in ('view', 'explore'):
             raise ValueError("Lookup is only supported for views and explores")
         if not self.name_to_id_mapping.get(name):
-            return None # Nothing of this name
+            return None # Nothing of this name in this project
         if not self.name_to_id_mapping[name].get(obj_type):
-            return None # No views/explores of this name
+            return None # No views/explores of this name in this project
         results = self.name_to_id_mapping[name][obj_type]
         if len(results) > 1 and not first:
             ## TODO: Must be a better way to do this than user input?
@@ -217,6 +257,15 @@ class project:
         else:
             return self.id_to_obj_mapping[results[0]]
 
+    #TODO max_depth not working
+    def graph_dependencies(self, obj_name, obj_type, first=False, max_depth=MAX_DEPTH):
+        '''
+        Pass in an object name and this will generate a chart of 
+        the downstream dependencies and save it to a PDF.
+        '''
+        target = self.locate_obj_by_name(obj_name, obj_type=obj_type, first=first)
+        if target:
+            return target.make_digraph(max_depth=max_depth)
 
     def __getitem__(self, key):
         return self.file(key)
@@ -435,6 +484,7 @@ class shellProject(project):
         
         assert(kwargs['git_url'] is not None)
         self.gitControllerSession.clone(kwargs['git_url'])
+        self.generate_map()
 
 
 #proj.gitControllerSession.add().commit().pushRemote()
@@ -549,6 +599,7 @@ class githubProject(project):
         self.type = "github"
         self.gitsession = github.Github(kwargs['access_token'])
         self.repo = self.gitsession.get_repo(kwargs['repo'])
+        self.generate_map()
 
 class File:
     '''
@@ -929,8 +980,70 @@ class base(object):
         self.extends.append(ref)
         self.extends = list(set(self.extends))
 
+    # For Graphing dependencies
+    def make_digraph(self,
+                     parent=None,
+                     digraph=None,
+                     depth=0,
+                     style={},
+                     full_path=[],
+                     max_depth=MAX_DEPTH):
+        """Produces a digraph dot diagram based on the current object and its downstream dependencies"""
+        colour = COLOURS[self.descriptive_type]
+        if digraph is None:
+            digraph = Digraph(engine='dot',
+                              name=TITLE,
+                              node_attr={'style': 'filled', 'color': '#DF928E', 'shape': 'box'})
+            digraph.attr(overlap='scale')
+            digraph.node(str(id(self)), self.name)
+        else:
+            digraph.attr('edge', arrowhead=style['arrow'], color=style['arrow_color'])
+            digraph.attr('node', color=colour)
+            digraph.edge(parent, str(id(self)), label=style['label'])
+            digraph.node(str(id(self)), self.name)
+        if str(id(self)) in full_path or depth == max_depth:
+            return digraph
+        full_path.append(str(id(self)))
+        if self.extended_by != []:
+            for child in self.extended_by:
+                style = {'label': 'extension', 'arrow': 'none', 'arrow_color': 'lightgrey'}
+                digraph = child.make_digraph(parent=str(id(self)),
+                                                digraph=digraph,
+                                                depth=depth + 1,
+                                                style=style,
+                                                full_path=full_path,
+                                                max_depth=max_depth)
+        if self.ndt_references != [] and self.ndt_references is not None:
+            for child in self.ndt_references:
+                style = {'label': 'NDT', 'arrow': 'box', 'arrow_color': 'darkgrey'}
+                digraph = child.make_digraph(parent=str(id(self)),
+                                                digraph=digraph,
+                                                depth=depth+1,
+                                                style=style,
+                                                full_path=full_path,
+                                                max_depth=max_depth)
+        if self.explore_appearances != [] and self.explore_appearances is not None:
+            for child in self.explore_appearances:
+                style = {'label': 'explore', 'arrow': 'normal', 'arrow_color': 'darkgrey'}
+                digraph = child.make_digraph(parent=str(id(self)),
+                                                digraph=digraph,
+                                                depth=depth + 1,
+                                                style=style,
+                                                full_path=full_path,
+                                                max_depth=max_depth)
+        if self.dt_references != [] and self.dt_references is not None:
+            for child in self.dt_references:
+                style = {'label': 'DT', 'arrow': 'dot', 'arrow_color': 'darkgrey'}
+                digraph = child.make_digraph(parent=str(id(self)),
+                                                digraph=digraph,
+                                                depth=depth + 1,
+                                                style=style,
+                                                full_path=full_path,
+                                                max_depth=max_depth)
+        return digraph
+
     def __repr__(self):
-        return "%s  name: %s id: %s" % (self.__class__, self.identifier, hex(id(self))) 
+        return "%s  name: %s id: %s" % (self.__class__, self.identifier, hex(str(id(self)))) 
 
     def __len__(self):
         return len([f for f in self.getProperties()])
@@ -974,6 +1087,7 @@ class View(base):
         self.parent = None
         super(View, self).__init__(input)
         self.token = 'view'
+        self.descriptive_type = 'view'
         # For LookML interdependence
         self.ndt_dependencies = [] # If it's an NDT, what's the explore source
         self.dt_dependencies = [] # If it's a derived table, does it reference any sql table names
@@ -1059,7 +1173,7 @@ class View(base):
         return sorted(self._fields.values(), key=lambda field: ''.join([str(isinstance(field, Measure)), field.identifier]))
 
     def __repr__(self):
-        return "%s (%r) fields: %s id: %s" % (self.__class__, self.identifier, len(self), hex(id(self))) 
+        return f"{self.__class__} ({self.identifier}) fields: {len(self)} id: {hex(str(id(self)))}" 
 
     def __len__(self):
         return len([f for f in self.fields()])
@@ -1248,7 +1362,8 @@ class View(base):
             try:
                 return self._fields[f]
             except KeyError:
-                raise KeyError
+                # raise KeyError
+                return None #TODO see if this breaks something
         elif isinstance(f,Field):
             return self._fields[f.identifier]
 
@@ -1577,11 +1692,13 @@ class View(base):
     # For LookML interdependence
     def add_ndt_dependency(self, ref):
         """Add a link to an explore that this is based on"""
+        self.descriptive_type = 'ndt'
         self.ndt_dependencies.append(ref)
         self.ndt_dependencies = list(set(self.ndt_dependencies))
 
     def add_dt_dependency(self, ref):
         """Add a link to a view that this queries"""
+        self.descriptive_type = 'dt'
         self.dt_dependencies.append(ref)
         self.dt_dependencies = list(set(self.dt_dependencies)) 
 
@@ -1655,9 +1772,11 @@ class Explore(base):
         self.base_view = ''
         super(Explore, self).__init__(input)
         self.token = 'explore'
+        self.descriptive_type = 'explore'
         # For LookML interdependence
-        self.view_names = [] # LookML object names for base table and all joins
         self.ndt_references = [] # Where this is referenced as an explore source in an NDT
+        self.views_from_joins() # Populates a list of views in this explore (as strings) and saves it to self.view_names
+        self.views = [] # Views that appear in these explores (LookML objects)
             
     def _bind_lkml(self,jsonDict):
         if 'name' in jsonDict.keys():
@@ -1763,8 +1882,24 @@ class Explore(base):
 
     def add_view(self, ref):
         """Add a view that this explore references"""
-        self.view_names.append(ref)
-        self.view_names = list(set(self.view_names))
+        self.views.append(ref)
+        self.views = list(set(self.views))
+
+    def views_from_joins(self):
+        """Construct an array of lookml object names for the base table and all joins"""
+        self.view_names = []
+        if self.hasProp('from'):
+            self.view_names.append(self.getProperty('from').value)
+        elif self.hasProp('view_name'):
+            self.view_names.append(self.getProperty('view_name').value)
+        else:
+            self.view_names.append(self.name)
+        for k, v in self.joins.items():
+            if v.hasProp('from'):
+                self.view_names.append(v.getProperty('from').value)
+            else:
+                self.view_names.append(k)
+
 
 class Property(object):
     ''' A basic property / key value pair. 
