@@ -291,7 +291,7 @@ class project:
         :return: generator of LookML file objects
         :rtype: generator of lookml File objects
         '''
-        for f in self.repo.get_contents(path):
+        for f in  self.repo.get_contents(path):
             yield File(f)
 
     def file(self,path):
@@ -722,7 +722,7 @@ class File:
         def exploreBootstrap():
             #custom initialization for path type
             #Set Basic Attributes
-            self.name = f.name + '.model.lkml' # What about explore filetypes?
+            self.name = f.name + '.model.lkml' # TODO What about explore filetypes?
             self.base_name = f.name
             self.path = self.name
             self.sha = ''
@@ -1173,7 +1173,7 @@ class View(base):
         return sorted(self._fields.values(), key=lambda field: ''.join([str(isinstance(field, Measure)), field.identifier]))
 
     def __repr__(self):
-        return f"{self.__class__} ({self.identifier}) fields: {len(self)} id: {hex(str(id(self)))}" 
+        return "%s (%r) fields: %s id: %s" % (self.__class__, self.identifier, len(self), hex(id(self)))
 
     def __len__(self):
         return len([f for f in self.fields()])
