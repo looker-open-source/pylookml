@@ -1043,7 +1043,7 @@ class base(object):
         return digraph
 
     def __repr__(self):
-        return "%s  name: %s id: %s" % (self.__class__, self.identifier, hex(str(id(self)))) 
+        return "%s  name: %s id: %s" % (self.__class__, self.identifier, hex(id(self))) 
 
     def __len__(self):
         return len([f for f in self.getProperties()])
