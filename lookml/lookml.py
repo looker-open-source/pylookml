@@ -1173,7 +1173,7 @@ class View(base):
         return sorted(self._fields.values(), key=lambda field: ''.join([str(isinstance(field, Measure)), field.identifier]))
 
     def __repr__(self):
-        return "%s (%r) fields: %s id: %s" % (self.__class__, self.identifier, len(self), hex(id(self)))
+        return "%s (%r) fields: %s id: %s" % (self.__class__, self.identifier, len(self), hex(id(self))) 
 
     def __len__(self):
         return len([f for f in self.fields()])
