@@ -11,7 +11,7 @@ from graphviz import Digraph
 
 # TODO - move this
 MAX_DEPTH = 50
-COLOURS = {'view':'#F2E6E6', 'dt':'#C8BFF2', 'ndt':'#92DBEF', 'explore':'#FFE587'}
+GRAPH_COLOURS = {'view':'#F2E6E6', 'dt':'#C8BFF2', 'ndt':'#92DBEF', 'explore':'#FFE587'}
 TITLE = 'my fun chart'
 ######### V3 #########
 # TODO: implement length of field to be the number of it's properties (will help with formatting. Dense lookml when only one prop)
@@ -30,9 +30,9 @@ TITLE = 'my fun chart'
 # TODO: ensure the top level stuff for file works, i.e. accessors for plurals like data groups etc
 
 # Dependency Graphing:
-    # TODO: Use 'locator' functions for __get_item__?
-    # TODO: Better object resolution when there are multiple matches
+    # TODO: Better conflict resolution when there are multiple matches for an object
         # Ideally we would trace the import paths to see which objects are legally referenceable
+        # Currently this is from user input (predicting an eventual CLI interface)
     # TODO: Ancenstor functions? 
     # TODO: Child function support renaming across all properties (html, links, etc)
     # TODO: Multi-generation dependency tracing (ancestor / decendangt)
@@ -989,7 +989,7 @@ class base(object):
                      full_path=[],
                      max_depth=MAX_DEPTH):
         """Produces a digraph dot diagram based on the current object and its downstream dependencies"""
-        colour = COLOURS[self.descriptive_type]
+        colour = GRAPH_COLOURS[self.descriptive_type]
         if digraph is None:
             digraph = Digraph(engine='dot',
                               name=TITLE,
