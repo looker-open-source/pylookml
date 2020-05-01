@@ -249,17 +249,17 @@ class project:
             for ix, obj in enumerate(results):
                 print(ix + 1, obj)
             choice = input("")
-            return self.id_to_obj_mapping[results[choice]]
+            return results[choice]
         else:
-            return self.id_to_obj_mapping[results[0]]
+            return results[0]
 
-    #TODO:TP max_depth not working
+    #TODO: Calling this more than once removes all dependencies
     def graph_dependencies(self, obj_name, obj_type, first=False, max_depth=conf.MAX_GRAPH_DEPTH):
         '''
         Pass in an object name and this will generate a chart of 
         the downstream dependencies and save it to a PDF.
         '''
-        if self.id_to_obj_mapping == {}:
+        if self.name_to_obj_mapping == {}:
             self.generate_map()
         target = self.locate_obj_by_name(obj_name, obj_type=obj_type, first=first)
         if target:
