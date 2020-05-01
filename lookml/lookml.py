@@ -6,7 +6,7 @@ import base64
 import requests
 import time, copy
 from string import Template
-import subprocess, os, platform
+import subprocess, platform
 from graphviz import Digraph
 
 ######### V3 #########
@@ -185,47 +185,10 @@ class project:
                 else:
                     self.name_to_obj_mapping[ex.name] = {'explore': [ex]}
         # Now make links between all objects
-        table_name_match = re.compile(r'\$\{([\w_]*?)\.SQL_TABLE_NAME\}')
         for matches in self.name_to_obj_mapping.values():
-            if matches.get('view'):
-                for target in matches['view']:
-                    # Extends
-                    if target.hasProp('extends'):
-                        extends = target.properties.schema.get('extends')
-                        for ex in extends:
-                            obj = self.locate_obj_by_name(ex, target.token, first=True)
-                            if obj:
-                                target.add_extend(obj)
-                                obj.add_extension(target)
-                    # Get any derived tables
-                    if target.hasProp('derived_table'):
-                        if target.properties.schema['derived_table'].get('explore_source'):
-                            obj = self.locate_obj_by_name(target.properties.schema['derived_table']['explore_source']['name'], 'explore', first=True)
-                            if obj:
-                                target.add_ndt_dependency(obj)
-                                obj.add_ndt_reference(target)
-                        elif target.properties.schema['derived_table'].get('sql'):
-                            table_names = re.findall(table_name_match, target.properties.schema['derived_table'].get('sql'))
-                            for table in table_names:
-                                obj = self.locate_obj_by_name(table, 'view', first=True)
-                                if obj:
-                                    target.add_dt_dependency(obj)
-                                    obj.add_dt_reference(target)
-            if matches.get('explore'):
-                for target in matches['explore']:
-                    # Extends
-                    if target.hasProp('extends'):
-                        extends = target.properties.schema.get('extends')
-                        for ex in extends:
-                            obj = self.locate_obj_by_name(ex, target.token, first=True)
-                            if obj:
-                                target.add_extend(obj)
-                                obj.add_extension(target)
-                    for view in target.view_names:
-                        obj = self.locate_obj_by_name(view, 'view', first=True)
-                        if obj:
-                            target.add_view(obj)
-                            obj.add_explore_appearance(target)
+            for target in matches.values():
+                for lookml_object in target:
+                    lookml_object.make_links(self)
 
     def locate_obj_by_name(self, name,
                            obj_type='view',
@@ -262,8 +225,8 @@ class project:
         if self.name_to_obj_mapping == {}:
             self.generate_map()
         target = self.locate_obj_by_name(obj_name, obj_type=obj_type, first=first)
-        if target:
-            return target.make_digraph(max_depth=max_depth)
+        if target is not None:
+            return target.make_digraph(full_path=[], max_depth=max_depth)
 
     #TODO:TP -> Build a complete ERD
     def graph_all_dependencies(self):
@@ -986,10 +949,12 @@ class base(object):
                      full_path=[],
                      max_depth=conf.MAX_GRAPH_DEPTH):
         """Produces a digraph dot diagram based on the current object and its downstream dependencies"""
+        if self.token not in ('view', 'explore'):
+            raise TypeError("Only views and explores are currently supported for graphing.")
         colour = conf.GRAPH_COLOURS[self.descriptive_type]
         if digraph is None:
             digraph = Digraph(engine='dot',
-                              name=TITLE,
+                              name='graph',
                               node_attr={'style': 'filled', 'color': '#DF928E', 'shape': 'box'})
             digraph.attr(overlap='scale')
             digraph.node(str(id(self)), self.name)
@@ -1005,11 +970,11 @@ class base(object):
             for child in self.extended_by:
                 style = {'label': 'extension', 'arrow': 'none', 'arrow_color': 'lightgrey'}
                 digraph = child.make_digraph(parent=str(id(self)),
-                                                digraph=digraph,
-                                                depth=depth + 1,
-                                                style=style,
-                                                full_path=full_path,
-                                                max_depth=max_depth)
+                                             digraph=digraph,
+                                             depth=depth + 1,
+                                             style=style,
+                                             full_path=full_path,
+                                             max_depth=max_depth)
         if self.ndt_references != [] and self.ndt_references is not None:
             for child in self.ndt_references:
                 style = {'label': 'NDT', 'arrow': 'box', 'arrow_color': 'darkgrey'}
@@ -1711,6 +1676,34 @@ class View(base):
         self.explore_appearances.append(ref)
         self.explore_appearances = list(set(self.explore_appearances))
 
+    def make_links(self, project):
+        '''
+        Use a representation of the objects in a project and link this object to
+        others
+        '''
+        table_name_match = re.compile(r'\$\{([\w_]*?)\.SQL_TABLE_NAME\}')
+        # Extends
+        if self.hasProp('extends'):
+            for ex in self.properties.schema.get('extends'):
+                obj = project.locate_obj_by_name(ex, self.token, first=True)
+                if obj:
+                    self.add_extend(obj)
+                    obj.add_extension(self)
+        # Get any derived tables
+        if self.hasProp('derived_table'):
+            if self.properties.schema['derived_table'].get('explore_source'):
+                obj = project.locate_obj_by_name(self.properties.schema['derived_table']['explore_source']['name'], 'explore', first=True)
+                if obj:
+                    self.add_ndt_dependency(obj)
+                    obj.add_ndt_reference(self)
+            elif self.properties.schema['derived_table'].get('sql'):
+                table_names = re.findall(table_name_match, self.properties.schema['derived_table'].get('sql'))
+                for table in table_names:
+                    obj = project.locate_obj_by_name(table, 'view', first=True)
+                    if obj:
+                        self.add_dt_dependency(obj)
+                        obj.add_dt_reference(self)
+
 class Join(base):
     ''' Instantiates a LookML join object... '''
 
@@ -1776,7 +1769,6 @@ class Explore(base):
         self.extended_by = []
         self.descriptive_type = 'explore'
         self.ndt_references = [] # Where this is referenced as an explore source in an NDT
-        self.views_from_joins() # Populates a list of views in this explore (as strings) and saves it to self.view_names
         self.views = [] # Views that appear in these explores (LookML objects)
             
     def _bind_lkml(self,jsonDict):
@@ -1901,6 +1893,23 @@ class Explore(base):
             else:
                 self.view_names.append(k)
 
+    def make_links(self, project):
+        '''
+        Use a representation of the objects in a project and link this object to
+        others
+        '''
+        self.views_from_joins()
+        if self.hasProp('extends'):
+            for ex in self.properties.schema.get('extends'):
+                obj = project.locate_obj_by_name(ex, self.token, first=True)
+                if obj:
+                    self.add_extend(obj)
+                    obj.add_extension(self)
+        for view in self.view_names:
+            obj = project.locate_obj_by_name(view, 'view', first=True)
+            if obj:
+                self.add_view(obj)
+                obj.add_explore_appearance(self)
 
 class Property(object):
     ''' A basic property / key value pair. 
