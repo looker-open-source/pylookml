@@ -153,78 +153,79 @@ class project:
         self.deploy_url = ""
         self.constructDeployUrl()
         
-        # Create an internal representation of all objects for looking up by name or ID
-        self.id_to_obj_mapping = {}
-        self.name_to_id_mapping = {}
+        # Create an internal representation of all objects for looking up by name
+        self.name_to_obj_mapping = {}
 
     def generate_map(self):
         '''
-        This generates two internal representations of the LookML objects within the project.
+        This generates an internal representation of the LookML objects within the project.
         Once finished, it prompts all of the objects to generate interdependencies between themselves
         ------------------------------------------------------------------------------------
-        id_to_obj_mapping:          Dict
-                                    Keys:   Unique object ids from inbuilt id() function
-                                    Values: View or Explore Objects within the project
-
-        name_to_id_mapping:         Dict
+        name_to_obj_mapping:        Dict
                                     Keys:   Object names as defined in LookML
-                                    Values: Dict containing unique object ids separated into
-                                            views and explores, like so:
+                                    Values: Dict containing the python objects, separated
+                                            into views and explores, like so:
                                             {view: [id, id], explore: [id, id]}
         '''
         for file in self.files():
             for v in file.vws:
-                self.id_to_obj_mapping[id(v)] = v
-                if self.name_to_id_mapping.get(v.name):
-                    if self.name_to_id_mapping[v.name].get('view'):
-                        self.name_to_id_mapping[v.name]['view'].append(id(v))
+                if self.name_to_obj_mapping.get(v.name):
+                    if self.name_to_obj_mapping[v.name].get('view'):
+                        self.name_to_obj_mapping[v.name]['view'].append(v)
                     else:
-                        self.name_to_id_mapping[v.name]['view'] = [id(v)]
+                        self.name_to_obj_mapping[v.name]['view'] = [v]
                 else:
-                    self.name_to_id_mapping[v.name] = {'view': [id(v)]}
+                    self.name_to_obj_mapping[v.name] = {'view': [v]}
             for ex in file.explores:
-                self.id_to_obj_mapping[id(ex)] = ex
-                if self.name_to_id_mapping.get(ex.name):
-                    if self.name_to_id_mapping[ex.name].get('explore'):
-                        self.name_to_id_mapping[ex.name]['explore'].append(id(ex))
+                if self.name_to_obj_mapping.get(ex.name):
+                    if self.name_to_obj_mapping[ex.name].get('explore'):
+                        self.name_to_obj_mapping[ex.name]['explore'].append(ex)
                     else:
-                        self.name_to_id_mapping[ex.name]['explore'] = [id(ex)]
+                        self.name_to_obj_mapping[ex.name]['explore'] = [ex]
                 else:
-                    self.name_to_id_mapping[ex.name] = {'explore': [id(ex)]}
+                    self.name_to_obj_mapping[ex.name] = {'explore': [ex]}
         # Now make links between all objects
         table_name_match = re.compile(r'\$\{([\w_]*?)\.SQL_TABLE_NAME\}')
-        for target in self.id_to_obj_mapping.values():
-            # Extends
-            if target.hasProp('extends'):
-                extends = target.properties.schema.get('extends')
-                for ex in extends:
-                    obj = self.locate_obj_by_name(ex, target.token, first=True)
-                    if obj:
-                        target.add_extend(obj)
-                        obj.add_extension(target)
-            # View specific
-            if target.token == 'view':
-                # Get any derived tables
-                if target.hasProp('derived_table'):
-                    if target.properties.schema['derived_table'].get('explore_source'):
-                        obj = self.locate_obj_by_name(target.properties.schema['derived_table']['explore_source']['name'], 'explore', first=True)
-                        if obj:
-                            target.add_ndt_dependency(obj)
-                            obj.add_ndt_reference(target)
-                    elif target.properties.schema['derived_table'].get('sql'):
-                        table_names = re.findall(table_name_match, target.properties.schema['derived_table'].get('sql'))
-                        for table in table_names:
-                            obj = self.locate_obj_by_name(table, 'view', first=True)
+        for matches in self.name_to_obj_mapping.values():
+            if matches.get('view'):
+                for target in matches['view']:
+                    # Extends
+                    if target.hasProp('extends'):
+                        extends = target.properties.schema.get('extends')
+                        for ex in extends:
+                            obj = self.locate_obj_by_name(ex, target.token, first=True)
                             if obj:
-                                target.add_dt_dependency(obj)
-                                obj.add_dt_reference(target)
-            #  Explore specific
-            elif target.token == 'explore':
-                for view in target.view_names:
-                    obj = self.locate_obj_by_name(view, 'view', first=True)
-                    if obj:
-                        target.add_view(obj)
-                        obj.add_explore_appearance(target)
+                                target.add_extend(obj)
+                                obj.add_extension(target)
+                    # Get any derived tables
+                    if target.hasProp('derived_table'):
+                        if target.properties.schema['derived_table'].get('explore_source'):
+                            obj = self.locate_obj_by_name(target.properties.schema['derived_table']['explore_source']['name'], 'explore', first=True)
+                            if obj:
+                                target.add_ndt_dependency(obj)
+                                obj.add_ndt_reference(target)
+                        elif target.properties.schema['derived_table'].get('sql'):
+                            table_names = re.findall(table_name_match, target.properties.schema['derived_table'].get('sql'))
+                            for table in table_names:
+                                obj = self.locate_obj_by_name(table, 'view', first=True)
+                                if obj:
+                                    target.add_dt_dependency(obj)
+                                    obj.add_dt_reference(target)
+            if matches.get('explore'):
+                for target in matches['explore']:
+                    # Extends
+                    if target.hasProp('extends'):
+                        extends = target.properties.schema.get('extends')
+                        for ex in extends:
+                            obj = self.locate_obj_by_name(ex, target.token, first=True)
+                            if obj:
+                                target.add_extend(obj)
+                                obj.add_extension(target)
+                    for view in target.view_names:
+                        obj = self.locate_obj_by_name(view, 'view', first=True)
+                        if obj:
+                            target.add_view(obj)
+                            obj.add_explore_appearance(target)
 
     def locate_obj_by_name(self, name,
                            obj_type='view',
@@ -237,11 +238,11 @@ class project:
         '''
         if obj_type not in ('view', 'explore'):
             raise ValueError("Lookup is only supported for views and explores")
-        if not self.name_to_id_mapping.get(name):
+        if not self.name_to_obj_mapping.get(name):
             return None # Nothing of this name in this project
-        if not self.name_to_id_mapping[name].get(obj_type):
+        if not self.name_to_obj_mapping[name].get(obj_type):
             return None # No views/explores of this name in this project
-        results = self.name_to_id_mapping[name][obj_type]
+        results = self.name_to_obj_mapping[name][obj_type]
         if len(results) > 1 and not first:
             ## TODO:TP Must be a better way to do this than user input?
             print("Multiple options found, please choose")
