@@ -37,3 +37,6 @@ $message $token: $identifier { $props $joins }
     array = """{ $data }"""
     _list = """[ $data] """
 #TODO: change these to configurable parameters via either argparse / config file / both 
+
+MAX_GRAPH_DEPTH = 20
+GRAPH_COLOURS = {'view':'#F2E6E6', 'dt':'#C8BFF2', 'ndt':'#92DBEF', 'explore':'#FFE587'}

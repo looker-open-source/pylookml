@@ -9,12 +9,8 @@ from string import Template
 import subprocess, os, platform
 from graphviz import Digraph
 
-# TODO - move this
-MAX_DEPTH = 50
-GRAPH_COLOURS = {'view':'#F2E6E6', 'dt':'#C8BFF2', 'ndt':'#92DBEF', 'explore':'#FFE587'}
-TITLE = 'my fun chart'
 ######### V3 #########
-# TODO: implement length of field to be the number of it's properties (will help with formatting. Dense lookml when only one prop)
+# TODO: implement length of field to be the number of its properties (will help with formatting. Dense lookml when only one prop)
 # DONE: Complete shell git implementation.... iterate over files etc
 # DONE: Extends bug --> render issue
 # DONE: figure out the whole NDT thing
@@ -29,7 +25,7 @@ TITLE = 'my fun chart'
 # TODO: Implement remaining collections iteration, top level file attributes (data groups, named value format etc)
 # TODO: ensure the top level stuff for file works, i.e. accessors for plurals like data groups etc
 
-# Dependency Graphing:
+# Dependency Graphing: #TODO:TP 
     # TODO: Better conflict resolution when there are multiple matches for an object
         # Ideally we would trace the import paths to see which objects are legally referenceable
         # Currently this is from user input (predicting an eventual CLI interface)
@@ -54,14 +50,13 @@ TITLE = 'my fun chart'
 # TODO: Implement MVC? 
         # * model -> could eliminate the "phanton property" in that a class instance is only created on get / observation.... (getters and setters should mutate the underlying json at all times to ensure conssistency)
         # TODO: Rationalize View rendering
-        # TODO: elimnate property / properties classes? -> replace with model? Think through getter / setter / render 
-# TODO: Integrate Tom's script for dependency graphing OO
+        # TODO: eliminate property / properties classes? -> replace with model? Think through getter / setter / render 
 # TODO: Common Sql Functions added to the SQL paramter
 # TODO: Common html Functions added to the html paramter
 # TODO: Manifest
-# TODO: contants
-# TODO: locale
-# TODO: slots / performance optimizaiton
+# TODO: Constants
+# TODO: Locale
+# TODO: Slots / performance optimizaiton
 # TODO: Interactive CLI
 # TODO: Update LKML to support new filters syntax
 # TODO: additional documentation
@@ -248,7 +243,7 @@ class project:
             return None # No views/explores of this name in this project
         results = self.name_to_id_mapping[name][obj_type]
         if len(results) > 1 and not first:
-            ## TODO: Must be a better way to do this than user input?
+            ## TODO:TP Must be a better way to do this than user input?
             print("Multiple options found, please choose")
             for ix, obj in enumerate(results):
                 print(ix + 1, obj)
@@ -257,15 +252,21 @@ class project:
         else:
             return self.id_to_obj_mapping[results[0]]
 
-    #TODO max_depth not working
-    def graph_dependencies(self, obj_name, obj_type, first=False, max_depth=MAX_DEPTH):
+    #TODO:TP max_depth not working
+    def graph_dependencies(self, obj_name, obj_type, first=False, max_depth=conf.MAX_GRAPH_DEPTH):
         '''
         Pass in an object name and this will generate a chart of 
         the downstream dependencies and save it to a PDF.
         '''
+        if self.id_to_obj_mapping == {}:
+            self.generate_map()
         target = self.locate_obj_by_name(obj_name, obj_type=obj_type, first=first)
         if target:
             return target.make_digraph(max_depth=max_depth)
+
+    #TODO:TP -> Build a complete ERD
+    def graph_all_dependencies(self):
+        pass
 
     def __getitem__(self, key):
         return self.file(key)
@@ -484,7 +485,6 @@ class shellProject(project):
         
         assert(kwargs['git_url'] is not None)
         self.gitControllerSession.clone(kwargs['git_url'])
-        self.generate_map()
 
 
 #proj.gitControllerSession.add().commit().pushRemote()
@@ -599,7 +599,6 @@ class githubProject(project):
         self.type = "github"
         self.gitsession = github.Github(kwargs['access_token'])
         self.repo = self.gitsession.get_repo(kwargs['repo'])
-        self.generate_map()
 
 class File:
     '''
@@ -894,9 +893,6 @@ class base(object):
         elif isinstance(input,dict):
             self._bind_lkml(input)
         self.templateMap = {}
-        # For LookML interdependence
-        self.extends = []
-        self.extended_by = []
         
     def _bind_lkml(self, lkmldict):
             # self.setName(lkmldict.pop('name'))
@@ -987,9 +983,9 @@ class base(object):
                      depth=0,
                      style={},
                      full_path=[],
-                     max_depth=MAX_DEPTH):
+                     max_depth=conf.MAX_GRAPH_DEPTH):
         """Produces a digraph dot diagram based on the current object and its downstream dependencies"""
-        colour = GRAPH_COLOURS[self.descriptive_type]
+        colour = conf.GRAPH_COLOURS[self.descriptive_type]
         if digraph is None:
             digraph = Digraph(engine='dot',
                               name=TITLE,
@@ -1087,8 +1083,10 @@ class View(base):
         self.parent = None
         super(View, self).__init__(input)
         self.token = 'view'
-        self.descriptive_type = 'view'
         # For LookML interdependence
+        self.descriptive_type = 'view' # Can be changed to NDT or DT. Used to colour code graphing
+        self.extends = []
+        self.extended_by = []
         self.ndt_dependencies = [] # If it's an NDT, what's the explore source
         self.dt_dependencies = [] # If it's a derived table, does it reference any sql table names
         self.dt_references = [] # Where this view appears with SQL TABLE NAME
@@ -1352,7 +1350,7 @@ class View(base):
         '''
         get a field (most commonly, will pass in a field name)
 
-        :param field: Field to return 
+        :param field: Field to return
         :type field: str or Field (or Dimension, Measure...) object
         :return: Returns a subtype of Field
         :rtype:  Dimension, Measure, Filter or Parameter
@@ -1371,11 +1369,11 @@ class View(base):
         '''
         pass a regex expression and will return the fields whose sql match
 
-        :param prop: name of proprty you'd like to search
+        :param prop: name of property you'd like to search
         :param pattern: the regex pattern
         :type prop: str
-        :type patter: a regex search string
-        :return: a generator / iteratble set of fields who have a member property matching the pattern
+        :type pattern: a regex search string
+        :return: a generator / iterable set of fields who have a member property matching the pattern
         :rtype: Field
         '''
         if isinstance(pattern,list):
@@ -1448,8 +1446,8 @@ class View(base):
 
     def setPrimaryKey(self, f, callFromChild=False):
         '''
-        TODO: Complete Desctiption
-        represents a view onject in LookML
+        TODO: Complete Description
+        represents a view object in LookML
 
         :param arg1: description
         :param arg2: description
@@ -1475,7 +1473,7 @@ class View(base):
 
     def getPrimaryKey(self):
         '''
-        TODO: Complete Desctiption
+        TODO: Complete Description
         represents a view onject in LookML
 
         :param arg1: description
@@ -1491,7 +1489,7 @@ class View(base):
 
     def unSetPrimaryKey(self):
         '''
-        TODO: Complete Desctiption
+        TODO: Complete Description
         represents a view onject in LookML
 
         :param arg1: description
@@ -1772,8 +1770,10 @@ class Explore(base):
         self.base_view = ''
         super(Explore, self).__init__(input)
         self.token = 'explore'
-        self.descriptive_type = 'explore'
         # For LookML interdependence
+        self.extends = []
+        self.extended_by = []
+        self.descriptive_type = 'explore'
         self.ndt_references = [] # Where this is referenced as an explore source in an NDT
         self.views_from_joins() # Populates a list of views in this explore (as strings) and saves it to self.view_names
         self.views = [] # Views that appear in these explores (LookML objects)
@@ -1834,7 +1834,7 @@ class Explore(base):
 
     def createNDT(self,explore_source='', name='',fields=[]):
         pass
-        # TODO: re-impliment
+        # TODO: re-implement
         # if name:
         #     tmpView = View(name)
         # else:
@@ -1903,7 +1903,7 @@ class Explore(base):
 
 class Property(object):
     ''' A basic property / key value pair. 
-    If the value is a dict it will recusively instantiate properties within itself '''
+    If the value is a dict it will recursively instantiate properties within itself '''
     def __init__(self, name, value):
         self.name = name
         self.num = 0
@@ -2063,7 +2063,7 @@ class Property(object):
 
 class Properties(object):
     '''
-    Treats the collection of properties as a recursive dicitionary
+    Treats the collection of properties as a recursive dictionary
     Things that fall outside of uniqueness (special cases):
     includes, links, filters, bind_filters
     Things that should be their own class:
@@ -2235,7 +2235,6 @@ class Field(base):
         self.db_column = ''
         super(Field, self).__init__(input)
         self.templateMap = {
-
         }
 
     def children(self):
