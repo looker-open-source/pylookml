@@ -946,7 +946,7 @@ class base(object):
                      digraph=None,
                      depth=0,
                      style={},
-                     full_path=[],
+                     full_path=[], # Be careful with mutable default arguments!
                      max_depth=conf.MAX_GRAPH_DEPTH):
         """Produces a digraph dot diagram based on the current object and its downstream dependencies"""
         if self.token not in ('view', 'explore'):
