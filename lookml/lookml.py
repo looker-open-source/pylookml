@@ -216,7 +216,7 @@ class project:
         else:
             return results[0]
 
-    #TODO: Calling this more than once removes all dependencies
+    #TODO:TP add option to name graph
     def graph_dependencies(self, obj_name, obj_type, first=False, max_depth=conf.MAX_GRAPH_DEPTH):
         '''
         Pass in an object name and this will generate a chart of 
@@ -228,9 +228,31 @@ class project:
         if target is not None:
             return target.make_digraph(full_path=[], max_depth=max_depth)
 
-    #TODO:TP -> Build a complete ERD
-    def graph_all_dependencies(self):
-        pass
+    #TODO:TP -> Option to filter orphan objects (no children)
+    #TODO:TP -> Show an ERD (with join relationships) rather than a dependency graph
+    def graph_all_dependencies(self, max_depth=conf.MAX_GRAPH_DEPTH, graph_name=None):
+        # Much more complex:
+        # a) identify all views that are 'base level' - not extensions or derived tables
+        # Build out the full dependency tree for each
+        # When scanning the dependencies, see if any objects have already been graphed (use uid)
+        # If they have, connect to them, don't make new objects
+        if self.name_to_obj_mapping == {}:
+            self.generate_map()
+        if not graph_name:
+            graph_name = 'graph'
+        digraph = Digraph(engine='dot',
+                          name=graph_name)
+        digraph.attr(overlap='scale')
+        full_path=[]
+        for matches in self.name_to_obj_mapping.values():
+            for target in matches.values():
+                for lookml_object in target:
+                    if lookml_object.descriptive_type == 'view': # Views are the base here
+                        digraph = lookml_object.make_digraph(full_path=full_path,
+                                                             digraph=digraph,
+                                                             max_depth=max_depth,
+                                                             full_map=True)
+        return digraph
 
     def __getitem__(self, key):
         return self.file(key)
@@ -947,7 +969,8 @@ class base(object):
                      depth=0,
                      style={},
                      full_path=[], # Be careful with mutable default arguments!
-                     max_depth=conf.MAX_GRAPH_DEPTH):
+                     max_depth=conf.MAX_GRAPH_DEPTH,
+                     full_map=False):
         """Produces a digraph dot diagram based on the current object and its downstream dependencies"""
         if self.token not in ('view', 'explore'):
             raise TypeError("Only views and explores are currently supported for graphing.")
@@ -957,6 +980,10 @@ class base(object):
                               name='graph',
                               node_attr={'style': 'filled', 'color': '#DF928E', 'shape': 'box'})
             digraph.attr(overlap='scale')
+            digraph.node(str(id(self)), self.name)
+        elif full_map:
+            digraph.attr(overlap='scale')
+            digraph.attr('node', style='filled', color='#F2E6E6', shape='box')
             digraph.node(str(id(self)), self.name)
         else:
             digraph.attr('edge', arrowhead=style['arrow'], color=style['arrow_color'])
