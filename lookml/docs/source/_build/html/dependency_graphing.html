@@ -1,0 +1,276 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Dependency Graphing &mdash; pylookml 2.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Full API Reference" href="reference.html" />
+    <link rel="prev" title="AutoGen for EAV" href="eav.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> pylookml
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Cookbook / Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eav.html">AutoGen for EAV</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Dependency Graphing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#what-does-this-do">What does this do?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#basic-usage">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#known-limitations">Known limitations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Full API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pylookml</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Dependency Graphing</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/dependency_graphing.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="dependency-graphing">
+<h1>Dependency Graphing<a class="headerlink" href="#dependency-graphing" title="Permalink to this headline">¶</a></h1>
+<p><strong>TO DO</strong></p>
+<ul class="simple">
+<li><p>Finish examples</p></li>
+<li><p>Neater functional reference</p></li>
+<li><p>Image of output/s</p></li>
+<li><p>More examples</p></li>
+</ul>
+</div>
+<div class="section" id="what-does-this-do">
+<h1>What does this do?<a class="headerlink" href="#what-does-this-do" title="Permalink to this headline">¶</a></h1>
+<p>It is now possible to generate the dependencies of a given LookML <strong>view</strong> or <strong>explore</strong> object and visualise its dependencies, or iteratively generate all of the dependencies in the project.</p>
+<p>This is useful if you are using Looker to do substantial data transformation, or other situations in which you have a number of downstream dependencies and need to understand the effects of renaming / modifying / deleting an object.</p>
+<p>This requires the <a class="reference external" href="https://pypi.org/project/graphviz/">graphviz library</a> and produces dot files which can be rendered as PDF or parsed with a variety of tools.</p>
+<p>What kind of dependencies does this pick up?</p>
+<ul class="simple">
+<li><p>View and explore extensions</p></li>
+<li><p>Base tables and joined views in explores</p></li>
+<li><p>Explores referenced in the <code class="code docutils literal notranslate"><span class="pre">explore_source</span></code> of NDTs</p></li>
+<li><p>Views referenced in <code class="code docutils literal notranslate"><span class="pre">SQL_TABLE_NAME</span></code> inside derived tables</p></li>
+</ul>
+</div>
+<div class="section" id="basic-usage">
+<h1>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p>Basic usage consists of creating a project object as normal, and then calling either <code class="xref py py-func docutils literal notranslate"><span class="pre">graph_dependencies()</span></code> or <code class="xref py py-func docutils literal notranslate"><span class="pre">graph_all_dependencies()</span></code></p></li>
+<li><p>Under the hood, this will build an internal representation of the objects in the project, and then recursively build the dependencies between them</p></li>
+<li><p>The object returned is a <a class="reference external" href="https://graphviz.readthedocs.io/en/stable/api.html#digraph">graphviz.Digraph</a> object which can then be rendered and saved</p></li>
+<li><p>Calling <code class="xref py py-func docutils literal notranslate"><span class="pre">graph_dependencies()</span></code> with a named object:</p></li>
+</ul>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span></span>    <span class="c1"># Create your project object as normal</span>
+    <span class="n">proj</span> <span class="o">=</span> <span class="n">lookml</span><span class="o">.</span><span class="n">Project</span><span class="p">(</span><span class="n">git_url</span><span class="o">=</span><span class="s1">&#39;some_repo.git&#39;</span><span class="p">,</span> <span class="n">access_token</span><span class="o">=</span><span class="s1">&#39;abcd&#39;</span><span class="p">)</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">graph_dependencies</span><span class="p">(</span><span class="s1">&#39;my_great_view&#39;</span><span class="p">,</span> <span class="s1">&#39;view&#39;</span><span class="p">)</span>
+    <span class="n">graph</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s1">&#39;file_name.gv&#39;</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+<ul class="simple">
+<li><p>Calling <code class="xref py py-func docutils literal notranslate"><span class="pre">graph_all_dependencies()</span></code> to generate a full map:</p></li>
+</ul>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span>    <span class="n">graph</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">graph_all_dependencies</span><span class="p">()</span>
+    <span class="n">graph</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s1">&#39;file_name.gv&#39;</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="known-limitations">
+<h1>Known limitations<a class="headerlink" href="#known-limitations" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p>This currently does not recognise refinements or Looker’s new filter syntax (they are not recognised by the <a class="reference external" href="https://github.com/joshtemple/lkml/issues/32">lkml</a> library which this uses for parsing)</p></li>
+<li><p>This only plots dependencies at the explore / view level, and not at the level of individual fields</p></li>
+<li><p>i.e. it does not look at dimensions, measures, sets, filters, links, etc.</p></li>
+<li><p>This works within the scope of a single project and so cannot visualise dependencies that span across projects (i.e. if you are using project import)</p></li>
+<li><p>This does not look at how code may be modified by extensions or refinements, and so it will only pick up dependencies that are defined explicitly in the code.</p></li>
+</ul>
+<p>e.g. if explore: a is the explore source of NDT b, and view c extends view b, graphing the dependencies of explore a will show that it is the explore source for b, and that b is extended by c, but it won’t show that it is the explore source of c (which presumably it is unless c has been updated to point elsewhere)</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="reference.html" class="btn btn-neutral float-right" title="Full API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="eav.html" class="btn btn-neutral float-left" title="AutoGen for EAV" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Russell Garner
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

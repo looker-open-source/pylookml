@@ -157,15 +157,23 @@ class project:
         self.name_to_obj_mapping = {}
 
     def generate_map(self):
-        '''
-        This generates an internal representation of the LookML objects within the project.
-        Once finished, it prompts all of the objects to generate interdependencies between themselves
-        ------------------------------------------------------------------------------------
-        name_to_obj_mapping:        Dict
-                                    Keys:   Object names as defined in LookML
-                                    Values: Dict containing the python objects, separated
-                                            into views and explores, like so:
-                                            {view: [id, id], explore: [id, id]}
+        '''This generates an internal representation of the LookML objects 
+        within the project. Once finished, it prompts all of the objects to
+        generate interdependencies between themselves.
+
+        This creates an attribute called ``name_to_obj_mapping`` which is a 
+        Dict with keys that are LookML object names and values that are Dicts
+        containing references to the python objects, separated into views and
+        explores::
+            {
+                lookml_obj_1: {
+                    view: [id] # No explores with this name
+                    },
+                lookml_obj_2: {
+                    view: [id, id], # Multiple views with this name
+                    explore: [id]
+                    }
+            }
         '''
         for file in self.files():
             for v in file.vws:
@@ -190,14 +198,29 @@ class project:
                 for lookml_object in target:
                     lookml_object.make_links(self)
 
-    def locate_obj_by_name(self, name,
+    def locate_obj_by_name(self,
+                           name,
                            obj_type='view',
                            first=False):
         '''
-        Pass an LookML object name and this returns the python object that represents it.
-        By default this will assume the object is a view but explores can also be chosen using
-        obj_type. If multiple results are found then you can choose the correct one by index.
-        Or use first=True to always return the first result
+        Pass an LookML object name and this returns the python object that 
+        represents it. If multiple results are found then you can choose the
+        correct one by index, or use ``first=True`` to always return the first
+        result.
+
+        Note:
+            By default this will assume the object is a view but explores can
+            also be chosen using ``obj_type='explore'``.
+                
+        Args:
+            name (str): The name of the LookML object.
+            obj_type (str, optional): One of 'view' or 'explore'. Defaults to
+                'view'
+            first (bool. option): True to return the first match, False for the
+                user to choose based on index. Defaults to False.
+
+        Returns:
+            The matching python object corresponding to the LookML object name.
         '''
         if obj_type not in ('view', 'explore'):
             raise ValueError("Lookup is only supported for views and explores")
@@ -217,10 +240,33 @@ class project:
             return results[0]
 
     #TODO:TP add option to name graph
-    def graph_dependencies(self, obj_name, obj_type, first=False, max_depth=conf.MAX_GRAPH_DEPTH):
+    def graph_dependencies(self,
+                           obj_name,
+                           obj_type,
+                           first=False,
+                           max_depth=conf.MAX_GRAPH_DEPTH):
         '''
-        Pass in an object name and this will generate a chart of 
-        the downstream dependencies and save it to a PDF.
+        Pass in an object name and this will generate a chart of the downstream
+        dependencies and return a ``Digraph`` object which can be viewed or 
+        saved to PDF.
+
+        Args:
+            obj_name (str): The name of the LookML object with dependencies to 
+                graph.
+            obj_type (str): One of 'view' or 'explore'. Used to narrow down the
+                objects matching the name.
+            first (bool, optional): Defaults to False. True will return the
+                first matching object in the case that more than one share the
+                same name. False will print an enumerated list for the user to 
+                choose from. 
+            max_depth(int, optional): The max depth that dependencies will be
+                graphed to. By default this is set by the configuration file
+                ``conf.py``. Note that self-referential recursion is prevented
+                by default.
+
+        Returns:
+            A graphviz ``Digraph`` object representing the dependencies. This
+            can be saved as an image or PDF or interpreted by other tools.
         '''
         if self.name_to_obj_mapping == {}:
             self.generate_map()
@@ -230,18 +276,25 @@ class project:
 
     #TODO:TP -> Option to filter orphan objects (no children)
     #TODO:TP -> Show an ERD (with join relationships) rather than a dependency graph
-    def graph_all_dependencies(self, max_depth=conf.MAX_GRAPH_DEPTH, graph_name=None):
-        # Much more complex:
-        # a) identify all views that are 'base level' - not extensions or derived tables
-        # Build out the full dependency tree for each
-        # When scanning the dependencies, see if any objects have already been graphed (use uid)
-        # If they have, connect to them, don't make new objects
+    def graph_all_dependencies(self, max_depth=conf.MAX_GRAPH_DEPTH):
+        '''
+        Generate a chart of all dependencies in the project, starting from
+        all view objects that do not depend on anything else.
+
+        Args:
+            max_depth(int, optional): The max depth that dependencies will be
+            graphed to. By default this is set by the configuration file
+            ``conf.py``. Note that self-referential recursion is prevented by 
+            default.
+
+        Returns:
+            A graphviz ``Digraph`` object representing the dependencies. This
+            can be saved as an image or PDF or interpreted by other tools.
+        '''
         if self.name_to_obj_mapping == {}:
             self.generate_map()
-        if not graph_name:
-            graph_name = 'graph'
         digraph = Digraph(engine='dot',
-                          name=graph_name)
+                          name='graph')
         digraph.attr(overlap='scale')
         full_path=[]
         for matches in self.name_to_obj_mapping.values():

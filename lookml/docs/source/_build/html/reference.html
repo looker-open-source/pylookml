@@ -1,0 +1,1491 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Full API Reference &mdash; pylookml 2.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Dependency Graphing" href="dependency_graphing.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> pylookml
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Cookbook / Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eav.html">AutoGen for EAV</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependency_graphing.html">Dependency Graphing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependency_graphing.html#what-does-this-do">What does this do?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependency_graphing.html#basic-usage">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependency_graphing.html#known-limitations">Known limitations</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Full API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pylookml</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Full API Reference</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/reference.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="full-api-reference">
+<h1>Full API Reference<a class="headerlink" href="#full-api-reference" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="lookml.project">
+<em class="property">class </em><code class="sig-prename descclassname">lookml.</code><code class="sig-name descname">project</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">repo</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">access_token</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">branch</span><span class="o">=</span><span class="default_value">'master'</span></em>, <em class="sig-param"><span class="n">git_url</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">commitMessage</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">looker_host</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">looker_project_name</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">outputPath</span><span class="o">=</span><span class="default_value">'.tmp'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.project" title="Permalink to this definition">¶</a></dt>
+<dd><p>A LookML Project at a GitHub location or location on the filesytem</p>
+<dl class="py method">
+<dt id="lookml.project.add">
+<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.project.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>adds a new file to git</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>f</strong> (<a class="reference internal" href="#lookml.File" title="lookml.File"><em>File</em></a>) – the file to add</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self (for method chaining)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.project.constructDeployUrl">
+<code class="sig-name descname">constructDeployUrl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lookml.project.constructDeployUrl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a github deploy URL according to this pattern:
+<a class="reference external" href="https://prod.host.com/webhooks/projects/projectname/deploy">https://prod.host.com/webhooks/projects/projectname/deploy</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.project.delete">
+<code class="sig-name descname">delete</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.project.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>deletes a file from a repository at a specific path</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>f</strong> (<a class="reference internal" href="#lookml.File" title="lookml.File"><em>File</em></a><em> or </em><em>str path</em>) – the file or path</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.project.exists">
+<code class="sig-name descname">exists</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.project.exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a boolean if the file or file path exists</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>f</strong> (<a class="reference internal" href="#lookml.File" title="lookml.File"><em>File</em></a><em> or </em><em>str path</em>) – the file or path</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.project.file">
+<code class="sig-name descname">file</code><span class="sig-paren">(</span><em class="sig-param">'order_items.view.lkml'</em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.project.file" title="Permalink to this definition">¶</a></dt>
+<dd><p>file(‘my_folder/users.view.lkml’)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> – path file location</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a single lookml File</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#lookml.File" title="lookml.File">File</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.project.files">
+<code class="sig-name descname">files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.project.files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iteratively returns all the lkml files at a path in the project</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> – directory you would like to return the files from</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>generator of LookML file objects</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>generator of lookml File objects</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.project.generate_map">
+<code class="sig-name descname">generate_map</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lookml.project.generate_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>This generates an internal representation of the LookML objects 
+within the project. Once finished, it prompts all of the objects to
+generate interdependencies between themselves.</p>
+<p>This creates an attribute called <code class="docutils literal notranslate"><span class="pre">name_to_obj_mapping</span></code> which is a 
+Dict with keys that are LookML object names and values that are Dicts
+containing references to the python objects, separated into views and
+explores:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="n">lookml_obj_1</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">view</span><span class="p">:</span> <span class="p">[</span><span class="nb">id</span><span class="p">]</span> <span class="c1"># No explores with this name</span>
+        <span class="p">},</span>
+    <span class="n">lookml_obj_2</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">view</span><span class="p">:</span> <span class="p">[</span><span class="nb">id</span><span class="p">,</span> <span class="nb">id</span><span class="p">],</span> <span class="c1"># Multiple views with this name</span>
+        <span class="n">explore</span><span class="p">:</span> <span class="p">[</span><span class="nb">id</span><span class="p">]</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Note:</dt><dd><p>You do not actually need to call this method - it will be called
+automatically the first time you generate any object dependencies.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.project.graph_all_dependencies">
+<code class="sig-name descname">graph_all_dependencies</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">max_depth</span><span class="o">=</span><span class="default_value">20</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.project.graph_all_dependencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a chart of all dependencies in the project, starting from
+all view objects that do not depend on anything else.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>max_depth(int, optional): The max depth that dependencies will be
+graphed to. By default this is set by the configuration file
+<code class="docutils literal notranslate"><span class="pre">conf.py</span></code>. Note that self-referential recursion is prevented by 
+default.</p>
+</dd>
+<dt>Returns:</dt><dd><p>A graphviz <code class="docutils literal notranslate"><span class="pre">Digraph</span></code> object representing the dependencies. This
+can be saved as an image or PDF or interpreted by other tools.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.project.graph_dependencies">
+<code class="sig-name descname">graph_dependencies</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj_name</span></em>, <em class="sig-param"><span class="n">obj_type</span></em>, <em class="sig-param"><span class="n">first</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">max_depth</span><span class="o">=</span><span class="default_value">20</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.project.graph_dependencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pass in an object name and this will generate a chart of the downstream
+dependencies and return a <code class="docutils literal notranslate"><span class="pre">Digraph</span></code> object which can be viewed or 
+saved to PDF.</p>
+<dl>
+<dt>Args:</dt><dd><dl class="field-list simple">
+<dt class="field-odd">param obj_name</dt>
+<dd class="field-odd"><p>The name of the LookML object with dependencies to 
+graph.</p>
+</dd>
+<dt class="field-even">type obj_name</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param obj_type</dt>
+<dd class="field-odd"><p>One of ‘view’ or ‘explore’. Used to narrow down the
+objects matching the name.</p>
+</dd>
+<dt class="field-even">type obj_type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param first</dt>
+<dd class="field-odd"><p>Defaults to False. True will return the
+first matching object in the case that more than one share the
+same name. False will print an enumerated list for the user to 
+choose from.</p>
+</dd>
+<dt class="field-even">type first</dt>
+<dd class="field-even"><p>boolean, optional</p>
+</dd>
+<dt class="field-odd">param max_depth</dt>
+<dd class="field-odd"><p>The max depth that dependencies will be
+graphed to. By default this is set by the configuration file
+<code class="docutils literal notranslate"><span class="pre">conf.py</span></code>. Note that self-referential recursion is prevented
+by default.</p>
+</dd>
+<dt class="field-even">type max_depth</dt>
+<dd class="field-even"><p>int, optional</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><dl class="field-list simple">
+<dt class="field-odd">return</dt>
+<dd class="field-odd"><p>A graphviz <code class="docutils literal notranslate"><span class="pre">Digraph</span></code> object representing the dependencies. This</p>
+</dd>
+</dl>
+<p>can be saved as an image or PDF or interpreted by other tools.
+:rtype: graphviz.Digraph</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.project.locate_obj_by_name">
+<code class="sig-name descname">locate_obj_by_name</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">obj_type</span><span class="o">=</span><span class="default_value">'view'</span></em>, <em class="sig-param"><span class="n">first</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.project.locate_obj_by_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pass an LookML object name and this returns the python object that 
+represents it. If multiple results are found then you can choose the
+correct one by index, or use <code class="docutils literal notranslate"><span class="pre">first=True</span></code> to always return the first
+result.</p>
+<dl class="simple">
+<dt>Note:</dt><dd><p>By default this will assume the object is a view but explores can
+also be chosen using <code class="docutils literal notranslate"><span class="pre">obj_type='explore'</span></code>.</p>
+</dd>
+<dt>Args:</dt><dd><dl class="field-list simple">
+<dt class="field-odd">param name</dt>
+<dd class="field-odd"><p>The name of the LookML object.</p>
+</dd>
+<dt class="field-even">type name</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param obj_type</dt>
+<dd class="field-odd"><p>One of ‘view’ or ‘explore’. Defaults to ‘view’</p>
+</dd>
+<dt class="field-even">type obj_type</dt>
+<dd class="field-even"><p>str, optional</p>
+</dd>
+<dt class="field-odd">param</dt>
+<dd class="field-odd"><p>first: True to return the first match, False for the
+user to choose based on index. Defaults to False.</p>
+</dd>
+<dt class="field-even">type first</dt>
+<dd class="field-even"><p>boolean, optional</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><dl class="field-list simple">
+<dt class="field-odd">return</dt>
+<dd class="field-odd"><p>The matching python object corresponding to the LookML
+object name.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.project.put">
+<code class="sig-name descname">put</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.project.put" title="Permalink to this definition">¶</a></dt>
+<dd><p>adds or updates file to git. Safe to use either use case</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>f</strong> (<a class="reference internal" href="#lookml.File" title="lookml.File"><em>File</em></a>) – the file to add/update</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self (for method chaining)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.project.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.project.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>updates an existing file to git</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>f</strong> (<a class="reference internal" href="#lookml.File" title="lookml.File"><em>File</em></a>) – the file to update</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self (for method chaining)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="lookml.File">
+<em class="property">class </em><code class="sig-prename descclassname">lookml.</code><code class="sig-name descname">File</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.File" title="Permalink to this definition">¶</a></dt>
+<dd><p>A file object represents a file within a LookML project. It can be several types, can contain views, explores 
+or other properties such as inlcude or data groups
+It can be instantiated with a View, an Explore, a filepath on disk, or content from the Github API</p>
+<dl class="py class">
+<dt id="lookml.File.explore_collection">
+<em class="property">class </em><code class="sig-name descname">explore_collection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">explorelist</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.File.explore_collection" title="Permalink to this definition">¶</a></dt>
+<dd><p>A container for explores which allows us to use .operator syntax</p>
+<dl class="py method">
+<dt id="lookml.File.explore_collection.add">
+<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">e</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.File.explore_collection.add" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="lookml.File.explore_collection.remove">
+<code class="sig-name descname">remove</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">e</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.File.explore_collection.remove" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.File.getProperty">
+<code class="sig-name descname">getProperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prop</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.File.getProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a property from the properties collection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.File.setProperty">
+<code class="sig-name descname">setProperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.File.setProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a property in the properties collection</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="lookml.File.view_collection">
+<em class="property">class </em><code class="sig-name descname">view_collection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">viewlist</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.File.view_collection" title="Permalink to this definition">¶</a></dt>
+<dd><p>A container for views which allows us to use .operator syntax</p>
+<dl class="py method">
+<dt id="lookml.File.view_collection.add">
+<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">v</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.File.view_collection.add" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="lookml.File.view_collection.remove">
+<code class="sig-name descname">remove</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">v</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.File.view_collection.remove" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.File.write">
+<code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">overWriteExisting</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.File.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks to see if the file exists before writing</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="lookml.View">
+<em class="property">class </em><code class="sig-prename descclassname">lookml.</code><code class="sig-name descname">View</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View" title="Permalink to this definition">¶</a></dt>
+<dd><p>represents a view onject in LookML</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arg1</strong> (<em>type description</em>) – description</p></li>
+<li><p><strong>arg2</strong> – description</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>return description</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>the return type description</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="lookml.View.addAverage">
+<code class="sig-name descname">addAverage</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.addAverage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a average to the view based on a field object or field name/identifier. returns self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.addCount">
+<code class="sig-name descname">addCount</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.addCount" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a count measure to the view, returns self
+:return: return self (allows call chaining i.e. obj.method().method() )
+:rtype:  self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.addCountDistinct">
+<code class="sig-name descname">addCountDistinct</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.addCountDistinct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a count distinct to the view based on a field object or field name/identifier. returns self
+:return: return self (allows call chaining i.e. obj.method().method() )
+:rtype:  self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.addDimension">
+<code class="sig-name descname">addDimension</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dbColumn</span></em>, <em class="sig-param"><span class="n">type</span><span class="o">=</span><span class="default_value">'string'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.addDimension" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>return self (allows call chaining i.e. obj.method().method() )</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.addField">
+<code class="sig-name descname">addField</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">field</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.addField" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>add a field to the view</dt><dd><ul class="simple">
+<li><p>if the field is a dimension and primary key it will be set as the view primary key</p></li>
+<li><p>the field will have its view set to so that the view may be referenced from the field object</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>arg1</strong> (<em>Field</em><em> (or </em><em>subtype</em><em>)</em>) – Field</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>return self (allows call chaining i.e. obj.method().method() )</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.addFields">
+<code class="sig-name descname">addFields</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fields</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.addFields" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add multiple fields to a view. An iterable collection of field objects will be passed to the add field function. Helpful for adding many fields at once</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fields</strong> (<em>type description</em>) – set or list of fields [field1, field2 …]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>return self (allows call chaining i.e. obj.method().method() )</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.addSum">
+<code class="sig-name descname">addSum</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.addSum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a sum to the view based on a field object or field name/identifier. returns self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.add_dt_dependency">
+<code class="sig-name descname">add_dt_dependency</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.add_dt_dependency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to a view that this queries</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.add_dt_reference">
+<code class="sig-name descname">add_dt_reference</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.add_dt_reference" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to a view that references this one in SQL_TABLE_NAME</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.add_explore_appearance">
+<code class="sig-name descname">add_explore_appearance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.add_explore_appearance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to an explore that this appears in</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.add_extend">
+<code class="sig-name descname">add_extend</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.add_extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to an explore that this extends</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.add_extension">
+<code class="sig-name descname">add_extension</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.add_extension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to an object that extends this one</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.add_ndt_dependency">
+<code class="sig-name descname">add_ndt_dependency</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.add_ndt_dependency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to an explore that this is based on</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.countDistinct">
+<code class="sig-name descname">countDistinct</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.countDistinct" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Synonym for addCountDistinct
+:return: return self (allows call chaining i.e. obj.method().method() )
+:rtype:  self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.dimensionGroups">
+<code class="sig-name descname">dimensionGroups</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.dimensionGroups" title="Permalink to this definition">¶</a></dt>
+<dd><p>a description of the function
+:param arg1: description
+:param arg2: description
+:type arg1: type description
+:type arg1: type description
+:return: return description
+:rtype: the return type description</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.dims">
+<code class="sig-name descname">dims</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.dims" title="Permalink to this definition">¶</a></dt>
+<dd><p>a description of the function
+:param arg1: description
+:param arg2: description
+:type arg1: type description
+:type arg1: type description
+:return: return description
+:rtype: the return type description</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.extend">
+<code class="sig-name descname">extend</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">sameFile</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">required</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an extended view, optionally within the same view file 
+name (string) -&gt; name of the extended / child view. Will default to the parent + _extended
+sameFile (boolean) -&gt; default true, if true will result in the child being printed within the parent’s string call / file print
+required (boolean) -&gt; default false, if true will result in the parent being set to extension required
+returns the child view object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.field">
+<code class="sig-name descname">field</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.field" title="Permalink to this definition">¶</a></dt>
+<dd><p>get a field (most commonly, will pass in a field name)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>field</strong> (<em>str</em><em> or </em><em>Field</em><em> (or </em><a class="reference internal" href="#lookml.Dimension" title="lookml.Dimension"><em>Dimension</em></a><em>, </em><em>Measure...</em><em>) </em><em>object</em>) – Field to return</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns a subtype of Field</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#lookml.Dimension" title="lookml.Dimension">Dimension</a>, <a class="reference internal" href="#lookml.Measure" title="lookml.Measure">Measure</a>, <a class="reference internal" href="#lookml.Filter" title="lookml.Filter">Filter</a> or <a class="reference internal" href="#lookml.Parameter" title="lookml.Parameter">Parameter</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.fieldNames">
+<code class="sig-name descname">fieldNames</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.fieldNames" title="Permalink to this definition">¶</a></dt>
+<dd><p>represents a view onject in LookML</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arg1</strong> (<em>type description</em>) – description</p></li>
+<li><p><strong>arg2</strong> – description</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>return description</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>the return type description</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.fields">
+<code class="sig-name descname">fields</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>represents a view onject in LookML</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arg1</strong> (<em>type description</em>) – description</p></li>
+<li><p><strong>arg2</strong> – description</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>return description</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>the return type description</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.filters">
+<code class="sig-name descname">filters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.filters" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns iterable of Filter Fields</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.getFieldsByTag">
+<code class="sig-name descname">getFieldsByTag</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tag</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.getFieldsByTag" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arg1</strong> (<em>type description</em>) – description</p></li>
+<li><p><strong>arg2</strong> – description</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>return description</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>the return type description</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.getFieldsByType">
+<code class="sig-name descname">getFieldsByType</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.getFieldsByType" title="Permalink to this definition">¶</a></dt>
+<dd><p>represents a view onject in LookML</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arg1</strong> (<em>type description</em>) – description</p></li>
+<li><p><strong>arg2</strong> – description</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>return description</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>the return type description</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.getFieldsSorted">
+<code class="sig-name descname">getFieldsSorted</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.getFieldsSorted" title="Permalink to this definition">¶</a></dt>
+<dd><p>represents a view onject in LookML</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arg1</strong> (<em>type description</em>) – description</p></li>
+<li><p><strong>arg2</strong> – description</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>return description</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>the return type description</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.getPrimaryKey">
+<code class="sig-name descname">getPrimaryKey</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.getPrimaryKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO: Complete Description
+represents a view onject in LookML</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arg1</strong> (<em>type description</em>) – description</p></li>
+<li><p><strong>arg2</strong> – description</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>return description</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>the return type description</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.getProperty">
+<code class="sig-name descname">getProperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prop</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.getProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a property from the properties collection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.make_digraph">
+<code class="sig-name descname">make_digraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">digraph</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">depth</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">style</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">full_path</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">max_depth</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">full_map</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.make_digraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a digraph dot diagram based on the current object and its downstream dependencies</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.make_links">
+<code class="sig-name descname">make_links</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">project</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.make_links" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use a representation of the objects in a project and link this object to
+others</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.measures">
+<code class="sig-name descname">measures</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.measures" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns iterable of Measure Fields</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.parameters">
+<code class="sig-name descname">parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns iterable of Paramter Fields</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.rawProp">
+<code class="sig-name descname">rawProp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.rawProp" title="Permalink to this definition">¶</a></dt>
+<dd><p>if dict type schema, needs a prop name. If list type schema needs a number index</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.removeField">
+<code class="sig-name descname">removeField</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">field</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.removeField" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Removes a field from the View
+* also unsets primary key</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>arg1</strong> (<em>Field object</em><em> or </em><em>str name of field</em>) – field to remove</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>returns the removed field</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Field or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.search">
+<code class="sig-name descname">search</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prop</span></em>, <em class="sig-param"><span class="n">pattern</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>pass a regex expression and will return the fields whose sql match</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prop</strong> (<em>str</em>) – name of property you’d like to search</p></li>
+<li><p><strong>pattern</strong> (<em>a regex search string</em>) – the regex pattern</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a generator / iterable set of fields who have a member property matching the pattern</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Field</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.setExtensionRequired">
+<code class="sig-name descname">setExtensionRequired</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.setExtensionRequired" title="Permalink to this definition">¶</a></dt>
+<dd><p>represents a view onject in LookML</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arg1</strong> (<em>type description</em>) – description</p></li>
+<li><p><strong>arg2</strong> – description</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>return description</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>the return type description</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.setName">
+<code class="sig-name descname">setName</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.setName" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets the name
+:param arg1: name
+:type arg1: string 
+:return: returns the overall object
+:rtype: self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.setPrimaryKey">
+<code class="sig-name descname">setPrimaryKey</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em>, <em class="sig-param"><span class="n">callFromChild</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.setPrimaryKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO: Complete Description
+represents a view object in LookML</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arg1</strong> (<em>type description</em>) – description</p></li>
+<li><p><strong>arg2</strong> – description</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>return self (allows call chaining i.e. obj.method().method() )</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.setProperty">
+<code class="sig-name descname">setProperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.setProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a property in the properties collection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.sum">
+<code class="sig-name descname">sum</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Synonym for addSum 
+:return: return self (allows call chaining i.e. obj.method().method() )
+:rtype:  self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.sumAllNumDimensions">
+<code class="sig-name descname">sumAllNumDimensions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.sumAllNumDimensions" title="Permalink to this definition">¶</a></dt>
+<dd><p>represents a view onject in LookML</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arg1</strong> (<em>type description</em>) – description</p></li>
+<li><p><strong>arg2</strong> – description</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>return description</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>the return type description</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.View.unSetPrimaryKey">
+<code class="sig-name descname">unSetPrimaryKey</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lookml.View.unSetPrimaryKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO: Complete Description
+represents a view onject in LookML</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arg1</strong> (<em>type description</em>) – description</p></li>
+<li><p><strong>arg2</strong> – description</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>return self (allows call chaining i.e. obj.method().method() )</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="lookml.Explore">
+<em class="property">class </em><code class="sig-prename descclassname">lookml.</code><code class="sig-name descname">Explore</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Explore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents an explore object in LookML</p>
+<dl class="py method">
+<dt id="lookml.Explore.add_extend">
+<code class="sig-name descname">add_extend</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Explore.add_extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to an explore that this extends</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Explore.add_extension">
+<code class="sig-name descname">add_extension</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Explore.add_extension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to an object that extends this one</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Explore.add_ndt_reference">
+<code class="sig-name descname">add_ndt_reference</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Explore.add_ndt_reference" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a view that references this explore in an NDT</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Explore.add_view">
+<code class="sig-name descname">add_view</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Explore.add_view" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a view that this explore references</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Explore.getProperty">
+<code class="sig-name descname">getProperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prop</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Explore.getProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a property from the properties collection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Explore.make_digraph">
+<code class="sig-name descname">make_digraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">digraph</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">depth</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">style</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">full_path</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">max_depth</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">full_map</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Explore.make_digraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a digraph dot diagram based on the current object and its downstream dependencies</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Explore.make_links">
+<code class="sig-name descname">make_links</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">project</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Explore.make_links" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use a representation of the objects in a project and link this object to
+others</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Explore.rawProp">
+<code class="sig-name descname">rawProp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Explore.rawProp" title="Permalink to this definition">¶</a></dt>
+<dd><p>if dict type schema, needs a prop name. If list type schema needs a number index</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Explore.setName">
+<code class="sig-name descname">setName</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Explore.setName" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets the name
+:param arg1: name
+:type arg1: string 
+:return: returns the overall object
+:rtype: self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Explore.setProperty">
+<code class="sig-name descname">setProperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Explore.setProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a property in the properties collection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Explore.views_from_joins">
+<code class="sig-name descname">views_from_joins</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Explore.views_from_joins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct an array of lookml object names for the base table and all joins</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="lookml.Join">
+<em class="property">class </em><code class="sig-prename descclassname">lookml.</code><code class="sig-name descname">Join</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Join" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiates a LookML join object…</p>
+<dl class="py method">
+<dt id="lookml.Join.add_extend">
+<code class="sig-name descname">add_extend</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Join.add_extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to an explore that this extends</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Join.add_extension">
+<code class="sig-name descname">add_extension</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Join.add_extension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to an object that extends this one</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Join.getProperty">
+<code class="sig-name descname">getProperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prop</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Join.getProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a property from the properties collection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Join.make_digraph">
+<code class="sig-name descname">make_digraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">digraph</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">depth</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">style</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">full_path</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">max_depth</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">full_map</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Join.make_digraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a digraph dot diagram based on the current object and its downstream dependencies</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Join.rawProp">
+<code class="sig-name descname">rawProp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Join.rawProp" title="Permalink to this definition">¶</a></dt>
+<dd><p>if dict type schema, needs a prop name. If list type schema needs a number index</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Join.setName">
+<code class="sig-name descname">setName</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Join.setName" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets the name
+:param arg1: name
+:type arg1: string 
+:return: returns the overall object
+:rtype: self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Join.setProperty">
+<code class="sig-name descname">setProperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Join.setProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a property in the properties collection</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="lookml.Dimension">
+<em class="property">class </em><code class="sig-prename descclassname">lookml.</code><code class="sig-name descname">Dimension</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Dimension" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="lookml.Dimension.add_extend">
+<code class="sig-name descname">add_extend</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Dimension.add_extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to an explore that this extends</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Dimension.add_extension">
+<code class="sig-name descname">add_extension</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Dimension.add_extension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to an object that extends this one</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Dimension.getProperty">
+<code class="sig-name descname">getProperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prop</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Dimension.getProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a property from the properties collection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Dimension.make_digraph">
+<code class="sig-name descname">make_digraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">digraph</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">depth</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">style</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">full_path</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">max_depth</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">full_map</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Dimension.make_digraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a digraph dot diagram based on the current object and its downstream dependencies</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Dimension.rawProp">
+<code class="sig-name descname">rawProp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Dimension.rawProp" title="Permalink to this definition">¶</a></dt>
+<dd><p>if dict type schema, needs a prop name. If list type schema needs a number index</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Dimension.setName">
+<code class="sig-name descname">setName</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Dimension.setName" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets the name
+:param arg1: name
+:type arg1: string 
+:return: returns the overall object
+:rtype: self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Dimension.setName_safe">
+<code class="sig-name descname">setName_safe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">newName</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Dimension.setName_safe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the name of the field and references to it in sql (does not yet perform the same for HTML / Links / Drill Fields / Sets / Actions etc)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Dimension.setProperty">
+<code class="sig-name descname">setProperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Dimension.setProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a property in the properties collection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Dimension.setView">
+<code class="sig-name descname">setView</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">view</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Dimension.setView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="lookml.Measure">
+<em class="property">class </em><code class="sig-prename descclassname">lookml.</code><code class="sig-name descname">Measure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Measure" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="lookml.Measure.add_extend">
+<code class="sig-name descname">add_extend</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Measure.add_extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to an explore that this extends</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Measure.add_extension">
+<code class="sig-name descname">add_extension</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Measure.add_extension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to an object that extends this one</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Measure.getProperty">
+<code class="sig-name descname">getProperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prop</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Measure.getProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a property from the properties collection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Measure.make_digraph">
+<code class="sig-name descname">make_digraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">digraph</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">depth</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">style</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">full_path</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">max_depth</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">full_map</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Measure.make_digraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a digraph dot diagram based on the current object and its downstream dependencies</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Measure.rawProp">
+<code class="sig-name descname">rawProp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Measure.rawProp" title="Permalink to this definition">¶</a></dt>
+<dd><p>if dict type schema, needs a prop name. If list type schema needs a number index</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Measure.setName">
+<code class="sig-name descname">setName</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Measure.setName" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets the name
+:param arg1: name
+:type arg1: string 
+:return: returns the overall object
+:rtype: self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Measure.setName_safe">
+<code class="sig-name descname">setName_safe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">newName</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Measure.setName_safe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the name of the field and references to it in sql (does not yet perform the same for HTML / Links / Drill Fields / Sets / Actions etc)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Measure.setProperty">
+<code class="sig-name descname">setProperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Measure.setProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a property in the properties collection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Measure.setView">
+<code class="sig-name descname">setView</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">view</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Measure.setView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="lookml.Filter">
+<em class="property">class </em><code class="sig-prename descclassname">lookml.</code><code class="sig-name descname">Filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Filter" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="lookml.Filter.add_extend">
+<code class="sig-name descname">add_extend</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Filter.add_extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to an explore that this extends</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Filter.add_extension">
+<code class="sig-name descname">add_extension</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Filter.add_extension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to an object that extends this one</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Filter.getProperty">
+<code class="sig-name descname">getProperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prop</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Filter.getProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a property from the properties collection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Filter.make_digraph">
+<code class="sig-name descname">make_digraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">digraph</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">depth</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">style</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">full_path</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">max_depth</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">full_map</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Filter.make_digraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a digraph dot diagram based on the current object and its downstream dependencies</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Filter.rawProp">
+<code class="sig-name descname">rawProp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Filter.rawProp" title="Permalink to this definition">¶</a></dt>
+<dd><p>if dict type schema, needs a prop name. If list type schema needs a number index</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Filter.setName">
+<code class="sig-name descname">setName</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Filter.setName" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets the name
+:param arg1: name
+:type arg1: string 
+:return: returns the overall object
+:rtype: self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Filter.setName_safe">
+<code class="sig-name descname">setName_safe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">newName</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Filter.setName_safe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the name of the field and references to it in sql (does not yet perform the same for HTML / Links / Drill Fields / Sets / Actions etc)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Filter.setProperty">
+<code class="sig-name descname">setProperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Filter.setProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a property in the properties collection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Filter.setView">
+<code class="sig-name descname">setView</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">view</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Filter.setView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="lookml.Parameter">
+<em class="property">class </em><code class="sig-prename descclassname">lookml.</code><code class="sig-name descname">Parameter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Parameter" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="lookml.Parameter.add_extend">
+<code class="sig-name descname">add_extend</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Parameter.add_extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to an explore that this extends</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Parameter.add_extension">
+<code class="sig-name descname">add_extension</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Parameter.add_extension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to an object that extends this one</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Parameter.getProperty">
+<code class="sig-name descname">getProperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prop</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Parameter.getProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a property from the properties collection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Parameter.make_digraph">
+<code class="sig-name descname">make_digraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">digraph</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">depth</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">style</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">full_path</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">max_depth</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">full_map</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Parameter.make_digraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a digraph dot diagram based on the current object and its downstream dependencies</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Parameter.rawProp">
+<code class="sig-name descname">rawProp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Parameter.rawProp" title="Permalink to this definition">¶</a></dt>
+<dd><p>if dict type schema, needs a prop name. If list type schema needs a number index</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Parameter.setName">
+<code class="sig-name descname">setName</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Parameter.setName" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets the name
+:param arg1: name
+:type arg1: string 
+:return: returns the overall object
+:rtype: self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Parameter.setName_safe">
+<code class="sig-name descname">setName_safe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">newName</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Parameter.setName_safe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the name of the field and references to it in sql (does not yet perform the same for HTML / Links / Drill Fields / Sets / Actions etc)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Parameter.setProperty">
+<code class="sig-name descname">setProperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Parameter.setProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a property in the properties collection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.Parameter.setView">
+<code class="sig-name descname">setView</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">view</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.Parameter.setView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="lookml.DimensionGroup">
+<em class="property">class </em><code class="sig-prename descclassname">lookml.</code><code class="sig-name descname">DimensionGroup</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.DimensionGroup" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="lookml.DimensionGroup.add_extend">
+<code class="sig-name descname">add_extend</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.DimensionGroup.add_extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to an explore that this extends</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.DimensionGroup.add_extension">
+<code class="sig-name descname">add_extension</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ref</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.DimensionGroup.add_extension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a link to an object that extends this one</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.DimensionGroup.getProperty">
+<code class="sig-name descname">getProperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prop</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.DimensionGroup.getProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a property from the properties collection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.DimensionGroup.make_digraph">
+<code class="sig-name descname">make_digraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">digraph</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">depth</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">style</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">full_path</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">max_depth</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">full_map</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.DimensionGroup.make_digraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a digraph dot diagram based on the current object and its downstream dependencies</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.DimensionGroup.rawProp">
+<code class="sig-name descname">rawProp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.DimensionGroup.rawProp" title="Permalink to this definition">¶</a></dt>
+<dd><p>if dict type schema, needs a prop name. If list type schema needs a number index</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.DimensionGroup.setName">
+<code class="sig-name descname">setName</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.DimensionGroup.setName" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets the name
+:param arg1: name
+:type arg1: string 
+:return: returns the overall object
+:rtype: self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.DimensionGroup.setName_safe">
+<code class="sig-name descname">setName_safe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">newName</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.DimensionGroup.setName_safe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the name of the field and references to it in sql (does not yet perform the same for HTML / Links / Drill Fields / Sets / Actions etc)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.DimensionGroup.setProperty">
+<code class="sig-name descname">setProperty</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.DimensionGroup.setProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a property in the properties collection</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lookml.DimensionGroup.setView">
+<code class="sig-name descname">setView</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">view</span></em><span class="sig-paren">)</span><a class="headerlink" href="#lookml.DimensionGroup.setView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="dependency_graphing.html" class="btn btn-neutral float-left" title="Dependency Graphing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Russell Garner
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
