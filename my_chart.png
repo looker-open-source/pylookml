@@ -1,0 +1,17 @@
+digraph "graph" {
+	node [color="#DF928E" shape=box style=filled]
+	overlap=scale
+	4578290064 [label=users_with_user_facts]
+	edge [arrowhead=normal color=darkgrey]
+	node [color="#FFE587"]
+	4578290064 -> 4578167952 [label=explore]
+	4578167952 [label=order_items]
+	edge [arrowhead=box color=darkgrey]
+	node [color="#92DBEF"]
+	4578167952 -> 4578320848 [label=NDT]
+	4578320848 [label=user_facts]
+	edge [arrowhead=normal color=darkgrey]
+	node [color="#FFE587"]
+	4578320848 -> 4578167952 [label=explore]
+	4578167952 [label=order_items]
+}

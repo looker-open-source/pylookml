@@ -1,13 +1,6 @@
 Dependency Graphing
 ------------------------------
 
-**TO DO**
-
-* Finish examples
-* Neater functional reference
-* Image of output/s
-* More examples
-
 What does this do?
 -------------------
 
@@ -42,6 +35,10 @@ Basic Usage
         # Render the output
         graph.render('file_name.gv', view=True)
 
+* Example output (Note that an NDT might be joined back into its source explore, as in this example):
+.. image:: dep_sample_1.png
+    :width: 200
+
 * Calling :py:func:`graph_all_dependencies` to generate a full map:
 .. code-block:: python
     :linenos:
@@ -49,6 +46,22 @@ Basic Usage
         graph = proj.graph_all_dependencies()
         graph.render('file_name.gv', view=True)
 
+* Example output:
+.. image:: dep_sample_2.png
+    :width: 900
+
+
+Styles 
+-------------------
+It is possible to customise the colours used in the chart by amending ``config.py``.
+The default colours are:
+
+* Views:               #F2E6E6 (light pink)
+* SQL Derived Tables:  #C8BFF2 (light purple)
+* NDTs:                #92DBEF (light blue)
+* Explores:             #FFE587 (yellow)
+
+Additionally, if you choose to graph the dependencies of a specific object, this object will be coloured red.
 
 Known limitations
 -------------------
