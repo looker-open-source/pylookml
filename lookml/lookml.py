@@ -34,6 +34,7 @@ import subprocess, os, platform
 # TODO: rationally break up the megafile...
 # TODO: use the _variable name for all private variables
 # TODO: change "identifier" to _name
+# TODO: use python naming conventions -> CamelCase for Class names, snake_case for functions
 
 # Unit Testing:
 # TODO: Redesign / modularize test suite
@@ -173,7 +174,7 @@ class project:
         :return: generator of LookML file objects
         :rtype: generator of lookml File objects
         '''
-        for f in  self.repo.get_contents(path):
+        for f in self.repo.get_contents(path):
             yield File(f)
 
     def file(self,path):
@@ -575,7 +576,13 @@ class File:
             #custom initialization for path type
             #Set Basic Attributes
             self.name = os.path.basename(f)
-            self.base_name = self.name.replace(".model.lkml", "").replace(".explore.lkml", "").replace(".view.lkml", "")
+            self.name_components = self.name.split('.')
+            if len(self.name_components) <= 1:
+                self.base_name = self.name
+            elif len(self.name_components) == 2:
+                self.base_name = self.name_components[0]
+            else:
+                self.base_name = '.'.join(self.name_components[:-2])
             self.path = os.path.relpath(f)
             self.sha = ''
             #Parse Step: file is provided 
@@ -596,7 +603,7 @@ class File:
         def exploreBootstrap():
             #custom initialization for path type
             #Set Basic Attributes
-            self.name = f.name + '.model.lkml'
+            self.name = f.name + '.model.lkml' # What about explore filetypes?
             self.base_name = f.name
             self.path = self.name
             self.sha = ''
@@ -619,12 +626,8 @@ class File:
             filepathBootstrap()
 
         #Step 2 -- set a lookml "file type" mostly only used for path info 
-        if self.name.endswith(".model.lkml"):
-            self.filetype = 'model'
-        elif self.name.endswith(".view.lkml"):
-            self.filetype = 'view'
-        elif self.name.endswith(".explore.lkml"):
-            self.filetype = 'explore'
+        if self.name.endswith('lkml'):
+            self.filetype = self.name.split('.')[-2]
         else:
             raise Exception("Unsupported filename " + self.name)
             
