@@ -231,11 +231,11 @@ class project:
         results = self.name_to_obj_mapping[name][obj_type]
         if len(results) > 1 and not first:
             ## TODO:TP Must be a better way to do this than user input?
-            print("Multiple options found, please choose")
+            print("Multiple options found, please choose.")
             for ix, obj in enumerate(results):
                 print(ix + 1, obj)
-            choice = input("")
-            return results[choice]
+            choice = input("Enter number:\n")
+            return results[choice - 1]
         else:
             return results[0]
 
