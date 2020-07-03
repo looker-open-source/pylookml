@@ -30,7 +30,7 @@ order_items = lookml.View('order_items')
 order_items + 'id' + 'value'
 
 # add a sum measure
-order_itmems.addSum('id')
+order_items.addSum('id')
 
 # order_items.view.lkml will be written in working directory
 order_items.write()
