@@ -293,7 +293,7 @@ class project:
         '''
         if self.name_to_obj_mapping == {}:
             self.generate_map()
-        digraph = Digraph(engine='dot',
+        digraph = Digraph(engine=conf.GRAPH_ENGINE,
                           name='graph')
         digraph.attr(overlap='scale')
         full_path=[]
@@ -1029,7 +1029,7 @@ class base(object):
             raise TypeError("Only views and explores are currently supported for graphing.")
         colour = conf.GRAPH_COLOURS[self.descriptive_type]
         if digraph is None:
-            digraph = Digraph(engine='dot',
+            digraph = Digraph(engine=conf.GRAPH_ENGINE,
                               name='graph',
                               node_attr={'style': 'filled', 'color': '#DF928E', 'shape': 'box'})
             digraph.attr(overlap='scale')

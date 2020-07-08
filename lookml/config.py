@@ -40,3 +40,4 @@ $message $token: $identifier { $props $joins }
 
 MAX_GRAPH_DEPTH = 20
 GRAPH_COLOURS = {'view':'#F2E6E6', 'dt':'#C8BFF2', 'ndt':'#92DBEF', 'explore':'#FFE587'}
+GRAPH_ENGINE = 'neato'
