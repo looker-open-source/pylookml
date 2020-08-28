@@ -119,10 +119,10 @@ The automation python file follows these high level steps.
    :linenos:
 
     import lookml
-    from looker_sdk import client, models, methods
+    from looker_sdk import models, methods, init31
 
     # step 1 -- connect to the Looker API to pull a list of EAV fields
-    sdk = client.setup("api.ini")
+    sdk = init31("api.ini")
     sql_for_fields = f"""
             SELECT 
                  cpf.org_id
