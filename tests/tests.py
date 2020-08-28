@@ -1,7 +1,7 @@
 import unittest, copy
 import lookml
 import configparser, json
-from looker_sdk import client, models, methods
+from looker_sdk import models, methods, init31
 config = configparser.ConfigParser()
 config.read('settings.ini')
  
@@ -249,7 +249,7 @@ class whitespaceTest(unittest.TestCase):
             tmpDim.sql = "${TABLE}." + col['COLUMN_NAME']
             return tmpDim
 
-        sdk = client.setup("api.ini")
+        sdk = init31("api.ini")
         sql = """
                 SELECT 
                     t.TABLE_NAME
@@ -732,7 +732,7 @@ class testMicroUnits(unittest.TestCase):
             )
 
     def test_eav_unnester(self):
-        sdk = client.setup("api.ini")
+        sdk = init31("api.ini")
         sql_for_fields = f"""
                 SELECT 
                      cpf.org_id
