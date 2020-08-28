@@ -1,6 +1,3 @@
-    # includes, links, filters, bind_filters
-    # Things that should be their own class:
-    # data_groups, named_value_format, sets
 NONUNIQUE_PROPERTIES = {'include','link', 'filters', 'bind_filters', 'data_groups', 'named_value_format', 'sets', 'column','derived_column','includes', "allowed_value", "actions"}
 MULTIVALUE_PROPERTIES = ['drill_fields', 'timeframes', 'tiers','suggestions','tags']
 KEYS_WITH_NAME_FIELDS = ("user_attribute_param", "param", "form_param", "option")
@@ -36,4 +33,3 @@ $message $token: $identifier { $props $joins }
 """
     array = """{ $data }"""
     _list = """[ $data] """
-#TODO: change these to configurable parameters via either argparse / config file / both 
