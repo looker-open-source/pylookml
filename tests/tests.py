@@ -4,12 +4,7 @@ import configparser, json
 from looker_sdk import client, models, methods
 config = configparser.ConfigParser()
 config.read('settings.ini')
-
-#TODO: Define Essential Test Suite:
-    # create "kitchen sink" model file with every obscure problematic parameter, fetch it from a project parse everything, put it back, parse it again.
-    # Do this for raw filesytem level stuff, and for github based projects. 
-#TODO: Add test coverage for providing positional arguments of vastly different types, i.e. lookml class vs json etc. 
-
+ 
 class testKitchenSinkLocal(unittest.TestCase):
     '''
         Test Procedure:
@@ -131,7 +126,7 @@ class testKitchenSinkLocal(unittest.TestCase):
         self.f_copy.views.order_items.id.sql = "${TABLE}.test_sql_change"
         # self.f_copy.views.order_items + 'test_add_dimension'
         self.f_copy.views.order_items.addDimension('test_add_dimension') #+ 'test_add_dimension'
-        self.f_copy.views.order_items.shipping_time.change_name_and_child_references('time_in_transit')
+        self.f_copy.views.order_items.shipping_time.setName_safe('time_in_transit')
         #Check tag addition and subtraction
         self.f_copy.views.order_items.id.addTag('x')
         self.assertEqual(len(self.f_copy.views.order_items.id.tags),4)
@@ -319,31 +314,6 @@ class whitespaceTest(unittest.TestCase):
         print(refine_ex)
         # refine_ex.addProperty('aggregate_table','foo')
         print(myFile)
-
-# TODO: Write a test that would use materialization and refinements
-# Meterialization:
-# explore: event {
-#   aggregate_table: monthly_orders {
-#     materialization: {
-#       datagroup_trigger: orders_datagroup
-#     }
-#     query: {
-#       dimensions: [orders.created_month]
-#       measures: [orders.count]
-#       #filters: [orders.created_date: "1 year", orders.status: "fulfilled"]
-#       filters: {
-#           field: orders.created_date
-#           value: "1 year"
-#           }
-#       filters: {
-#           field: orders.status
-#           value: "fulfilled"
-#           }
-#       timezone: "America/Los_Angeles"
-#     }
-#   }
-# }
-
 
 
 class testShellGitController(unittest.TestCase):
@@ -646,8 +616,6 @@ class testMicroUnits(unittest.TestCase):
         )
 
     def test_topN(self):
-
-
         def apply_top_n(project, view_file, view, rank_by_dims, rank_by_meas, model_file, explore, agg_view='rank_ndt', dynamic_dim_name='dynamic_dim', dynamic_dim_selector='dynamic_dim_selector'):
             #### SETUP ####
             p = project
@@ -762,22 +730,6 @@ class testMicroUnits(unittest.TestCase):
             ,'order_items.model.lkml' 
             ,'order_items'
             )
-
-    # def test_derived_table_object_access_and_whitespace(self):
-    #     v = lookml.View('v')
-    #     v + '''
-    #         derived_table: {
-    #             explore_source: x {
-    #                 column: a { field: a.cool }
-    #                 column: b {field: b.cool }
-    #                 derived_column: c { sql: foo! ;;}
-    #             }
-    #         }
-    #     '''
-    #     # print(v)
-    #     # print(v)
-    #     # v.derived_table = {}
-    #     # print(v)
 
     def test_eav_unnester(self):
         sdk = client.setup("api.ini")
@@ -898,7 +850,6 @@ class testMicroUnits(unittest.TestCase):
         proj.put(modelFile)
         # proj.deploy()
 
-
     def test_local_file(self):
         x = lookml.File('lookml/tests/kitchenSink/kitchenSink.model.lkml')
         for v in x.views:
@@ -909,11 +860,6 @@ class testMicroUnits(unittest.TestCase):
         x.setFolder('.tmp')
         #Write the file
         x.write()
-
-
-
-
-
 
 if __name__ == '__main__':
     unittest.main()

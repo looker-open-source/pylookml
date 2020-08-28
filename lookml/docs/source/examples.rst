@@ -223,7 +223,8 @@ Convenience Methods
    }
 
 
-* working with a local file (The setName_safe method previously change_name_and_child_references, use that if setName_safe not found)
+* working with a local file 
+* Changing field names safely (The setName_safe method previously change_name_and_child_references, use that if setName_safe not found)
 
 
 .. code-block:: python
