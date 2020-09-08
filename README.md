@@ -1,6 +1,6 @@
 pyLookML allows you to fetch, parse and program lookml very easily. 
 It is an object oriented metaprogramming interface built on top of the AWESOME lkml parsing library which you can check out here: https://github.com/joshtemple/lkml. But extends it by adding convenience to it's json structure and more advanced integrations and object oriented behaviors.
-Check out the full documentation for pyLookml project here: https://lookml.readthedocs.io/en/latest/
+Check out the full documentation for pyLookml project here: https://pylookml.readthedocs.io/en/latest/
 
 In the meantime here are some very basic examples for getting started:
 
