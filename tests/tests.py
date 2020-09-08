@@ -1,9 +1,11 @@
 import unittest, copy
 import lookml
 import configparser, json
-from looker_sdk import models, methods, init31
+from looker_sdk import client, models, methods
+# from looker_sdk import models, methods, init31
 config = configparser.ConfigParser()
 config.read('settings.ini')
+
  
 class testKitchenSinkLocal(unittest.TestCase):
     '''
@@ -860,6 +862,46 @@ class testMicroUnits(unittest.TestCase):
         x.setFolder('.tmp')
         #Write the file
         x.write()
+
+    def test_parse_references(self):
+        results = list(lookml.parseReferences('''
+            ${test.one_1} - ${test.two}
+            {% condition test.three %} ${four} {% endcondition %}
+            {% parameter test.five %}
+            {{ six }}
+            {{seven}}
+            {{test.eight}}
+            {{ _filters['test.nine'] | url_encode}}
+            {% _filters['ten10'] %}
+        '''))
+        self.assertEqual(results[0]['field'],'test.one_1')
+        self.assertEqual(results[1]['field'],'test.two')
+        self.assertEqual(results[2]['field'],'test.three')
+        self.assertEqual(results[3]['field'],'four')
+        self.assertEqual(results[4]['field'],'test.five')
+        self.assertEqual(results[5]['field'],'six')
+        self.assertEqual(results[6]['field'],'seven')
+        self.assertEqual(results[7]['field'],'test.eight')
+        self.assertEqual(results[8]['field'],'test.nine')
+        self.assertEqual(results[9]['field'],'ten10')
+        self.assertEqual(results[9]['fully_qualified_reference'],False)
+
+    def test_project_level_functions(self):
+        self.proj = lookml.Project(
+                #  repo= config['github']['repo']
+                # ,access_token=config['github']['access_token']
+                 git_url='git@github.com:llooker/russ_sandbox.git'
+                ,looker_host="https://dat.dev.looker.com/"
+                ,looker_project_name="pylookml"
+        )
+        self.proj.buildIndex()
+
+ 
+
+
+
+
+
 
 if __name__ == '__main__':
     unittest.main()

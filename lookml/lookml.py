@@ -40,6 +40,21 @@ def stringify(collection,delim=conf.NEWLINEINDENT, prefix=True, postfix=False):
     # return delim + delim.join([str(item) for item in collection])
     return  (delim if prefix else '') + delim.join([str(item) for item in collection]) + (delim if postfix else '')
 
+def parseReferences(inputString):
+    '''
+    Uses regular expresssions to preduce an iterator of the lookml references in a string.
+    result has the shape {'raw':'${exact.field_reference}','field':'exact.field_reference', fully_qualified_reference:True}
+    '''
+    for match in re.findall(r'(\$\{([a-z\._0-9]*)\}|\{\%\s{1,3}condition\s([a-z\._0-9]*)\s\%\}|\{\%\s{1,3}parameter\s([a-z\._0-9]*)\s\%\}|\{\{\s{0,10}([a-z\._0-9]*)\s{0,10}\}\}| \_filters\[\s{0,10}\'([a-z\._0-9]*)\'\])',inputString):
+        #Collapse the results from findall
+        result = ''.join(match[1:])
+        #Replace the liquid value references
+        if result.endswith('._value'):
+            result = result.replace('._value','')
+        #Check if a fully qualified reference was used
+        fq = True if '.' in ''.join(match[1:]) else False
+
+        yield {'raw':match[0],'field':result, 'fully_qualified_reference': fq }
 
 class File:
     '''
@@ -135,7 +150,13 @@ class File:
             #custom initialization for path type
             #Set Basic Attributes
             self.name = os.path.basename(f)
-            self.base_name = self.name.replace(".model.lkml", "").replace(".explore.lkml", "").replace(".view.lkml", "")
+            self.name_components = self.name.split('.')
+            if len(self.name_components) <= 1:
+                self.base_name = self.name
+            elif len(self.name_components) == 2:
+                self.base_name = self.name_components[0]
+            else:
+                self.base_name = '.'.join(self.name_components[:-2])
             self.path = os.path.relpath(f)
             self.sha = ''
             #Parse Step: file is provided 
@@ -156,7 +177,7 @@ class File:
         def exploreBootstrap():
             #custom initialization for path type
             #Set Basic Attributes
-            self.name = f.name + '.model.lkml'
+            self.name = f.name + '.model.lkml' # What about explore filetypes?
             self.base_name = f.name
             self.path = self.name
             self.sha = ''
@@ -179,12 +200,8 @@ class File:
             filepathBootstrap()
 
         #Step 2 -- set a lookml "file type" mostly only used for path info 
-        if self.name.endswith(".model.lkml"):
-            self.filetype = 'model'
-        elif self.name.endswith(".view.lkml"):
-            self.filetype = 'view'
-        elif self.name.endswith(".explore.lkml"):
-            self.filetype = 'explore'
+        if self.name.endswith('lkml'):
+            self.filetype = self.name.split('.')[-2]
         else:
             raise Exception("Unsupported filename " + self.name)
             

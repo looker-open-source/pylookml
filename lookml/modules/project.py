@@ -4,6 +4,7 @@ import lookml
 import github
 import base64
 import requests
+import re
 
 def mkdir_force(dir):
     if not os.path.exists(dir):
@@ -32,6 +33,7 @@ class project:
         self.branch = branch
         self.looker_project_name = looker_project_name
         self.commitMessage = "PyLookML Auto Updated: " + time.strftime('%h %d %Y @ %I:%M%p %Z') if not commitMessage else commitMessage
+        self.index = dict()
         
         #host setup
         self.looker_host = looker_host
@@ -41,6 +43,28 @@ class project:
                 self.looker_host = self.looker_host + '/'
         self.deploy_url = ""
         self.constructDeployUrl()
+
+    def buildIndex(self):
+        for f in self.files():
+            for view in f['views']:
+                for prop in view:
+                    pass
+                for field in view.fields():
+                    for prop in field:
+                        if prop.name in ('sql','html'):
+                            # print(prop.name,': ', prop.value)
+                            for ref in lookml.parseReferences(prop.value):
+                                if ref is not None:
+                                    key = ref['field'] if ref['fully_qualified_reference'] else view.name + '.' + ref['field']
+                                    location = view.name + '.' + field.name + '.' + prop.name
+                                    data = {'type':prop.name, 'file':f.path}
+                                    if key not in self.index.keys():
+                                        self.index[key] = { location: data }
+                                    else:
+                                        self.index[key].update({
+                                           location : data
+                                        })
+        print(self.index)
 
     def __getitem__(self, key):
         return self.file(key)
@@ -126,28 +150,6 @@ class project:
         else:
             self.add(f)
         return self
-        
-    def exists(self,f):
-        '''
-        returns a boolean if the file or file path exists
-
-        :param f: the file or path
-        :type f: File or str path
-        :return: None
-        :rtype: None
-        '''
-        def checkgithub(f0):
-            try:
-                self.repo.get_contents(f0)
-                return True
-            except github.GithubException as e:
-                if e._GithubException__status == 404:
-                    return False
-        if isinstance(f,lookml.File):
-            return checkgithub(f.path)
-        elif isinstance(f,str):
-            return checkgithub(f)
-
     def delete(self,f):
         '''
         deletes a file from a repository at a specific path
@@ -256,7 +258,7 @@ class shellProject(project):
         self.type = "ssh_shell"
         
         self.gitControllerSession =  self.gitController(projectName=self.looker_project_name, branch=self.branch, deployMessage=self.commitMessage, outputPath=self.outputPath)    
-        
+        self.path =  os.getcwd() + '/' + self.outputPath + '/' + self.looker_project_name + '/'
         assert(kwargs['git_url'] is not None)
         self.gitControllerSession.clone(kwargs['git_url'])
 
@@ -273,8 +275,6 @@ class shellProject(project):
             for name in files:
                 if name.endswith('.lkml'):
                     yield lookml.File(os.path.join(root, name))
-
-
 
     def file(self,path):
         '''
@@ -343,7 +343,11 @@ class shellProject(project):
         if isinstance(f,lookml.File):
             return os.path.exists(f.path)
         elif isinstance(f,str):
-            return os.path.exists(f)
+            #Check a naked path first, then fall back on the user having provided the full project path
+            if os.path.exists( self.path  + f):
+                return os.path.exists( self.path  + f)
+            else:
+                return os.path.exists(f)
 
 
     def delete(self,f):
@@ -370,3 +374,24 @@ class githubProject(project):
         self.type = "github"
         self.gitsession = github.Github(kwargs['access_token'])
         self.repo = self.gitsession.get_repo(kwargs['repo'])
+
+    def exists(self,f):
+        '''
+        returns a boolean if the file or file path exists
+
+        :param f: the file or path
+        :type f: File or str path
+        :return: None
+        :rtype: None
+        '''
+        def checkgithub(f0):
+            try:
+                self.repo.get_contents(f0)
+                return True
+            except github.GithubException as e:
+                if e._GithubException__status == 404:
+                    return False
+        if isinstance(f,lookml.File):
+            return checkgithub(f.path)
+        elif isinstance(f,str):
+            return checkgithub(f)
