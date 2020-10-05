@@ -235,10 +235,8 @@ parameter: foo {
     type: count_distinct
     sql: ${id} ;;
     hidden: yes
-    filters:
-    {field:created_date
-      value: "28 days"
-    }}
+    #filters: [created_date: "28 days"]
+    }
 
   ########## Time Dimensions ##########
 
@@ -411,10 +409,7 @@ parameter: foo {
   measure: returned_count {
     type: count_distinct
     sql: ${id} ;;
-    filters: {
-      field: is_returned
-      value: "yes"
-    }
+    #filters: [is_returned: "Yes"]
     drill_fields: [detail*]
   }
 
@@ -422,10 +417,7 @@ parameter: foo {
     type: sum
     value_format_name: usd
     sql: ${sale_price} ;;
-    filters: {
-      field: is_returned
-      value: "yes"
-    }
+    #filters: [is_returned: "Yes"]
   }
 
   measure: return_rate {
@@ -453,11 +445,7 @@ parameter: foo {
     type: count_distinct
     sql: ${id} ;;
     view_label: "Repeat Purchase Facts"
-
-    filters: {
-      field: repeat_orders_within_30d
-      value: "Yes"
-    }
+    #filters: [repeat_orders_within_30d: "Yes"]
   }
 
   measure: 30_day_repeat_purchase_rate {
@@ -473,11 +461,7 @@ parameter: foo {
     view_label: "Orders"
     type: count_distinct
     sql: ${order_id} ;;
-
-    filters: {
-      field: order_facts.is_first_purchase
-      value: "Yes"
-    }
+    #filters: [order_facts.is_first_purchase: "Yes"]
     # customized drill path for first_purchase_count
     drill_fields: [user_id, order_id, created_date, users.traffic_source]
     link: {
@@ -573,11 +557,7 @@ parameter: foo {
     view_label: "Orders"
     type: count_distinct
     sql: ${order_id} ;;
-
-    filters: {
-      field: order_facts.is_first_purchase
-      value: "Yes"
-    }
+    #filters: [order_facts.is_first_purchase: "Yes"]
     drill_fields: [users.traffic_source, user_order_facts.average_lifetime_revenue, user_order_facts.average_lifetime_orders]
   }
 
