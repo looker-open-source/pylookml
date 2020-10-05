@@ -14,7 +14,7 @@ setuptools.setup(
     url="https://github.com/llooker/lookml",
     packages=setuptools.find_packages(),
     install_requires=[
-        "lkml >= 0.2.2",
+        # "lkml >= 0.2.2",
         "PyGithub >= 1.47"
     ],
     classifiers=[

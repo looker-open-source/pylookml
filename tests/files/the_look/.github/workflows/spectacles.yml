@@ -1,0 +1,92 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: spectacles
+
+env:
+  DEMO_NAME: Ecommerce
+  PROJECT_NAME: thelook_event
+  HOST: demo
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  spectacles_sql:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        #get a specific feature added for this demo otherwise pip install spectacles would do!
+        git clone -b feature/ignore-hidden https://github.com/ernestoongaro/spectacles.git
+        cd spectacles
+        python setup.py install
+    - name: SQL Tests
+      run: |
+        echo "Testing SQL for pull request from ${{ github.head_ref }}" 
+        spectacles sql \
+          --base-url https://${{ env.HOST }}.looker.com/ \
+          --client-id ${{ secrets.CLIENT_ID }} \
+          --client-secret ${{ secrets.CLIENT_SECRET }} \
+          --project ${{ env.PROJECT_NAME }} \
+          --branch `if [ -z "${{ github.head_ref }}" ]; then echo master; else echo ${{ github.head_ref }}; fi` \
+          --remote-reset 
+    - name: slack_notify_success
+      if: success()
+      uses: 8398a7/action-slack@v3
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }} 
+      with:
+        status: custom
+        custom_payload: |
+          {
+              blocks: [
+              {
+                    type: "section",
+                    text: {
+                      type: "mrkdwn",
+                      text: "A PR has been submitted for the ${{ env.DEMO_NAME }} demo: ${{ github.event.pull_request.title }} \n 👓 Spectacles tests ran successfully"
+              }
+              },
+                  {
+                    type: "section",
+                    text: {
+                      type: "mrkdwn",
+                      text: "Review and approve the PR <https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.id }}) | here > "
+                    }
+                  }
+                  ]
+            }
+    - name: slack_notify_failure
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }} 
+      with:
+        status: custom
+        custom_payload: |
+          {
+              blocks: [
+              {
+                    type: "section",
+                    text: {
+                      type: "mrkdwn",
+                      text: "A PR has been submitted for the ${{ env.DEMO_NAME }} demo, ${{ github.event.pull_request.title }} \n 🛑 Spectacles tests failed"
+              }
+              },
+                  {
+                    type: "section",
+                    text: {
+                      type: "mrkdwn",
+                      text: "Reject the request <https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.id }})|here>. See the <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|action log> for details"
+                    }
+                  }
+                  ]
+            }
+   

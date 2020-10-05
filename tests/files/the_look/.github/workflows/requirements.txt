@@ -1,0 +1,9 @@
+attrs==19.3.0
+cattrs==1.0.0
+certifi==2020.6.20
+chardet==3.0.4
+idna==2.10
+looker-sdk==0.1.3b15
+requests==2.24.0
+typing-extensions==3.7.4.2
+urllib3==1.25.9

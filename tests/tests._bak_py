@@ -1,8 +1,9 @@
 import unittest, copy
 import lookml
 import configparser, json
-from looker_sdk import client, models, methods
-# from looker_sdk import models, methods, init31
+# from looker_sdk import client, models, methods
+
+from looker_sdk import models, methods, init31
 config = configparser.ConfigParser()
 config.read('settings.ini')
 
@@ -25,11 +26,11 @@ class testKitchenSinkLocal(unittest.TestCase):
         7) Run assertions that confirm [A,B,C,D] were successfully applied
         TearDown)  remove KitchenSink2 if it exists (comment out if having parse difficulties)
     '''
-# @unittest.skipIf(condition, reason)
-# @unittest.expectedFailure
+    # @unittest.skipIf(condition, reason)
+    # @unittest.expectedFailure
 
     def setUp(self):
-        self.f = lookml.File('lookml/tests/kitchenSink/kitchenSink.model.lkml')
+        self.f = lookml.File('kitchenSink/kitchenSink.model.lkml')
         self.f2 = None
         self.order_items = self.f.views.order_items
         self.order_items_explore = self.f.explores.order_items
@@ -212,15 +213,28 @@ class whitespaceTest(unittest.TestCase):
         Setup) Obtain Local Kitchen Sink Model File
         2) Parse the file
     '''
-# @unittest.skipIf(condition, reason)
-# @unittest.expectedFailure
+    # @unittest.skipIf(condition, reason)
+    # @unittest.expectedFailure
 
     def setUp(self):
-        self.f = lookml.File('lookml/tests/kitchenSink/kitchenSink.model.lkml')
+        self.f = lookml.File('tests/kitchenSink/kitchenSink.model.lkml')
         self.f2 = None
         self.order_items = self.f.views.order_items
         self.order_items_explore = self.f.explores.order_items
 
+    def test_step0(self):
+        print(self.order_items.id)
+
+    def test_mvc(self):
+        # x = lookml.View('order_items')
+        # print(x.m.data)
+        print(self.order_items)
+        # print(self.order_items.m.data)
+
+    def test_ws(self):
+        f = lookml.File('tests/thelook/whitespace.view.lkml')
+        print(f)
+        
     def test_step1(self):
         for i in self.f.datagroups:
             print(i)
@@ -376,8 +390,6 @@ class testShellGitController(unittest.TestCase):
         cool + 'extends: [wut]'
         print(cool)
         
-
-
 
 class testMicroUnits(unittest.TestCase):
 
@@ -863,6 +875,12 @@ class testMicroUnits(unittest.TestCase):
         #Write the file
         x.write()
 
+    def test_model_file_creation(self):
+        #initialize project
+        #create new model file
+        #put and check output
+        pass
+
     def test_parse_references(self):
         results = list(lookml.parseReferences('''
             ${test.one_1} - ${test.two}
@@ -886,6 +904,27 @@ class testMicroUnits(unittest.TestCase):
         self.assertEqual(results[9]['field'],'ten10')
         self.assertEqual(results[9]['fully_qualified_reference'],False)
 
+
+    def test_field_deletion(self):
+        self.proj = lookml.Project(
+                #  repo= config['github']['repo']
+                # ,access_token=config['github']['access_token']
+                 git_url='git@github.com:llooker/russ_sandbox.git'
+                ,looker_host="https://dat.dev.looker.com/"
+                ,looker_project_name="pylookml"
+        )
+        viewFile = self.proj.file('01_order_items.view.lkml')
+        view = viewFile['views']['order_items'] 
+        for f in view.fields():
+            if f.name not in ('id'):
+                view - f
+        print(view)
+        # or alternatively remove the fields with a loop
+        # for field in viewFile.fields():
+            # if field.name in ('count','sales_price'):
+        
+        # viewFile.removeField(field)
+
     def test_project_level_functions(self):
         self.proj = lookml.Project(
                 #  repo= config['github']['repo']
@@ -896,10 +935,19 @@ class testMicroUnits(unittest.TestCase):
         )
         self.proj.buildIndex()
 
- 
-
-
-
+    def test_new_filters(self):
+        test = lookml.View('test')
+        test2 = lookml.View('+test')
+        test + "dimension: foo {}"
+        test2 + "dimension: bar {}"
+        x = lookml.File(test)
+        x.setFolder('.')
+        x + test2
+        x.write()
+        print(x.path)
+        # print(x)
+        # print(lookml.l('measure: { filters:[a:"b",c:"d"] }'))
+        print(lookml.l(str(x)))
 
 
 

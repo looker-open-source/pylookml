@@ -12,7 +12,7 @@ imagesize==1.2.0
 isort==4.3.21
 Jinja2==2.11.1
 lazy-object-proxy==1.4.3
-lkml==0.2.2
+# lkml==0.2.2
 looker-sdk==0.1.3b4
 MarkupSafe==1.1.1
 mccabe==0.6.1
