@@ -12,17 +12,17 @@ imagesize==1.2.0
 isort==4.3.21
 Jinja2==2.11.1
 lazy-object-proxy==1.4.3
-# lkml==0.2.2
 looker-sdk==0.1.3b4
 MarkupSafe==1.1.1
 mccabe==0.6.1
-packaging==20.3
+packaging==20.4
 PyGithub==1.47
 Pygments==2.6.1
 PyJWT==1.7.1
 pylint==2.4.4
 pyparsing==2.4.6
 pytz==2019.3
+PyYAML==5.3.1
 requests==2.23.0
 rstcheck==3.3.1
 six==1.14.0
