@@ -68,6 +68,9 @@ coverage.xml
 # Django stuff:
 *.log
 
+# pipenv stuff:
+Pipfile
+Pipfile.lock
 # Sphinx documentation
 # docs/_build/
 
