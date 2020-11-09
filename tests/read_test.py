@@ -2,6 +2,7 @@ import lookml, lang
 import unittest
 import lkml as lkml
 from pprint import pprint
+import file
 
 # Objective / coverage
 #     Read all file types from filesystem: 
@@ -30,7 +31,23 @@ class testView(unittest.TestCase):
         self.myView = lookml.View(self.parsed_view['views'][0])
 
     def test_parse_print(self):
+        #P0: fix the issue with actions / forms
         print(self.myView)
+
+    def test_filters(self):
+        self.myView.sum_foo.filters.foo.contains('test')
+        self.myView + '''
+            measure: total_sales {type: sum sql: ${TABLE}.sales ;;}
+        '''
+        self.myView.total_sales + 'filters: [foo:">100"]'
+        self.myView.total_sales.filters + {'bar':'>100'}
+        self.assertEqual(self.myView.total_sales.filters.bar.value,'>100')
+        self.assertEqual(self.myView.total_sales.filters.foo.value,'>100')
+        self.assertEqual(self.myView.sum_foo.filters.foo.value,'%test%')
+
+    def test_json_serialization(self):
+        self.assertIsNotNone(self.myView._json())
+        print(self.myView._json())
 
     def test_tags(self):
         self.myView.transaction.tags + ['tag5','tag6','tag7','tag8']
@@ -84,8 +101,11 @@ class testView(unittest.TestCase):
 class testOtherFiles(unittest.TestCase):
     def setUp(self):
         pass
+
     def test_model_file(self):
-        pass
+        x = file.File('tests/files/basic_parsing/basic.view.lkml')
+        print(str(x))
+
     def test_other_lkml_file(self):
         pass
     def test_manifest_file(self):

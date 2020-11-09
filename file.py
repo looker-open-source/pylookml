@@ -1,8 +1,9 @@
-import lookml
+import lookml, lkml
+from lang import ws
 import github
-import re, os, shutil
+import re, os, shutil, copy
 
-class File:
+class File(object):
     '''
         A file object represents a file within a LookML project. It can be several types, can contain views, explores 
         or other properties such as inlcude or data groups
@@ -25,7 +26,7 @@ class File:
 
         def add(self, v):
             if isinstance(v,dict):
-                v = View(v)
+                v = lookml.View(v)
             self.views.update({v.name:v})
             return self
 
@@ -61,7 +62,7 @@ class File:
 
         def add(self, e):
             if isinstance(e,dict):
-                e = Explore(e)
+                e = lookml.Explore(e)
             self.explores.update({e.name:e})
             return self
 
@@ -136,10 +137,10 @@ class File:
         if isinstance(f, github.ContentFile.ContentFile):
             self.f_type = "github_api"
             githubBootstrap()
-        elif isinstance(f, View):
+        elif isinstance(f, lookml.View):
             self.f_type = "view"
             viewBootstrap()
-        elif isinstance(f, Explore):
+        elif isinstance(f, lookml.Explore):
             self.f_type = "explore"
             exploreBootstrap()
         elif os.path.isfile(f):
@@ -163,8 +164,8 @@ class File:
         else:
             self.exps = self.explore_collection({})
 
-        self.properties = Properties(self.json_data)
-        self.props = self.properties.props()
+        # self.properties = Properties(self.json_data)
+        # self.props = self.properties.props()
 
     def __getattr__(self, key):
         if key in self.__dict__.keys():
@@ -176,9 +177,9 @@ class File:
         #TODO: resolve attribute access issues
         elif key in ['datagroups', 'map_layers', 'named_value_formats']:
             return self.properties[key]
-        else:
-            # raise KeyError
-            return object.__getattr__(key)
+        # else:
+        #     # raise KeyError
+        #     return object.__getattr__(key)
 
     def __getitem__(self,key):
         if key == 'views':
@@ -187,13 +188,13 @@ class File:
             return self.exps
 
     def __str__(self):
-        return splice(
-             conf.NEWLINE.join([str(p) for p in self.properties.getProperties()])
-            ,conf.NEWLINE
-            ,conf.NEWLINE.join([ str(e) for e in self.explores] ) if self.exps else ''
-            ,conf.NEWLINE
-            ,conf.NEWLINE.join([ str(v) for v in self.views]) if self.vws else ''
-        )
+        # return (
+        #      f'{ws.nl}'.join([ str(e) for e in self.explores] ) if self.exps else ''
+        #      f'{ws.nl}'
+        #      f'{ws.nl}'.join([ str(v) for v in self.views]) if self.vws else ''
+        # )
+        return   (f'{ws.nl}'.join([ str(e) for e in self.explores]) if self.exps else '') + (ws.nl + f'{ws.nl}'.join([ str(v) for v in self.views]) if self.vws else '')
+
 
     def setSha(self,sha):
         self.sha = sha
@@ -211,21 +212,21 @@ class File:
         lkmldict = copy.deepcopy(lkmldictraw)
         if 'views' in lkmldict.keys():
             for view in lkmldict['views']:
-                self.vws.add(View(view))
+                self.vws.add(lookml.View(view))
             lkmldict.pop('views')
 
         if 'explores' in lkmldict.keys():
             for explore in lkmldict['explores']:
-                self.exps.add(Explore(explore))
+                self.exps.add(lookml.Explore(explore))
             lkmldict.pop('explores')
 
         for k,v in lkmldict.items():
             self.setProperty(k,v) 
 
     def __add__(self, other):
-        if isinstance(other, View):
+        if isinstance(other, lookml.View):
             self.addView(other)
-        elif isinstance(other, Explore):
+        elif isinstance(other, lookml.Explore):
             self.addExplore(other)
         else:
             self._bind_lkml(lkml.load(other))
