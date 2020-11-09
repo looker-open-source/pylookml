@@ -1,9 +1,9 @@
 import unittest, copy
 import lookml
 import configparser, json
-# from looker_sdk import client, models, methods
+from looker_sdk import client, models, methods
 
-from looker_sdk import models, methods, init31
+# from looker_sdk import models, methods, init31
 config = configparser.ConfigParser()
 config.read('settings.ini')
 
