@@ -76,10 +76,7 @@ view: basic {
      # }
     #}
     }
-    filter: myfilt {
-        type: string
-        sql: 1=1 ;;
-    }
+    filter: myfilt {type: string sql: 1=1 ;;}
   dimension_group: transaction {
     type: time
     tags: ["tag1","tag2","tag3","tag4"]
@@ -122,5 +119,17 @@ explore: basic {
     type: left_outer
     sql_on: ${basic.cool_id} = ${cool.basic_id} ;;
     relationship: many_to_one
+  }
+  aggregate_table: foo {
+    query: {
+      dimensions: [created_date, users.state]
+      measures: [total_sales]
+      pivots: [users.age_tier]
+      limit:  500
+      timezone: Africa/Bamako
+    }
+    materialization: {
+      datagroup_trigger: foo
+    }
   }
 }
