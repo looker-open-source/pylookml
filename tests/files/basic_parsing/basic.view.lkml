@@ -1,5 +1,4 @@
 view: basic {
-#['derived_table', 'dimension', 'dimension_group', 'drill_fields', 'extends', 'extension', 'filter', 'final', 'label', 'measure', 'parameter', 'required_access_grants', 'set', 'sql_table_name', 'suggestions', 'view_label']
     extends:[base]
     extension: required
     final: no
@@ -22,6 +21,7 @@ view: basic {
         sql: ${TABLE}.foo ;;
       }
       bind_all_filters: yes
+      sorts: [field_name_1: asc, field_name_2: desc]
       bind_filters: {
         from_field: order_items.foo
         to_field: order_items.foo
@@ -50,6 +50,31 @@ view: basic {
     dimension: bar {
         type: number
         sql: ${TABLE}.number ;;
+    #action: {
+    #  label: "cool"
+    #  url: "http://beeceptor.com/post"
+    #  icon_url: "https://looker.com/favicon.ico"
+    #  form_url: "https://beeceptor.com/post"
+      #param: {
+      #  name: "foo"
+      #  value: "bar"
+      #}
+     # form_param: {
+     #   name: "my form param"
+     #   type: select
+     #   label: "My form Param"
+     #   option: {
+     #     name: "cool"
+     #     label: "Cool"
+     #   }
+     #   option: {
+     #     name: "notcool"
+     #     label: "Not Cool"
+     #   }
+     #   description: "Is it cool or not cool?"
+     #   default: "cool"
+     # }
+    #}
     }
     filter: myfilt {
         type: string
@@ -91,4 +116,11 @@ view: basic {
     set: set2 {
         fields: [field4, field5, view2.field6 ]
     }
+}
+explore: basic {
+  join: cool {
+    type: left_outer
+    sql_on: ${basic.cool_id} = ${cool.basic_id} ;;
+    relationship: many_to_one
+  }
 }

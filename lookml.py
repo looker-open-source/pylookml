@@ -55,7 +55,8 @@ class lookml(object):
         return item in self.__dict__
 
     def _allowed_children(self): return props._allowed_children[self._type()]
-    def _dense(self): return len(list(self())) <= ws.dense_children_threshold #or self._length() <= ws.dense_str_len
+    def _dense(self): return len(list(self())) <= ws.dense_children_threshold 
+    #P0: this causes a stack overflow: or self._length() <= ws.dense_str_len
 
     def __iter__(self):
         def i():
@@ -90,6 +91,7 @@ class lookml(object):
     def _length(self): return len([str(i) for i in self()])
     def __bool__(self): return len(self) > 0
     def _insert(self,key,value): self.__dict__.update( { key: prop_router( key, value, self ) } )
+    def _json(self): return lkml.load(str(self))
     def _has_data(self,func):
         for f in func:
             return True
@@ -103,16 +105,22 @@ class lookml(object):
             # parsed = lkml.load(r)['views'][0]
             try:
                 # Handles the special case where lkml passes single object wrapped in a collection list
-                parsed = lkml.load(other)[self._type()+'s'][0]
+                parsed = lkml.load(other)[self._type() + 's'][0]
             except:
                 parsed = lkml.load(other)
 
         elif isinstance(other,dict):
             parsed = other
+            # print(parsed)
 
         for key,value in parsed.items():
             is_plural = True if key[:-1] in props.plural_keys else False
             key = key[:-1] if is_plural else key
+
+            if self._type() in props.cfg['filters'].keys() and key == 'filter': 
+                key = key + 's'
+            elif self._type() == 'explore_source' and key == 'bind_filter':
+                key = key + 's'
 
             if isinstance(value,dict):
                 # Add dict type properties to the top level namespace
@@ -121,7 +129,9 @@ class lookml(object):
 
             if isinstance(value,list):
                 # Add members to the top level namespace
-                if key in self._member_classes:
+                # if self._type() in props.cfg['filters'].keys() and key == 'filter':
+                # else:
+                if key in self._member_classes and self._type() not in props.cfg['filters'].keys():
                     for member in value:
                         self.__dict__.update(
                             { member['name'] : classMap[key](member,self) }
@@ -198,10 +208,27 @@ class Model(lookml):
 #P0: create explore type
 class Explore(lookml):
     _member_classes = [
-         'join'
+        #  'join'
     ]
-class Join(lookml): pass
+    def _dense(self): return False
+    def __str__(self): 
+        return (f'{self._type()}: {self.name} {{'
+                f'{ self._s(sub_type="join") }'
+                f'{ws.nl}}}')
+    # def __str__(self):
+    #     return (
+    #         f'{self._type()}: {self.name} {{'
+    #             f'{ self._s(exclude_subtype="set") }'
+    #             f'{ self._s(type=Filter) }'
+    #             f'{ self._s(type=Parameter) }'
+    #             f'{ self._s(type=Dimension) }'
+    #             f'{ self._s(type=Dimension_Group) }'
+    #             f'{ self._s(type=Measure) }'
+    #             f'{ self._s(sub_type="set") }'
+    #         f'{ws.nl}}}'
+    #     )
 
+class Join(lookml): pass
 #P0: create manifest type
 class Manifest(lookml):
     _member_classes = []
@@ -287,9 +314,8 @@ class prop_named_construct_single(Field):
             return (
                 f'{ws.nl}{ws.s*i}{self._type()}: {self.name} {{'
                 f'{ self._s(type=prop) }'
-                f'{ws.nl}{ws.s}}}'
+                f'{ws.nl}{ws.s*i}}}'
             )
-
 class prop_named_construct(prop):
     def __init__(self, key, value, parent, conf={}):
         self.key = key
@@ -361,6 +387,7 @@ class prop_anonymous_construct(prop):
         rendered_children = ''
         for child in self.children.values():
             rendered_children += (child.conf['indent']*ws.s) + str(child)
+        rendered_children += ws.nl + (self.conf['indent'] * ws.s)
         return rendered_children
 
     def __str__(self):
@@ -387,8 +414,9 @@ class prop_anonymous_construct_plural(prop):
     def __setattr__(self, key, value):
         if key in ('key','value','parent','conf','children'):
             object.__setattr__(self, key, value)
-        if key in props._allowed_children[self.key]:
-            self.__dict__.update( { key : prop_router( key, value, self) } )
+        elif self.key != 'filters':
+            if key in props._allowed_children[self.key]:
+                self.__dict__.update( { key : prop_router( key, value, self) } )
         else:
             object.__setattr__(self, key, value)
 
@@ -470,7 +498,6 @@ class prop_list_quoted(prop, common_list_functions):
         else:
             return f'{__}{self.key}: { "[]" }'
 
-# P0: options & Options Quoted
 class prop_options(prop):
     def __init__(self, key, value, parent, conf={}):
         self.key = key
@@ -488,10 +515,81 @@ class prop_options_quoted(prop_string):
 
 class prop_expression(prop): pass
 
-# P0: filters
-class prop_filters(prop): pass
-# P0: sorts
-class prop_sorts(prop): pass
+class flt(object):
+    def __init__(self,key,value):
+        self.key, self.value = key, value
+    
+    def __str__(self):
+        return f'{self.key}:"{self.value}"'
+    
+    def contains(self,expression):
+        self.value = '%' + expression + '%'
+
+class srt(object):
+    #sorts: [field_name_1: asc | desc, field_name_2: asc | desc, …]
+    def __init__(self,key,value):
+        self.key, self.value = key, value
+    
+    def __str__(self):
+        return f'{self.key}: {self.value} '
+    
+    def asc(self):
+        self.value = 'asc'
+    def desc(self):
+        self.value = 'desc'
+
+class prop_filters(prop_anonymous_construct_plural): 
+    # Old Style:
+    #{'filters': [{'field': 'foo', 'value': '%cool%'}, {'field': 'bar', 'value': '%great%'}], 'name': 'filters'}
+    # New Style:
+    #{'filters': {'foo': '%cool%', 'bar': '%great%'}, 'name': 'filters'}
+    def __init__(self, key, value, parent, conf={}):
+        self.key = key
+        self.parent = parent
+        self.conf = conf
+        if isinstance(value,list):
+            self.value = {f['field']:flt(f['field'],f['value']) for f in value}
+        else:
+            self.value = {k:flt(k,v) for k,v in value.items()}
+
+    def __str__(self):
+        fltrs = [ str(f)  for f in self.value.values()]
+        indent = ws.nl + (ws.s * self.conf['indent']) if not self.parent._dense() else ws.s
+        if len(self.value) > ws.list_multiline_threshold:
+            return (f'{indent}{self.key}: [ {ws.nl}       ' 
+                    f"{(chr(10)+'      ,').join(fltrs)}"
+                    '{ws.nl}      ] ')
+        else:
+            return f"{indent}{self.key}: [ {', '.join(fltrs)} ] "
+
+    def __getattr__(self,key):
+        if key in self.__dict__.keys():
+            return self.__dict__[key]
+        elif key in self.value.keys():
+            return self.value[key]
+
+    def __getitem__(self,item):
+        self.value[item]
+
+    def __add__(self,other):
+        if isinstance(other,dict):
+            other = {k:flt(k,v) for k,v in other.items()}
+            self.value.update(other)
+    
+    def __sub__(self,other):
+        if isinstance(other,str):
+            del self.value[other]
+
+class prop_sorts(prop_filters):
+    def __init__(self, key, value, parent, conf={}):
+        self.key = key
+        self.parent = parent
+        self.conf = conf
+        if isinstance(value,list):
+            self.value = {f['field']:srt(f['field'],f['value']) for f in value}
+        else:
+            self.value = {k:srt(k,v) for k,v in value.items()}
+
 class prop_yesno(prop):
     def __bool__(self): return True if self.value == 'yes' else False
 
@@ -502,7 +600,10 @@ def prop_router(key,value, parent):
     is_plural = True if key[:-1] in props.plural_keys else False
     key = key[:-1] if is_plural else key
     parent_type = parent._type()
-    # conf = props.cfg[key][parent]
+    if parent_type in props.cfg['filters'].keys() and key == 'filter': #('measure', 'explore_source', 'query')
+        key = key + 's'
+    elif parent_type == 'explore_source' and key == 'bind_filter':
+        key = key + 's'
     conf = props.cfg[key][parent_type]
     prop_type = conf['type']
     default = conf['default_value']

@@ -4,7 +4,7 @@ class ws:
     nl = '\n'
     #size of a list type object before it breaks onto multiple lines. Int for number of items, not string length
     list_multiline_threshold = 4
-    dense_children_threshold = 3
+    dense_children_threshold = 2
     dense_str_len = 25
 
 class props:
@@ -222,7 +222,7 @@ class props:
                 "has_allowed_values": False,
                 "allowed_values": ""
             },
-            "form": {
+            "form_param": {
                 "type": "string",
                 "subtype": "possibly-localized-string",
                 "indent": 4,
@@ -988,7 +988,7 @@ class props:
                 "has_allowed_values": False,
                 "allowed_values": ""
             },
-            "form": {
+            "form_param": {
                 "type": "string",
                 "subtype": "possibly-localized-string",
                 "indent": 4,
@@ -2483,7 +2483,7 @@ class props:
                     "left_outer"
                 ]
             },
-            "form": {
+            "form_param": {
                 "type": "options",
                 "subtype": "options",
                 "indent": 4,
@@ -4712,7 +4712,7 @@ class props:
             }
         },
         "name": {
-            "form": {
+            "form_param": {
                 "type": "string",
                 "subtype": "string",
                 "indent": 3,
@@ -4732,7 +4732,7 @@ class props:
             }
         },
         "option": {
-            "form": {
+            "form_param": {
                 "type": "anonymous_construct",
                 "subtype": "anonymous_construct",
                 "indent": 4,
@@ -4743,7 +4743,7 @@ class props:
             }
         },
         "required": {
-            "form": {
+            "form_param": {
                 "type": "yesno",
                 "subtype": "yesno",
                 "indent": 4,
@@ -4754,7 +4754,7 @@ class props:
             }
         },
         "default": {
-            "form": {
+            "form_param": {
                 "type": "string",
                 "subtype": "string",
                 "indent": 4,
