@@ -33,9 +33,30 @@ non-semantic:
 
 '''
 class baseFile(object):
-    def __init__(self,f):
-        self.f = f
+    def __init__(self,path='',name=''):
+        self.name = name
+        self.path = path
 
+    def setFolder(self,folder):
+        self.path = folder + self.name if folder.endswith('/') else folder  + '/' +  self.name
+        return self
+
+    def write(self,overWriteExisting=True):
+        ''' Checks to see if the file exists before writing'''
+        print("Writing to: %s" % (self.path) )
+        if overWriteExisting:
+            with open(self.path, 'w') as opened_file:
+                try:
+                    opened_file.write(self.__str__())
+                except:
+                    pass
+        else:
+            try:
+                fh = open(self.path, 'r')
+                fh.close()
+            except FileNotFoundError:
+                with open(self.path, 'w') as opened_file:
+                    opened_file.write(self.__str__())
 
 
 
