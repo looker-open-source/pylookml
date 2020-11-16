@@ -100,7 +100,7 @@ class testView(unittest.TestCase):
         #     print(p)
 class testOtherFiles(unittest.TestCase):
     def setUp(self):
-        pass
+        self.model_file = file.File('tests/files/basic_parsing/basic.model.lkml')
 
     def test_parsing_aggregate_tables(self):
         x = file.File('tests/files/basic_parsing/agg.model.lkml')
@@ -110,8 +110,7 @@ class testOtherFiles(unittest.TestCase):
         print(x.explores.foo.aggregate_table.bar)
 
     def test_model_file(self):
-        x = file.File('tests/files/basic_parsing/basic.view.lkml')
-        print(str(x))
+        print(str(self.model_file))
 
     def test_view_refinement(self):
         x = file.File('tests/files/basic_parsing/refine.view.lkml')
@@ -130,5 +129,5 @@ class testOtherFiles(unittest.TestCase):
     def test_maplayer_topojson(self):
         pass
 
-    def tearDown(self):
-        pass
+    # def tearDown(self):
+    #     pass
