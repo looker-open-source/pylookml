@@ -97,16 +97,16 @@ view: order_items {
   sql_table_name: ecomm.order_items ;;
   ########## IDs, Foreign Keys, Counts ###########
 
-parameter: foo {
-  allowed_value: {
-    label: "foobar"
-    value: "bar"
-  }
-  allowed_value: {
-    label: "x"
-    value: "x"
-  }
-}
+#parameter: foo {
+#  allowed_value: {
+#    label: "foobar"
+#    value: "bar"
+#  }
+#  allowed_value: {
+#    label: "x"
+#    value: "x"
+#  }
+#}
 
   dimension: id {
     primary_key: yes
@@ -120,10 +120,10 @@ parameter: foo {
       label: "Send this to slack channel"
       url: "https://hooks.zapier.com/hooks/catch/1662138/tvc3zj/"
 
-      param: {
-        name: "user_dash_link"
-        value: "https://demo.looker.com/dashboards/160?Email={{ users.email._value}}"
-      }
+#      param: {
+#        name: "user_dash_link"
+#        value: "https://demo.looker.com/dashboards/160?Email={{ users.email._value}}"
+#      }
 
       form_param: {
         name: "Message"

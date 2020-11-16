@@ -68,10 +68,10 @@ include: "*.view"
 
 view: order_items {
   sql_table_name: ecomm.order_items ;;
-  parameter: foo {   allowed_value: { label: "foobar"
-  value: "bar" }
- allowed_value: { label: "x"
-  value: "x" } }
+#  parameter: foo {   allowed_value: { label: "foobar"
+#  value: "bar" }
+# allowed_value: { label: "x"
+#  value: "x" } }
   filter: cohort_by { 
     type: string
     hidden: yes
