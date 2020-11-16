@@ -2,9 +2,10 @@ import lkml, copy
 from lang import ws,props
 import helpers
 
-
+#P2: obtain the real list of timezones from Looker itself
 #P2: add looker version numbers to the lang map and throw warning if prop depreicated or error if not yet supported
-#P0: clean up whitespace system, now partial delegation of control to props / parent to emit elements of whitespace. Have parent only control boolean is_dense
+#P1: add warnings / error types
+#P2: complex props / constructs do not support an add method and + operator overloading
 class prop(object):
     def __init__(self, key, value, parent, conf={}):
         self.key = key
@@ -214,18 +215,6 @@ class Explore(lookml):
                 # f'{ self._s(type=(prop,Field)) }'
                 f'{ self._s(type=(prop,lookml),exclude_subtype="join") }'
                 f'{ws.nl}}}')
-    # def __str__(self):
-    #     return (
-    #         f'{self._type()}: {self.name} {{'
-    #             f'{ self._s(exclude_subtype="set") }'
-    #             f'{ self._s(type=Filter) }'
-    #             f'{ self._s(type=Parameter) }'
-    #             f'{ self._s(type=Dimension) }'
-    #             f'{ self._s(type=Dimension_Group) }'
-    #             f'{ self._s(type=Measure) }'
-    #             f'{ self._s(sub_type="set") }'
-    #         f'{ws.nl}}}'
-    #     )
 
 class Join(lookml): pass
 #P0: create manifest type
@@ -286,7 +275,6 @@ class prop_string(prop):
         __ = ws.nl + (ws.s * self.conf['indent']) if not dense else ws.s
         return f'{__}{self.key}: "{self.value}"'
 class prop_string_unquoted(prop): pass
-
 
 class prop_named_construct_single(Field):
     def __init__(self,key, data, parent, conf={}):
@@ -365,7 +353,7 @@ class prop_anonymous_construct(prop):
             self.children.update({name: prop_router(name,child,self)})
 
     def __setattr__(self, key, value):
-        #P0: fix this, I think it can be done without hard coding the variable names
+        #P2: fix this, I think it can be done without hard coding the variable names
         if key in ('key','value','parent','conf','children'):
             object.__setattr__(self, key, value)
         if key in props._allowed_children[self.key]:
@@ -410,7 +398,7 @@ class prop_anonymous_construct_plural(prop):
                 child.append(prop_router(name,attr,self))
             self.children.append(child)
 
-    #P0: add support for textual addition at any level. Need to support parsing if string, consume if dict
+    #P0: add support for textual addition / + operator overloading at any level. Need to support parsing if string, consume if dict
     def __setattr__(self, key, value):
         if key in ('key','value','parent','conf','children'):
             object.__setattr__(self, key, value)

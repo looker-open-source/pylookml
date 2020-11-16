@@ -93,7 +93,7 @@ class testView(unittest.TestCase):
         # print(self.myView.set.__dict__)
         # print(self.myView.set.set1)
         self.myView.set.set1.fields + 'foo'
-        print(self.myView)
+        print(self.myView.foo.link[1])
         # for p in self.myView.bar.__iter__(type=lookml.prop):
         # for p in self.myView.transaction(type=lookml.prop, sub_type='timeframes', exclude_subtype='timeframes'):
         #     # if isinstance(p,lookml.prop_list_unquoted):

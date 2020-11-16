@@ -3,7 +3,43 @@ from lang import ws
 import github
 import re, os, shutil, copy
 
-class File(object):
+#P0: Finish defining new granular file types
+#P0: Lookml "container" (or detached model...) for generic file types? need to support props + explores + views
+'''
+Factory Function:
+    routes / existing instances or New()
+
+General File:
+    file (read/write)
+    path management
+
+generic lkml file (identified by .lkml)
+
+    model file (identified by .model.lkml)
+    view file
+    manifest file (identified by manifest.lkml name [one and only one per project])
+    
+
+lookml dashboard (identified by extension .lookml)
+    pyyaml parser
+
+json files:
+    locale (identified by .strings.json extension)
+
+non-semantic:
+    markdown file (identified by .md extension)
+    js file (identified by extension .js)
+    maylayer (identified by .topojson or vector tile)
+
+'''
+class baseFile(object):
+    def __init__(self,f):
+        self.f = f
+
+
+
+
+class baseFileOld(object):
     '''
         A file object represents a file within a LookML project. It can be several types, can contain views, explores 
         or other properties such as inlcude or data groups
@@ -259,3 +295,10 @@ class File(object):
             except FileNotFoundError:
                 with open(self.path, 'w') as opened_file:
                     opened_file.write(self.__str__())
+
+
+def File(f):
+    '''
+        Factory Function which routes to the right class
+    '''
+    return baseFileOld(f)
