@@ -10,6 +10,7 @@ config/settings.ini
 settings.ini
 api.ini
 .DS_Store
+~$lang_map_generator.xlsm
 ############## Generic Python Gitignore configurations ##############
 # Byte-compiled / optimized / DLL files
 __pycache__/

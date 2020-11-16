@@ -1894,6 +1894,15 @@ class props:
                 "docs_url": "https://looker.com/docs/r/lookml/types/derived_column/sql?version=7.14&lookml=new",
                 "has_allowed_values": False,
                 "allowed_values": ""
+            },
+            "when": {
+                "type": "sql",
+                "subtype": "sql-block ",
+                "indent": 5,
+                "default_value": "",
+                "docs_url": "https://looker.com/docs/r/lookml/types/case/when?version=7.14&lookml=new",
+                "has_allowed_values": False,
+                "allowed_values": ""
             }
         },
         "sql_end": {
@@ -4691,8 +4700,8 @@ class props:
         },
         "form_param": {
             "action": {
-                "type": "anonymous_construct",
-                "subtype": "anonymous_construct",
+                "type": "anonymous_construct_plural",
+                "subtype": "anonymous_construct_plural",
                 "indent": 3,
                 "default_value": "",
                 "docs_url": "https://looker.com/docs/r/lookml/types/action/form_param?version=7.14&lookml=new",
@@ -4729,12 +4738,30 @@ class props:
                 "docs_url": "https://looker.com/docs/r/lookml/types/option/name?version=7.14&lookml=new",
                 "has_allowed_values": False,
                 "allowed_values": ""
+            },
+            "param": {
+                "type": "string",
+                "subtype": "string",
+                "indent": 4,
+                "default_value": "",
+                "docs_url": "https://docs.looker.com/reference/field-params/action?version=7.14&lookml=new",
+                "has_allowed_values": False,
+                "allowed_values": ""
+            },
+            "user_attribute_param": {
+                "type": "string",
+                "subtype": "string",
+                "indent": 4,
+                "default_value": "",
+                "docs_url": "https://docs.looker.com/reference/field-params/action?version=7.14&lookml=new",
+                "has_allowed_values": False,
+                "allowed_values": ""
             }
         },
         "option": {
             "form_param": {
-                "type": "anonymous_construct",
-                "subtype": "anonymous_construct",
+                "type": "anonymous_construct_plural",
+                "subtype": "anonymous_construct_plural",
                 "indent": 4,
                 "default_value": "",
                 "docs_url": "https://looker.com/docs/r/lookml/types/form_param/option?version=7.14&lookml=new",
@@ -5040,17 +5067,6 @@ class props:
                 "allowed_values": ""
             }
         },
-        "sql:": {
-            "when": {
-                "type": "sql",
-                "subtype": "sql-block ",
-                "indent": 5,
-                "default_value": "",
-                "docs_url": "https://looker.com/docs/r/lookml/types/case/when?version=7.14&lookml=new",
-                "has_allowed_values": False,
-                "allowed_values": ""
-            }
-        },
         "allowed_values": {
             "access_grant": {
                 "type": "list_quoted",
@@ -5069,6 +5085,15 @@ class props:
                 "indent": 1,
                 "default_value": "",
                 "docs_url": "https://looker.com/docs/r/lookml/types/access_grant/user_attribute?version=7.14&lookml=new",
+                "has_allowed_values": False,
+                "allowed_values": ""
+            },
+            "user_attribute_param": {
+                "type": "string_unquoted",
+                "subtype": "user-attribute-ref",
+                "indent": 4,
+                "default_value": "",
+                "docs_url": "https://docs.looker.com/reference/field-params/action?version=7.14&lookml=new",
                 "has_allowed_values": False,
                 "allowed_values": ""
             }
@@ -5113,6 +5138,15 @@ class props:
                 "indent": 2,
                 "default_value": "",
                 "docs_url": "https://docs.looker.com/data-modeling/learning-lookml/importing-projects?version=7.14&lookml=new#passing_constants_between_projects",
+                "has_allowed_values": False,
+                "allowed_values": ""
+            },
+            "param": {
+                "type": "string",
+                "subtype": "string",
+                "indent": 4,
+                "default_value": "",
+                "docs_url": "https://docs.looker.com/reference/field-params/action?version=7.14&lookml=new",
                 "has_allowed_values": False,
                 "allowed_values": ""
             }
@@ -5194,6 +5228,7 @@ class props:
         'user_attribute_param',
         'assert',
         'test',
+        'aggregate_table',
     )
     field_types = (
          'dimension'
