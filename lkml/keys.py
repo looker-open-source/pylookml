@@ -39,6 +39,7 @@ PLURAL_KEYS: Tuple[str, ...] = (
     "user_attribute_param",
     "assert",
     "test",
+    "aggregate_table",
 )
 
 # These are keys in LookML that should be recognized as expression blocks (end with ;;).

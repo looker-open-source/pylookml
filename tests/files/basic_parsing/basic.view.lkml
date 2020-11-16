@@ -50,31 +50,32 @@ view: basic {
     dimension: bar {
         type: number
         sql: ${TABLE}.number ;;
-    #action: {
-    #  label: "cool"
-    #  url: "http://beeceptor.com/post"
-    #  icon_url: "https://looker.com/favicon.ico"
-    #  form_url: "https://beeceptor.com/post"
+    action: {
+      label: "cool"
+      url: "http://beeceptor.com/post"
+      icon_url: "https://looker.com/favicon.ico"
+      form_url: "https://beeceptor.com/post"
+    
       #param: {
       #  name: "foo"
       #  value: "bar"
       #}
-     # form_param: {
-     #   name: "my form param"
-     #   type: select
-     #   label: "My form Param"
-     #   option: {
-     #     name: "cool"
-     #     label: "Cool"
-     #   }
-     #   option: {
-     #     name: "notcool"
-     #     label: "Not Cool"
-     #   }
-     #   description: "Is it cool or not cool?"
-     #   default: "cool"
-     # }
-    #}
+      form_param: {
+        name: "my form param"
+        type: select
+        label: "My form Param"
+        option: {
+          name: "cool"
+          label: "Cool"
+        }
+        option: {
+          name: "notcool"
+          label: "Not Cool"
+        }
+        description: "Is it cool or not cool?"
+        default: "cool"
+     }
+    }
     }
     filter: myfilt {type: string sql: 1=1 ;;}
   dimension_group: transaction {

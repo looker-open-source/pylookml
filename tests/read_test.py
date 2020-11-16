@@ -102,8 +102,19 @@ class testOtherFiles(unittest.TestCase):
     def setUp(self):
         pass
 
+    def test_parsing_aggregate_tables(self):
+        x = file.File('tests/files/basic_parsing/agg.model.lkml')
+        # x = lkml.load(open('tests/files/basic_parsing/agg.model.lkml','r', encoding="utf-8"))
+        # x = open('tests/files/basic_parsing/agg.model.lkml','r', encoding="utf-8")
+        print(str(x))
+        print(x.explores.foo.aggregate_table.bar)
+
     def test_model_file(self):
         x = file.File('tests/files/basic_parsing/basic.view.lkml')
+        print(str(x))
+
+    def test_view_refinement(self):
+        x = file.File('tests/files/basic_parsing/refine.view.lkml')
         print(str(x))
 
     def test_other_lkml_file(self):

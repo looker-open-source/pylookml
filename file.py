@@ -108,7 +108,7 @@ class File(object):
             self.path = os.path.relpath(f)
             self.sha = ''
             #Parse Step: file is provided 
-            with open(self.path, 'r') as tmp:
+            with open(self.path, 'r', encoding="utf-8") as tmp:
                 self.json_data = lkml.load(tmp)
 
         def viewBootstrap():
@@ -194,7 +194,6 @@ class File(object):
         #      f'{ws.nl}'.join([ str(v) for v in self.views]) if self.vws else ''
         # )
         return   (f'{ws.nl}'.join([ str(e) for e in self.explores]) if self.exps else '') + (ws.nl + f'{ws.nl}'.join([ str(v) for v in self.views]) if self.vws else '')
-
 
     def setSha(self,sha):
         self.sha = sha

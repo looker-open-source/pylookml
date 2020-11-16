@@ -32,7 +32,6 @@ class prop(object):
 class lookml(object):
     _member_classes  = list()
     def __init__(self,data, parent=None):
-        #P1: get rid of this by moving it down
         self.parent = parent
         self + data
     
@@ -56,7 +55,7 @@ class lookml(object):
 
     def _allowed_children(self): return props._allowed_children[self._type()]
     def _dense(self): return len(list(self())) <= ws.dense_children_threshold 
-    #P0: this causes a stack overflow: or self._length() <= ws.dense_str_len
+    #P2: this causes a stack overflow: or self._length() <= ws.dense_str_len
 
     def __iter__(self):
         def i():
@@ -71,6 +70,7 @@ class lookml(object):
         except:
             raise StopIteration
 
+    # def __call__(self,type=prop, exclude_type=tuple(), sub_type=None, exclude_subtype=None):
     def __call__(self,type=prop, exclude_type=tuple(), sub_type=None, exclude_subtype=None):
         for item in self:
             if isinstance(item,type)\
@@ -92,9 +92,6 @@ class lookml(object):
     def __bool__(self): return len(self) > 0
     def _insert(self,key,value): self.__dict__.update( { key: prop_router( key, value, self ) } )
     def _json(self): return lkml.load(str(self))
-    def _has_data(self,func):
-        for f in func:
-            return True
 
     def _add_hook(self):
         #PO: add a hook for processing values as they are added
@@ -214,6 +211,8 @@ class Explore(lookml):
     def __str__(self): 
         return (f'{self._type()}: {self.name} {{'
                 f'{ self._s(sub_type="join") }'
+                # f'{ self._s(type=(prop,Field)) }'
+                f'{ self._s(type=(prop,lookml),exclude_subtype="join") }'
                 f'{ws.nl}}}')
     # def __str__(self):
     #     return (
@@ -383,15 +382,16 @@ class prop_anonymous_construct(prop):
             return None
 
     def print_children(self):
-        # rendered_children = ws.nl
         rendered_children = ''
         for child in self.children.values():
             rendered_children += (child.conf['indent']*ws.s) + str(child)
         rendered_children += ws.nl + (self.conf['indent'] * ws.s)
         return rendered_children
+    def _dense(self): return len(self.children) == 0
 
     def __str__(self):
-        dense = True if self.parent._dense() else False
+        # dense = True if self.parent._dense() else False
+        dense = True if self.parent._dense() and self._dense() else False
         i = self.conf['indent']
         __ = ws.nl + (ws.s * i) if not dense else ws.s
         return f'''{__}{self.key}: {{ { self.print_children() } }}'''
@@ -437,7 +437,8 @@ class prop_anonymous_construct_plural(prop):
         return rendered
 
     def __str__(self):
-        dense = True if self.parent._dense() else False
+        # dense = True if self.parent._dense() else False
+        dense = True if self.parent._dense() and self._dense() else False
         __ = ws.nl + (ws.s * self.conf['indent']) if not dense else ws.s
         rendered = ''
         for child in self.children:
@@ -600,9 +601,12 @@ def prop_router(key,value, parent):
     is_plural = True if key[:-1] in props.plural_keys else False
     key = key[:-1] if is_plural else key
     parent_type = parent._type()
-    if parent_type in props.cfg['filters'].keys() and key == 'filter': #('measure', 'explore_source', 'query')
+    #P2: not proud of this, but the "plural keys" needs to be corrected for certain contexts. This works for now but I can't explain it well
+    if parent_type in props.cfg['filters'].keys() and key == 'filter':
         key = key + 's'
     elif parent_type == 'explore_source' and key == 'bind_filter':
+        key = key + 's'
+    elif parent_type == 'query' and key in ('dimension','measure'):
         key = key + 's'
     conf = props.cfg[key][parent_type]
     prop_type = conf['type']
