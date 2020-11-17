@@ -441,12 +441,14 @@ class prop_anonymous_construct(prop):
         __ = ws.nl + (ws.s * i) if not dense else ws.s
         return f'''{__}{self.key}: {{ { self.print_children() } }}'''
 
+
 class prop_anonymous_construct_plural(prop): 
     def __init__(self, key, value, parent, conf={}):
         self.key = key
         self.value = value
         self.parent = parent
         self.conf = conf
+        #P0: need to loop over / iterate over the contents of children
         self.children = []
         # P0: create an add method for adding additional children 
         for construct in value:
