@@ -71,7 +71,6 @@ class lookml(object):
         except:
             raise StopIteration
 
-    # def __call__(self,type=prop, exclude_type=tuple(), sub_type=None, exclude_subtype=None):
     def __call__(self,type=prop, exclude_type=tuple(), sub_type=None, exclude_subtype=None):
         for item in self:
             if isinstance(item,type)\
@@ -109,7 +108,6 @@ class lookml(object):
 
         elif isinstance(other,dict):
             parsed = other
-            # print(parsed)
 
         for key,value in parsed.items():
             is_plural = True if key[:-1] in props.plural_keys else False
@@ -201,25 +199,113 @@ class Dimension_Group(Field): pass
 #P0: create model type
 class Model(lookml):
     _member_classes = [
-         'explore'
+        #  'explore'
     ]
-#P0: create explore type
+    class dotdict(dict):
+        def __getattr__(self,item):
+            if item in self.__dict__.keys():
+                return self.__dict__[item]
+            elif item in self.keys():
+                return self.__getitem__(item)
+            else:
+                return object.__getattr__(item)
+
+    def __init__(self,data):
+        self.explores = self.dotdict()
+        self.views = self.dotdict()
+        self + data
+    
+    def __add__(self,data):
+        if isinstance(data,dict):
+            if 'explores' in data.keys():
+                for explore in data['explores']:
+                    self.explores.update(
+                            {explore['name']:Explore(explore, parent=self)}
+                                )
+                del data['explores']
+            if 'views' in data.keys():
+                for view in data['views']:
+                    self.views.update(
+                            {view['name']:View(view, parent=self)}
+                                )
+                del data['views']
+            super().__add__(data)
+    
+        if isinstance(data,str):
+            parsed = lkml.load(data)
+            self.__add__(parsed)
+
+    def __getattr__(self,key):
+        if key in self.__dict__.keys():
+            self.__dict__.__getitem__(key)
+        elif key in self._allowed_children():
+            return prop_router(key,'__default__', self)
+
+    def _s_views(self):
+        tmp = ws.nl
+        for v in self.views.values():
+            tmp += (ws.nl + str(v))
+        return tmp
+
+    def _s_explores(self):
+        tmp = ws.nl
+        for e in self.explores.values():
+            tmp += (ws.nl + str(e))
+        return tmp
+
+    def __str__(self):
+        return (
+            f'{ self._s(sub_type="connection")}'
+            f'{ self._s(exclude_subtype="connection") }'
+            f'{ self._s_views() }'
+            f'{ self._s_explores() }'
+        )
+
 class Explore(lookml):
     _member_classes = [
-        #  'join'
     ]
     def _dense(self): return False
     def __str__(self): 
         return (f'{self._type()}: {self.name} {{'
                 f'{ self._s(sub_type="join") }'
-                # f'{ self._s(type=(prop,Field)) }'
-                f'{ self._s(type=(prop,lookml),exclude_subtype="join") }'
+                f'{ self._s(type=(prop),exclude_subtype="join") }'
                 f'{ws.nl}}}')
 
 class Join(lookml): pass
 #P0: create manifest type
 class Manifest(lookml):
     _member_classes = []
+
+
+class FileContents(object):
+#parsing
+#namespace
+#str
+    def __init__(self,data):
+        self.explores = dict()
+        self.views = dict()
+        self.props = object()
+    
+    def _unpack(self,data):
+        if 'explores' in data.keys():
+            for explore in data['explores']:
+                self.explores.update({explore['name']:Explore(explore)})
+        if 'views' in data.keys():
+            for view in data['views']:
+                self.explores.update({explore['name']:Explore(explore)})
+        
+
+    # def __add__(self,item):
+    #     if isinstance(item,str):
+    #         self.json_data = lkml.load(item)
+    #     elif isinstance(item,dict):
+            
+    #     elif isinstance(item,View):
+        
+    #     elif isinstance(item,Explore):
+
+    #     elif isinstance(item,Manifest):
+    
 
 #P0: re-integrate File type
 #P0: re-integrate project type

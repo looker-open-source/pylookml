@@ -59,6 +59,59 @@ class testView(unittest.TestCase):
                 self.myView.transaction.tags - tag
         self.assertCountEqual(self.myView.transaction.tags,['tag1','tag2','tag3','tag5'])
 
+    def test_delete_me_adhoc_model_test(self):
+        x = '''
+            connection: "my_data"
+            view: foo {
+                dimension: a {}
+                dimension: b {}
+                dimension: c {}
+            }
+            view: bar {
+                dimension: x {}
+                dimension: y {}
+                dimension: z {}
+            }
+            explore: bar {
+                join: foo {}
+                join: test12 {}
+            }
+            explore: foo {
+                join: bar {}
+                aggregate_table: blah {
+                    query: {
+                        dimensions: [dim1,dim2,dim3]
+                        filters: [foo:"%myfoo%",bar:"mybar%"]
+                        sorts: [dim1: asc]
+                        pivots: [dim4]
+                    }
+                    materialization: {
+                        datagroup_trigger: yes
+                    }
+                }
+            }
+        '''
+        parsed = lkml.load(x)
+        # print(parsed)
+        m = lookml.Model(parsed)
+        # print(str(m.__dict__))
+        print(str(m))
+        # print(str(m.explores['foo']))
+        # print(str(m.explores.foo))
+
+    def test_deleteme_adhoc_file_model_binding(self):
+        x = file.File('tests/files/basic_parsing/basic.model.lkml')
+        print(x.path)
+        cool = 'test123'
+        #P0: replacing rather than additive
+        x.explores['trip'] + f'''
+        join: {cool} {{
+
+        }}
+        '''
+        x.path = 'example2.model.lkml'
+        x.write()
+
     def test_other(self):
         # if isinstance(self.myView.sum_foo.sql,lookml.prop):
         # if not isinstance(self.myView.sum_foo.sql,tuple()):

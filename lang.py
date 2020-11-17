@@ -189,7 +189,7 @@ class props:
             "query": {
                 "type": "string",
                 "subtype": "possibly-localized-string",
-                "indent": 4,
+                "indent": 3,
                 "default_value": "",
                 "docs_url": "https://looker.com/docs/r/lookml/types/query/label?version=7.14&lookml=new",
                 "has_allowed_values": False,
@@ -982,7 +982,7 @@ class props:
             "query": {
                 "type": "string",
                 "subtype": "possibly-localized-string",
-                "indent": 4,
+                "indent": 3,
                 "default_value": "",
                 "docs_url": "https://looker.com/docs/r/lookml/types/query/description?version=7.14&lookml=new",
                 "has_allowed_values": False,
@@ -1065,7 +1065,7 @@ class props:
             "query": {
                 "type": "string",
                 "subtype": "possibly-localized-string",
-                "indent": 4,
+                "indent": 3,
                 "default_value": "",
                 "docs_url": "https://looker.com/docs/r/lookml/types/query/group_label?version=7.14&lookml=new",
                 "has_allowed_values": False,
@@ -2669,7 +2669,7 @@ class props:
             "query": {
                 "type": "filters",
                 "subtype": "identifier",
-                "indent": 4,
+                "indent": 3,
                 "default_value": "",
                 "docs_url": "https://looker.com/docs/r/lookml/types/query/filters?version=7.14&lookml=new",
                 "has_allowed_values": False,
@@ -3061,7 +3061,7 @@ class props:
             "query": {
                 "type": "string_unquoted",
                 "subtype": "number",
-                "indent": 4,
+                "indent": 3,
                 "default_value": "5000",
                 "docs_url": "https://looker.com/docs/r/lookml/types/query/limit?version=7.14&lookml=new",
                 "has_allowed_values": False,
@@ -3125,7 +3125,7 @@ class props:
             "query": {
                 "type": "sorts",
                 "subtype": "field-ref-to-sort-map",
-                "indent": 4,
+                "indent": 3,
                 "default_value": "",
                 "docs_url": "https://looker.com/docs/r/lookml/types/query/sorts?version=7.14&lookml=new",
                 "has_allowed_values": False,
@@ -3709,7 +3709,7 @@ class props:
             "query": {
                 "type": "options",
                 "subtype": "options",
-                "indent": 4,
+                "indent": 3,
                 "default_value": "America/Los_Angeles",
                 "docs_url": "https://looker.com/docs/r/lookml/types/query/timezone?version=7.14&lookml=new",
                 "has_allowed_values": True,
@@ -4366,7 +4366,7 @@ class props:
             "aggregate_table": {
                 "type": "anonymous_construct",
                 "subtype": "anonymous_construct",
-                "indent": 3,
+                "indent": 2,
                 "default_value": "",
                 "docs_url": "https://looker.com/docs/r/lookml/types/aggregate_table/query?version=7.14&lookml=new",
                 "has_allowed_values": False,
@@ -4377,7 +4377,7 @@ class props:
             "aggregate_table": {
                 "type": "anonymous_construct",
                 "subtype": "anonymous_construct",
-                "indent": 3,
+                "indent": 2,
                 "default_value": "",
                 "docs_url": "https://looker.com/docs/r/lookml/types/aggregate_table/materialization?version=7.14&lookml=new",
                 "has_allowed_values": False,
@@ -4388,7 +4388,7 @@ class props:
             "query": {
                 "type": "list_unquoted",
                 "subtype": "field-ref",
-                "indent": 4,
+                "indent": 3,
                 "default_value": "",
                 "docs_url": "https://looker.com/docs/r/lookml/types/query/dimensions?version=7.14&lookml=new",
                 "has_allowed_values": False,
@@ -4399,7 +4399,7 @@ class props:
             "query": {
                 "type": "list_unquoted",
                 "subtype": "field-ref",
-                "indent": 4,
+                "indent": 3,
                 "default_value": "",
                 "docs_url": "https://looker.com/docs/r/lookml/types/query/measures?version=7.14&lookml=new",
                 "has_allowed_values": False,
@@ -4410,7 +4410,7 @@ class props:
             "query": {
                 "type": "list_unquoted",
                 "subtype": "field-ref",
-                "indent": 4,
+                "indent": 3,
                 "default_value": "",
                 "docs_url": "https://looker.com/docs/r/lookml/types/query/pivots?version=7.14&lookml=new",
                 "has_allowed_values": False,
@@ -5185,6 +5185,7 @@ class props:
             }
         }
     }
+    #P2: rather than doing this dynamically on import, do it at lang generation time to save a couple cycles
     _allowed_children = dict()
     for prop,parents in cfg.items():
         for parent,data in parents.items():
