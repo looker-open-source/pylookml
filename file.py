@@ -58,9 +58,24 @@ class baseFile(object):
                 with open(self.path, 'w') as opened_file:
                     opened_file.write(self.__str__())
 
+class lkmlFile(baseFile):
+    def __init__(self,path='',name=''):
+        self.name = name
+        self.path = path
+        self.contents = lookml.Model(lkml.load(open(self.path,encoding="utf-8")))
+
+    def __getattr__(self,item):
+        if item in self.__dict__.keys():
+            return self.__dict__[item]
+        elif item in self.contents.__dict__.keys():
+            return self.contents.__dict__[item]
+        else:
+            return object.__getattr__(item)
+
+    def __str__(self): return str(self.contents)
 
 
-class baseFileOld(object):
+class baseFileOld(object): 
     '''
         A file object represents a file within a LookML project. It can be several types, can contain views, explores 
         or other properties such as inlcude or data groups
@@ -322,4 +337,8 @@ def File(f):
     '''
         Factory Function which routes to the right class
     '''
-    return baseFileOld(f)
+    if isinstance(f,str):
+        if f.endswith('.model.lkml'):
+            return lkmlFile(f)
+        else:
+            return baseFileOld(f)
