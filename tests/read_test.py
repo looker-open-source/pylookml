@@ -49,6 +49,24 @@ class testView(unittest.TestCase):
         self.assertIsNotNone(self.myView._json())
         print(self.myView._json())
 
+    def test_refs(self):
+        for f in self.myView._fields():
+            #full reference
+            print('full ref __ref__: ',f.__ref__)
+            #short reference
+            print('short ref __refs__: ',f.__refs__)
+            #full reference -- regex escaped
+            print('full ref regex __refre__: ',f.__refre__)
+            #Short reference -- regex escaped
+            print('short ref regex __refsre__: ',f.__refsre__)
+            #Raw Reference
+            print('raw full ref __refr__: ',f.__refr__)
+            #Raw refence short
+            print('raw ref short __refrs__: ',f.__refrs__)
+            #Raw Reference regex
+            print('raw ref regex __refrre__: ',f.__refrre__)
+
+
     def test_tags(self):
         self.myView.transaction.tags + ['tag5','tag6','tag7','tag8']
         self.myView.transaction.tags - 'tag7'

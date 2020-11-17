@@ -159,35 +159,36 @@ class Field(lookml):
     def __getattr__(self,key):
         if key in self.__dict__.keys():
             self.__dict__.__getitem__(key)
-        #P0: make this __ref__ structure fail for construct types, should only work for proper fields
+        #P2: make this __ref__ structure fail for construct types, should only work for proper fields
+
         #full reference
         elif key == '__ref__' and self._type() in props.field_types:
-            if self._view:
-                return ('${' + self._view.name + '.' + self.name + '}')
+            if self.parent:
+                return ('${' + self.parent.name + '.' + self.name + '}')
         #Short Reference
         elif key == '__refs__' and self._type() in props.field_types:
             return ('${' + self.name + '}')
 
         #full reference -- regex escaped
         elif key == '__refre__' and self._type() in props.field_types:
-            if self._view:
-                return ('\$\{' + self._view.name + '\.' + self.name + '\}')
+            if self.parent:
+                return ('\$\{' + self.parent.name + '\.' + self.name + '\}')
         #Short reference -- regex escaped
         elif key == '__refsre__' and self._type() in props.field_types:
-            if self._view:
+            if self.parent:
                 return ('\$\{' + self.name + '\}')
         #Raw Reference
         elif key == '__refr__' and self._type() in props.field_types:
-            if self._view:
-                return (self._view.name + '.' + self.name)
+            if self.parent:
+                return (self.parent.name + '.' + self.name)
         #Raw refence short
         elif key == '__refrs__' and self._type() in props.field_types:
-            if self._view:
+            if self.parent:
                 return (self.name)
         #Raw Reference regex
         elif key == '__refrre__' and self._type() in props.field_types:
-            if self._view:
-                return (self._view.name + '\.' + self.name)
+            if self.parent:
+                return (self.parent.name + '\.' + self.name)
         else:
             return prop_router(key,'__default__', self)
 class Dimension(Field): pass
@@ -276,37 +277,7 @@ class Join(lookml): pass
 class Manifest(lookml):
     _member_classes = []
 
-
-class FileContents(object):
-#parsing
-#namespace
-#str
-    def __init__(self,data):
-        self.explores = dict()
-        self.views = dict()
-        self.props = object()
     
-    def _unpack(self,data):
-        if 'explores' in data.keys():
-            for explore in data['explores']:
-                self.explores.update({explore['name']:Explore(explore)})
-        if 'views' in data.keys():
-            for view in data['views']:
-                self.explores.update({explore['name']:Explore(explore)})
-        
-
-    # def __add__(self,item):
-    #     if isinstance(item,str):
-    #         self.json_data = lkml.load(item)
-    #     elif isinstance(item,dict):
-            
-    #     elif isinstance(item,View):
-        
-    #     elif isinstance(item,Explore):
-
-    #     elif isinstance(item,Manifest):
-    
-
 #P0: re-integrate File type
 #P0: re-integrate project type
 
