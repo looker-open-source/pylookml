@@ -29,7 +29,7 @@ class testModel(unittest.TestCase):
     assert type(explore.view_name) == lookml.prop_string_unquoted
     assert explore2.view_name.value == 'weather_forecast'
     #P0: add support for getitem[] syntax at all levels
-    assert explore2.from == lookml.prop.string_unquoted
+    # assert explore2.from == lookml.prop.string_unquoted
 
   def test_walk_join(self):
     join = self.model.explores.trip.join.start_station
