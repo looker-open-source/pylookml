@@ -1,6 +1,6 @@
 import lkml, copy 
 from lang import ws,props
-import helpers
+# import helpers
 
 #P2: obtain the real list of timezones from Looker itself
 #P2: add looker version numbers to the lang map and throw warning if prop depreicated or error if not yet supported
