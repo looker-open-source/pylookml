@@ -2,6 +2,7 @@ import lookml, lkml
 from lang import ws
 import github
 import re, os, shutil, copy
+ 
 
 #P0: Finish defining new granular file types
 #P0: Lookml "container" (or detached model...) for generic file types? need to support props + explores + views
@@ -73,6 +74,12 @@ class lkmlFile(baseFile):
             return object.__getattr__(item)
 
     def __str__(self): return str(self.contents)
+
+class mnfstFile(lkmlFile):
+    def __init__(self,path='',name=''):
+        self.name = name
+        self.path = path
+        self.contents = lookml.Manifest(lkml.load(open(self.path,encoding="utf-8")))
 
 
 class baseFileOld(object): 
@@ -340,5 +347,7 @@ def File(f):
     if isinstance(f,str):
         if f.endswith('.model.lkml'):
             return lkmlFile(f)
+        if f.endswith('manifest.lkml'):
+            return mnfstFile(f)
         else:
             return baseFileOld(f)

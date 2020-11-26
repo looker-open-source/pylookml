@@ -3,6 +3,7 @@ import unittest
 import lkml as lkml
 from pprint import pprint
 import file
+import warnings
 
 # Objective / coverage
 #     Read all file types from filesystem: 
@@ -20,7 +21,25 @@ import file
 #     extensions
 #     refinements
 
+class testExceptions(unittest.TestCase):
+    def setup(self): pass
+    def test_invalid_lookml_attribute(self):
+        with self.assertWarns(UserWarning) as wrn:
+            testView = lookml.View({})
+            testView.name = 'test'
+            testView + '''
+                dimension: foo {
+                    cray: "cha"
+                }
+            '''
+            # Verify
+            for w in wrn.warnings:
+                print(w)
 
+    def test_duplicate_primary_key(self):
+        #P0: test to ensure that primary key is added, then if another primary key is set it throws an error, unless
+        #the original primary key was set to no prior to the operation
+        pass
 
 class testView(unittest.TestCase):
     '''
@@ -81,8 +100,13 @@ class testView(unittest.TestCase):
         x = '''
             connection: "my_data"
             view: foo {
-                dimension: a {}
-                dimension: b {}
+                dimension: a {
+                    type: string
+                    primary_key: yes
+                }
+                dimension: b {
+                    #primary_key: yes
+                }
                 dimension: c {}
             }
             view: bar {
@@ -113,6 +137,9 @@ class testView(unittest.TestCase):
         # print(parsed)
         m = lookml.Model(parsed)
         # print(str(m.__dict__))
+        
+        m.views.foo.a.primary_key.value = 'no'
+        m.views.foo.b.primary_key = 'yes'
         print(str(m))
         # print(str(m.explores['foo']))
         # print(str(m.explores.foo))
@@ -174,6 +201,7 @@ class testOtherFiles(unittest.TestCase):
         self.model_file = file.File('tests/files/basic_parsing/basic.model.lkml')
 
     def test_parsing_aggregate_tables(self):
+        #P0: include coming back funny
         x = file.File('tests/files/basic_parsing/agg.model.lkml')
         # x = lkml.load(open('tests/files/basic_parsing/agg.model.lkml','r', encoding="utf-8"))
         # x = open('tests/files/basic_parsing/agg.model.lkml','r', encoding="utf-8")
