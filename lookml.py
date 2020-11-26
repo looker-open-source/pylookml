@@ -1,11 +1,14 @@
 import lkml, copy 
-from lang import ws,props
-# import helpers
+from lang import ws,props,DuplicatePrimaryKey
+import warnings
 
 #P2: obtain the real list of timezones from Looker itself
+#P2: add CLI support
+#P0: legacy / backward compatibility methods
+#P2: option to omit defaults
 #P2: add looker version numbers to the lang map and throw warning if prop depreicated or error if not yet supported
 #P1: add warnings / error types
-#P2: complex props / constructs do not support an add method and + operator overloading
+#P0: complex props / constructs do not support an add method and + operator overloading
 class prop(object):
     def __init__(self, key, value, parent, conf={}):
         self.key = key
@@ -32,7 +35,7 @@ class prop(object):
 
 class lookml(object):
     _member_classes  = list()
-    def __init__(self,data, parent=None):
+    def __init__(self, data, parent=None):
         self.parent = parent
         self + data
     
@@ -43,6 +46,11 @@ class lookml(object):
             object.__setattr__(self, key, value)
 
     def __getattr__(self,key):
+        if key.startswith('_add_hook'):
+            if key in self.__dict__.keys():
+                self.__dict__.__getitem__(key)
+            else:
+                None
         if key in self.__dict__.keys():
             self.__dict__.__getitem__(key)
         elif key in self._allowed_children():
@@ -55,6 +63,19 @@ class lookml(object):
         return item in self.__dict__
 
     def _allowed_children(self): return props._allowed_children[self._type()]
+    def _conf(self): 
+        if self._type() == 'model':
+            return {
+                'docs_url': 'https://docs.looker.com/reference/model-reference'
+            }
+        elif self._type() == 'manifest':
+            return {
+                'docs_url': 'https://docs.looker.com/reference/manifest-reference'
+            }
+        else:
+            # return props.cfg[self.parent._type()][self._type()]
+            return props.cfg[self._type()][self.parent._type()]
+
     def _dense(self): return len(list(self())) <= ws.dense_children_threshold 
     #P2: this causes a stack overflow: or self._length() <= ws.dense_str_len
 
@@ -75,6 +96,7 @@ class lookml(object):
         for item in self:
             if isinstance(item,type)\
                 and not isinstance(item, exclude_type)\
+                and (item._type() in self._allowed_children())\
                 and (True if not sub_type else item._type() == sub_type)\
                 and (True if not exclude_subtype else item._type() not in exclude_subtype):
                 yield item
@@ -84,22 +106,54 @@ class lookml(object):
         string = ''
         for item in data:
             string += str(item)
+        string = string + ' ' if len(data) > 0 else string
+        # string = string + ws.nl if len(data) > 0 else string
         return string
 
     def _type(self): return self.__class__.__name__.lower()
     def __len__(self): return len([i for i in self()])
     def _length(self): return len([str(i) for i in self()])
     def __bool__(self): return len(self) > 0
-    def _insert(self,key,value): self.__dict__.update( { key: prop_router( key, value, self ) } )
     def _json(self): return lkml.load(str(self))
+    def _insert(self,key,value):
+        #special top level namespace insertion for 'member classes', careful of filters keyword issues
+        if key in self._member_classes and self._type() not in props.cfg['filters'].keys():
+            for member in value:
+                self.__dict__.update(
+                    { member['name'] : classMap[key](member,self) }
+                )
+        #normal property insertion
+        elif key in self._allowed_children():
+            #step 1) instantiate the property
+            candidate = prop_router( key, value, self )
+            if self._add_hook(key, candidate):
+                self.__dict__.update( { key: candidate } )
+            
+        #special private attribute insertion, currently limited to 'name'
+        elif key == 'name':
+            self.__dict__.update( { key: value } )
+        #else, skip and throw an invalid property warning
+        else:
+            warnings.warn(
+                f'{key} skipped. {key} not a valid attribute of {self._type()} '
+                f'refer to: {self._conf()["docs_url"]}'
+                )
+    def _add_hook_type(self,candidate_prop):
+        # print(self.parent)
+        # print(candidate_prop)
+        return True
+    
 
-    def _add_hook(self):
-        #PO: add a hook for processing values as they are added
-        pass
+    def _add_hook(self, key, candidate_val):
+        callback = '_add_hook_' + key
+        func = getattr(self, callback, None)
+        if callable(func):
+            return func(candidate_val)
+        else:
+            return True
 
     def __add__(self,other):
         if isinstance(other,str):
-            # parsed = lkml.load(r)['views'][0]
             try:
                 # Handles the special case where lkml passes single object wrapped in a collection list
                 parsed = lkml.load(other)[self._type() + 's'][0]
@@ -110,40 +164,15 @@ class lookml(object):
             parsed = other
 
         for key,value in parsed.items():
-            is_plural = True if key[:-1] in props.plural_keys else False
+            is_plural = True if (key[:-1] in props.plural_keys) else False
             key = key[:-1] if is_plural else key
-
+            #special cases to treat as singular
             if self._type() in props.cfg['filters'].keys() and key == 'filter': 
                 key = key + 's'
             elif self._type() == 'explore_source' and key == 'bind_filter':
                 key = key + 's'
 
-            if isinstance(value,dict):
-                # Add dict type properties to the top level namespace
-                if key in self._allowed_children():
-                    self._insert(key,value)
-
-            if isinstance(value,list):
-                # Add members to the top level namespace
-                # if self._type() in props.cfg['filters'].keys() and key == 'filter':
-                # else:
-                if key in self._member_classes and self._type() not in props.cfg['filters'].keys():
-                    for member in value:
-                        self.__dict__.update(
-                            { member['name'] : classMap[key](member,self) }
-                        )
-                # Add list type properties
-                elif key in self._allowed_children():
-                    # self.__dict__.update( { key: prop_router( key, value, self ) } )
-                    self._insert(key,value)
-
-            if isinstance(value,str) and key in self._allowed_children():
-                # Add allowed atomic properties to the top level namespace
-                self._insert(key,value)
-
-            elif key == 'name':
-                # Add remaining private properties, such as name (currently limited to just name)
-                self.__dict__.update( { key: value } )
+            self._insert(key,value)
 
 class Field(lookml):
     def __str__(self):
@@ -157,12 +186,9 @@ class Field(lookml):
             )
 
     def __getattr__(self,key):
-        if key in self.__dict__.keys():
-            self.__dict__.__getitem__(key)
-        #P2: make this __ref__ structure fail for construct types, should only work for proper fields
 
         #full reference
-        elif key == '__ref__' and self._type() in props.field_types:
+        if key == '__ref__' and self._type() in props.field_types:
             if self.parent:
                 return ('${' + self.parent.name + '.' + self.name + '}')
         #Short Reference
@@ -190,8 +216,20 @@ class Field(lookml):
             if self.parent:
                 return (self.parent.name + '\.' + self.name)
         else:
-            return prop_router(key,'__default__', self)
-class Dimension(Field): pass
+            super().__getattr__(key)
+            #return prop_router(key,'__default__', self)
+
+class Dimension(Field):
+    def _add_hook_primary_key(self, candidate_prop):
+        if self.parent.__pk:
+            if candidate_prop:
+                raise DuplicatePrimaryKey( self.parent, self)
+            else:
+                self.parent.__pk = candidate_prop
+        else:
+            self.parent.__pk = candidate_prop
+            return True
+
 class Measure(Field): pass
 class Filter(Field): pass
 class Parameter(Field): pass
@@ -210,6 +248,11 @@ class Model(lookml):
                 return self.__getitem__(item)
             else:
                 return object.__getattr__(item)
+        def __str__(self):
+            tmp = ws.nl
+            for i in self.values():
+                tmp += (ws.nl + str(i))
+            return tmp
 
     def __init__(self,data):
         self.explores = self.dotdict()
@@ -242,24 +285,12 @@ class Model(lookml):
         elif key in self._allowed_children():
             return prop_router(key,'__default__', self)
 
-    def _s_views(self):
-        tmp = ws.nl
-        for v in self.views.values():
-            tmp += (ws.nl + str(v))
-        return tmp
-
-    def _s_explores(self):
-        tmp = ws.nl
-        for e in self.explores.values():
-            tmp += (ws.nl + str(e))
-        return tmp
-
     def __str__(self):
         return (
             f'{ self._s(sub_type="connection")}'
             f'{ self._s(exclude_subtype="connection") }'
-            f'{ self._s_views() }'
-            f'{ self._s_explores() }'
+            f'{ str(self.views) }'
+            f'{ str(self.explores) }'
         )
 
 class Explore(lookml):
@@ -290,6 +321,9 @@ class View(lookml):
         ,'filter'
         ,'parameter'
     ]
+    def __init__(self, data, parent=None):
+        self.__pk = None
+        super().__init__(data, parent)
 
     def _first_order_fields(self):
         '''
@@ -343,6 +377,7 @@ class prop_named_construct_single(Field):
         if key in self.__dict__.keys():
             self.__dict__.__getitem__(key)
     def __setattr__(self, key, value):
+        #P2: way to get arround this setattr manual exceptions?
         if key in ('_key','conf'):
             object.__setattr__(self, key, value)
         elif key in props._allowed_children[self._type()]:
@@ -435,12 +470,10 @@ class prop_anonymous_construct(prop):
     def _dense(self): return len(self.children) == 0
 
     def __str__(self):
-        # dense = True if self.parent._dense() else False
         dense = True if self.parent._dense() and self._dense() else False
         i = self.conf['indent']
         __ = ws.nl + (ws.s * i) if not dense else ws.s
         return f'''{__}{self.key}: {{ { self.print_children() } }}'''
-
 
 class prop_anonymous_construct_plural(prop): 
     def __init__(self, key, value, parent, conf={}):
@@ -562,7 +595,6 @@ class prop_options_quoted(prop_string):
         assert value in conf['allowed_values']
 
 class prop_expression(prop): pass
-
 class flt(object):
     def __init__(self,key,value):
         self.key, self.value = key, value

@@ -4,7 +4,7 @@ import lkml as lkml
 from pprint import pprint
 import file
 
-## TODO things to look into
+#P0: things to look into
 # model.connection
 # model.datagroup
 # model.include
@@ -40,4 +40,4 @@ class testModel(unittest.TestCase):
     assert join.type.value == 'left_outer'
     assert type(join.sql_on) == lookml.prop_sql
     assert join.sql_on.value == '${trip.from_station_id} = ${start_station.station_id}'
-    assert join.from == lookml.prop.string_unquoted
+    # assert join.from == lookml.prop.string_unquoted

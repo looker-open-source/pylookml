@@ -1,4 +1,4 @@
-import re
+import re, warnings
 class ws:
     #basic whitespace paramters
     s = '  '
@@ -37,7 +37,6 @@ def parse_references(inputString):
         fq = True if '.' in ''.join(match[1:]) else False
 
         yield {'raw':match[0],'field':result, 'fully_qualified_reference': fq }
-
 
 class props:
     cfg = {
@@ -5279,10 +5278,11 @@ class OperationError(Exception):
     def __init__(self, obj, operand, obj2):
         self.message = 'operation not supported' + str(type(obj)) + ' ' + str(operand) + ' ' + str(type(obj2))
         super().__init__(self.message)
-class InvalidLookMLAttribute(Exception):
+
+class DuplicatePrimaryKey(Exception):
     '''
-        Provides messaging when an attribute is attempted to be bound that does not exist
+        Provides messaging when a second primary key is attempted to be added
     '''
-    def __init__(self, attr, cl):
-        self.message = 'Attribute ' + str(attr) + ' not found for ' + str(type(cl)) 
+    def __init__(self, view, dim ):
+        self.message = f'A primary key cannot be added because one already exists'
         super().__init__(self.message)
