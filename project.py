@@ -5,6 +5,7 @@ import github
 import base64
 import requests
 import re
+import file
 
 def mkdir_force(dir):
     if not os.path.exists(dir):
@@ -105,7 +106,7 @@ class project:
         :return: a single lookml File
         :rtype: File
         '''
-        return lookml.File(self.repo.get_contents(path))
+        return file.File(self.repo.get_contents(path))
 
     def update(self,f):
         '''

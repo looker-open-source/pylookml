@@ -6,7 +6,7 @@
             "indent": 0,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/model/access_grant?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -17,7 +17,7 @@
             "indent": 0,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/model/case_sensitive?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "explore": {
@@ -26,7 +26,7 @@
             "indent": 1,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/case_sensitive?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension": {
@@ -35,7 +35,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/case_sensitive?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -44,7 +44,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/case_sensitive?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -55,7 +55,7 @@
             "indent": 0,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/model/connection?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -66,7 +66,7 @@
             "indent": 0,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/model/datagroup?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -77,7 +77,7 @@
             "indent": 0,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/model/explore?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -88,7 +88,7 @@
             "indent": 0,
             "default_value": "0",
             "docs_url": "https://looker.com/docs/r/lookml/types/model/fiscal_month_offset?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -99,7 +99,7 @@
             "indent": 0,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/model/include?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -110,7 +110,7 @@
             "indent": 0,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/model/label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "view": {
@@ -119,7 +119,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/view/label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "explore": {
@@ -128,7 +128,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension": {
@@ -137,7 +137,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -146,7 +146,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -155,7 +155,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -164,7 +164,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -173,16 +173,16 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "query": {
             "type": "string",
             "subtype": "possibly-localized-string",
-            "indent": 4,
+            "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/query/label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "application": {
@@ -191,16 +191,16 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/application/label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "visualization": {
             "type": "string",
             "subtype": "possibly-localized-string",
-            "indent": 1,
+            "indent": 3,
             "default_value": "",
-            "docs_url": "https://looker.com/docs/r/lookml/types/visualization/label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "docs_url": "https://docs.looker.com/reference/manifest-params/visualization?version=7.18&lookml=new",
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "action": {
@@ -209,7 +209,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/action/label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "form_param": {
@@ -218,7 +218,7 @@
             "indent": 4,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/form_param/label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "option": {
@@ -227,7 +227,7 @@
             "indent": 5,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/option/label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "map_layer": {
@@ -236,7 +236,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/map_layer/label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "datagroup": {
@@ -245,7 +245,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/datagroup/label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "when": {
@@ -254,7 +254,7 @@
             "indent": 5,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/case/when?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "link": {
@@ -263,7 +263,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://docs.looker.com/reference/field-params/link?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -274,7 +274,7 @@
             "indent": 0,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/model/map_layer?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -285,7 +285,7 @@
             "indent": 0,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/model/named_value_format?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -296,7 +296,7 @@
             "indent": 0,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/model/persist_for?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "explore": {
@@ -305,7 +305,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/persist_for?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "derived_table": {
@@ -314,7 +314,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/derived_table/persist_for?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "materialization": {
@@ -323,7 +323,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/materialization/persist_for?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -334,7 +334,7 @@
             "indent": 0,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/model/persist_with?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "explore": {
@@ -343,7 +343,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/persist_with?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -354,7 +354,7 @@
             "indent": 0,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/model/test?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -365,7 +365,7 @@
             "indent": 0,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/model/view?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -376,7 +376,7 @@
             "indent": 0,
             "default_value": "monday",
             "docs_url": "https://looker.com/docs/r/lookml/types/model/week_start_day?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "monday",
                 "tuesday",
@@ -395,7 +395,7 @@
             "indent": 0,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/manifest/local_dependency?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -406,7 +406,7 @@
             "indent": 0,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/manifest/remote_dependency?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -417,7 +417,7 @@
             "indent": 0,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/manifest/localization_settings?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -428,18 +428,18 @@
             "indent": 0,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/manifest/project_name?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
     "constant": {
         "manifest": {
-            "type": "string_unquoted",
+            "type": "named_construct",
             "subtype": "constant-ref",
             "indent": 0,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/manifest/constant?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -450,7 +450,7 @@
             "indent": 0,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/manifest/application?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -461,7 +461,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/view/dimension?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -472,7 +472,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/view/dimension_group?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -483,7 +483,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/view/drill_fields?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension": {
@@ -492,7 +492,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/drill_fields?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -501,7 +501,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/drill_fields?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -510,7 +510,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/drill_fields?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -521,7 +521,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/view/extends?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "explore": {
@@ -530,7 +530,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/extends?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -541,7 +541,7 @@
             "indent": 1,
             "default_value": "required",
             "docs_url": "https://looker.com/docs/r/lookml/types/view/extension?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "required"
             ]
@@ -552,7 +552,7 @@
             "indent": 1,
             "default_value": "required",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/extension?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "required"
             ]
@@ -565,7 +565,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/view/filter?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -576,7 +576,7 @@
             "indent": 1,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/view/final?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "explore": {
@@ -585,7 +585,7 @@
             "indent": 1,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/final?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -596,7 +596,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/view/measure?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -607,7 +607,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/view/parameter?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -618,7 +618,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/view/derived_table?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -629,7 +629,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/view/required_access_grants?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "explore": {
@@ -638,7 +638,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/required_access_grants?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension": {
@@ -647,7 +647,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/required_access_grants?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -656,7 +656,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/required_access_grants?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -665,7 +665,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/required_access_grants?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -674,7 +674,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/required_access_grants?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -683,7 +683,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/required_access_grants?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "join": {
@@ -692,7 +692,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/join/required_access_grants?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -703,7 +703,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/view/set?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -714,7 +714,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/view/sql_table_name?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "explore": {
@@ -723,7 +723,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/sql_table_name?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "join": {
@@ -732,7 +732,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/join/sql_table_name?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -743,7 +743,7 @@
             "indent": 1,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/view/suggestions?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension": {
@@ -752,7 +752,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/suggestions?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -761,7 +761,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/suggestions?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -770,7 +770,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/suggestions?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -781,7 +781,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/view/view_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "explore": {
@@ -790,7 +790,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/view_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension": {
@@ -799,7 +799,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/view_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -808,7 +808,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/view_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -817,7 +817,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/view_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -826,7 +826,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/view_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -835,7 +835,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/view_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "join": {
@@ -844,7 +844,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/join/view_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -855,18 +855,18 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/access_filter?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
     "aggregate_table": {
         "explore": {
-            "type": "named_construct_single",
+            "type": "named_construct",
             "subtype": "identifier",
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/aggregate_table?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -877,7 +877,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/always_filter?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -888,7 +888,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/always_join?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -899,7 +899,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/cancel_grouping_fields?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -910,7 +910,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/conditionally_filter?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -921,7 +921,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/description?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension": {
@@ -930,7 +930,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/description?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -939,7 +939,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/description?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -948,7 +948,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/description?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -957,7 +957,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/description?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -966,16 +966,16 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/description?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "query": {
             "type": "string",
             "subtype": "possibly-localized-string",
-            "indent": 4,
+            "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/query/description?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "form_param": {
@@ -984,7 +984,7 @@
             "indent": 4,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/form_param/description?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "datagroup": {
@@ -993,7 +993,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/datagroup/description?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1004,7 +1004,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/group_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension": {
@@ -1013,7 +1013,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/group_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -1022,7 +1022,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/group_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -1031,7 +1031,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/group_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -1040,7 +1040,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/group_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -1049,16 +1049,16 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/group_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "query": {
             "type": "string",
             "subtype": "possibly-localized-string",
-            "indent": 4,
+            "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/query/group_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1069,7 +1069,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/from?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "join": {
@@ -1078,7 +1078,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/join/from?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1089,7 +1089,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/fields?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "join": {
@@ -1098,7 +1098,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/join/fields?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "set": {
@@ -1107,7 +1107,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/set/fields?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1118,7 +1118,7 @@
             "indent": 1,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/hidden?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension": {
@@ -1127,7 +1127,7 @@
             "indent": 2,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/hidden?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -1136,7 +1136,7 @@
             "indent": 2,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/hidden?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -1145,7 +1145,7 @@
             "indent": 2,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/hidden?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -1154,7 +1154,7 @@
             "indent": 2,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/hidden?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -1163,7 +1163,7 @@
             "indent": 2,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/hidden?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1174,7 +1174,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/join?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1185,7 +1185,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/sql_always_where?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1196,7 +1196,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/sql_always_having?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1207,7 +1207,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/tags?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension": {
@@ -1216,7 +1216,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/tags?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -1225,7 +1225,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/tags?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -1234,7 +1234,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/tags?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -1243,7 +1243,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/tags?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -1252,7 +1252,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/tags?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1263,7 +1263,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore/view_name?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1274,7 +1274,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/action?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -1283,7 +1283,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/action?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1294,7 +1294,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/allow_fill?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -1303,7 +1303,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/allow_fill?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1314,7 +1314,7 @@
             "indent": 2,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/alpha_sort?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1325,7 +1325,7 @@
             "indent": 2,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/bypass_suggest_restrictions?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -1334,7 +1334,7 @@
             "indent": 2,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/bypass_suggest_restrictions?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -1343,7 +1343,7 @@
             "indent": 2,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/bypass_suggest_restrictions?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -1352,7 +1352,7 @@
             "indent": 2,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/bypass_suggest_restrictions?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1363,7 +1363,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/can_filter?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -1372,7 +1372,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/can_filter?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -1381,7 +1381,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/can_filter?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1392,7 +1392,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/case?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1403,7 +1403,7 @@
             "indent": 2,
             "default_value": "timestamp",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/datatype?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "timestamp",
                 "epoch",
@@ -1419,7 +1419,7 @@
             "indent": 2,
             "default_value": "timestamp",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/datatype?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "timestamp",
                 "epoch",
@@ -1435,7 +1435,7 @@
             "indent": 2,
             "default_value": "timestamp",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/datatype?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "timestamp",
                 "epoch",
@@ -1451,7 +1451,7 @@
             "indent": 2,
             "default_value": "timestamp",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/datatype?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "timestamp",
                 "epoch",
@@ -1469,7 +1469,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/end_location_field?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1480,7 +1480,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/fanout_on?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -1489,7 +1489,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/fanout_on?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -1498,7 +1498,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/fanout_on?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1509,7 +1509,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/full_suggestions?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -1518,7 +1518,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/full_suggestions?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -1527,7 +1527,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/full_suggestions?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -1536,7 +1536,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/full_suggestions?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1547,7 +1547,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/group_item_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -1556,7 +1556,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/group_item_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -1565,7 +1565,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/group_item_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -1574,7 +1574,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/group_item_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -1583,7 +1583,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/group_item_label?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1594,7 +1594,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/html?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -1603,7 +1603,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/html?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -1612,7 +1612,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/html?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1623,7 +1623,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/label_from_parameter?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -1632,7 +1632,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/label_from_parameter?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1643,7 +1643,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/link?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -1652,7 +1652,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/link?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1663,7 +1663,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/map_layer_name?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1674,7 +1674,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/order_by_field?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -1683,7 +1683,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/order_by_field?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -1692,7 +1692,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/order_by_field?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1703,7 +1703,7 @@
             "indent": 2,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/primary_key?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1714,7 +1714,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/required_fields?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -1723,7 +1723,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/required_fields?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -1732,7 +1732,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/required_fields?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -1741,7 +1741,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/required_fields?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1752,7 +1752,7 @@
             "indent": 2,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/skip_drill_filter?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -1761,7 +1761,7 @@
             "indent": 2,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/skip_drill_filter?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1772,7 +1772,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/start_location_field?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1783,7 +1783,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/suggest_persist_for?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -1792,7 +1792,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/suggest_persist_for?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -1801,7 +1801,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/suggest_persist_for?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1812,7 +1812,7 @@
             "indent": 2,
             "default_value": "classic",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/style?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "classic",
                 "interval",
@@ -1828,7 +1828,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/sql?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -1837,7 +1837,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/sql?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -1846,7 +1846,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/sql?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -1855,7 +1855,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/sql?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "derived_table": {
@@ -1864,7 +1864,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/derived_table/sql?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "join": {
@@ -1873,7 +1873,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/join/sql?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "derived_column": {
@@ -1882,7 +1882,7 @@
             "indent": 5,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/derived_column/sql?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "when": {
@@ -1891,7 +1891,7 @@
             "indent": 5,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/case/when?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1902,7 +1902,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/sql_end?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -1911,7 +1911,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/sql_end?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1922,7 +1922,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/sql_start?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -1931,7 +1931,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/sql_start?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1942,7 +1942,7 @@
             "indent": 2,
             "default_value": [],
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/tiers?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1953,7 +1953,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/sql_longitude?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1964,7 +1964,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/sql_latitude?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -1975,7 +1975,7 @@
             "indent": 2,
             "default_value": "unicode",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/string_datatype?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "unicode"
             ]
@@ -1988,7 +1988,7 @@
             "indent": 2,
             "default_value": "kilometers",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/units?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "feet",
                 "kilometers",
@@ -2006,7 +2006,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/value_format?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -2015,7 +2015,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/value_format?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "named_value_format": {
@@ -2024,7 +2024,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/named_value_format/value_format?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2035,7 +2035,7 @@
             "indent": 2,
             "default_value": "decimal_0",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/value_format_name?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -2044,7 +2044,7 @@
             "indent": 2,
             "default_value": "decimal_0",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/value_format_name?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2055,7 +2055,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/alias?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -2064,7 +2064,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/alias?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -2073,7 +2073,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/alias?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -2082,7 +2082,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/alias?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -2091,7 +2091,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/alias?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2102,7 +2102,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/convert_tz?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -2111,7 +2111,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/convert_tz?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -2120,7 +2120,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/convert_tz?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -2129,7 +2129,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/convert_tz?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -2138,7 +2138,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/convert_tz?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2149,7 +2149,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/suggestable?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -2158,7 +2158,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/suggestable?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -2167,7 +2167,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/suggestable?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -2176,7 +2176,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/suggestable?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -2185,7 +2185,7 @@
             "indent": 2,
             "default_value": "yes",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/suggestable?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2196,7 +2196,7 @@
             "indent": 2,
             "default_value": "string",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/type?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "date",
                 "distance",
@@ -2277,7 +2277,7 @@
             "indent": 2,
             "default_value": "count",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/type?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "average",
                 "average_distinct",
@@ -2365,7 +2365,7 @@
             "indent": 2,
             "default_value": "time",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/type?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "duration",
                 "time"
@@ -2377,7 +2377,7 @@
             "indent": 2,
             "default_value": "string",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/type?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "date",
                 "distance",
@@ -2458,7 +2458,7 @@
             "indent": 2,
             "default_value": "string",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/type?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "date",
                 "date_time",
@@ -2474,7 +2474,7 @@
             "indent": 3,
             "default_value": "left_outer",
             "docs_url": "https://looker.com/docs/r/lookml/types/join/type?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "cross",
                 "full_outer",
@@ -2488,7 +2488,7 @@
             "indent": 4,
             "default_value": "textarea",
             "docs_url": "https://looker.com/docs/r/lookml/types/form_param/type?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "select",
                 "string",
@@ -2503,7 +2503,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/suggest_dimension?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -2512,7 +2512,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/suggest_dimension?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -2521,7 +2521,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/suggest_dimension?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -2530,7 +2530,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/suggest_dimension?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -2539,7 +2539,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/suggest_dimension?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2550,7 +2550,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension/suggest_explore?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "measure": {
@@ -2559,7 +2559,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/suggest_explore?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "dimension_group": {
@@ -2568,7 +2568,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/suggest_explore?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "filter": {
@@ -2577,7 +2577,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/suggest_explore?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -2586,7 +2586,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/suggest_explore?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2597,7 +2597,7 @@
             "indent": 2,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/approximate?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2608,7 +2608,7 @@
             "indent": 2,
             "default_value": "100000",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/approximate_threshold?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2619,7 +2619,7 @@
             "indent": 2,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/allow_approximate_optimization?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2630,7 +2630,7 @@
             "indent": 2,
             "default_value": "row",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/direction?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "row",
                 "column"
@@ -2644,7 +2644,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/filters?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "explore_source": {
@@ -2653,16 +2653,16 @@
             "indent": 4,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore_source/filters?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "query": {
             "type": "filters",
             "subtype": "identifier",
-            "indent": 4,
+            "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/query/filters?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2673,7 +2673,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/list_field?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2684,7 +2684,7 @@
             "indent": 2,
             "default_value": "75",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/percentile?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2695,7 +2695,7 @@
             "indent": 2,
             "default_value": "6",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/precision?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2706,7 +2706,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/measure/sql_distinct_key?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2717,7 +2717,7 @@
             "indent": 2,
             "default_value": "day",
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/intervals?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "day",
                 "hour",
@@ -2741,7 +2741,7 @@
                 "raw"
             ],
             "docs_url": "https://looker.com/docs/r/lookml/types/dimension_group/timeframes?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "date",
                 "day_of_month",
@@ -2810,7 +2810,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/filter/default_value?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "parameter": {
@@ -2819,7 +2819,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/default_value?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2830,7 +2830,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/parameter/allowed_value?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2841,7 +2841,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/derived_table/cluster_keys?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2852,7 +2852,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/derived_table/create_process?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2863,7 +2863,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/derived_table/datagroup_trigger?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "materialization": {
@@ -2872,7 +2872,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/materialization/datagroup_trigger?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2883,7 +2883,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/derived_table/distribution?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2894,7 +2894,7 @@
             "indent": 3,
             "default_value": "even",
             "docs_url": "https://looker.com/docs/r/lookml/types/derived_table/distribution_style?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "all",
                 "even"
@@ -2908,7 +2908,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/derived_table/explore_source?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "test": {
@@ -2917,7 +2917,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/test/explore_source?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2928,7 +2928,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/derived_table/indexes?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2939,7 +2939,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/derived_table/partition_keys?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2950,7 +2950,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/derived_table/sortkeys?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2961,7 +2961,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/derived_table/sql_create?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2972,7 +2972,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/derived_table/sql_trigger_value?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "materialization": {
@@ -2981,7 +2981,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/materialization/sql_trigger_value?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -2992,7 +2992,7 @@
             "indent": 3,
             "default_value": "GZIP",
             "docs_url": "https://looker.com/docs/r/lookml/types/derived_table/table_compression?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "GZIP",
                 "SNAPPY"
@@ -3006,7 +3006,7 @@
             "indent": 3,
             "default_value": "PARQUET",
             "docs_url": "https://looker.com/docs/r/lookml/types/derived_table/table_format?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "PARQUET",
                 "ORC",
@@ -3023,7 +3023,7 @@
             "indent": 3,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/derived_table/publish_as_db_view?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -3034,7 +3034,7 @@
             "indent": 4,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore_source/expression_custom_filter?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -3045,16 +3045,16 @@
             "indent": 4,
             "default_value": "5000",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore_source/limit?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "query": {
             "type": "string_unquoted",
             "subtype": "number",
-            "indent": 4,
+            "indent": 3,
             "default_value": "5000",
             "docs_url": "https://looker.com/docs/r/lookml/types/query/limit?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -3065,7 +3065,7 @@
             "indent": 4,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore_source/column?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -3076,7 +3076,7 @@
             "indent": 4,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore_source/derived_column?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -3087,7 +3087,7 @@
             "indent": 4,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore_source/bind_all_filters?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -3098,7 +3098,7 @@
             "indent": 4,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore_source/bind_filters?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -3109,16 +3109,16 @@
             "indent": 4,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore_source/sorts?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "query": {
             "type": "sorts",
             "subtype": "field-ref-to-sort-map",
-            "indent": 4,
+            "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/query/sorts?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -3129,7 +3129,7 @@
             "indent": 4,
             "default_value": "America/Los_Angeles",
             "docs_url": "https://looker.com/docs/r/lookml/types/explore_source/timezone?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "Africa/Abidjan",
                 "Africa/Accra",
@@ -3699,10 +3699,10 @@
         "query": {
             "type": "options",
             "subtype": "options",
-            "indent": 4,
+            "indent": 3,
             "default_value": "America/Los_Angeles",
             "docs_url": "https://looker.com/docs/r/lookml/types/query/timezone?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "Africa/Abidjan",
                 "Africa/Accra",
@@ -4277,7 +4277,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/join/foreign_key?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4288,7 +4288,7 @@
             "indent": 3,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/join/outer_only?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4299,7 +4299,7 @@
             "indent": 3,
             "default_value": "many_to_one",
             "docs_url": "https://looker.com/docs/r/lookml/types/join/relationship?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "many_to_one",
                 "many_to_many",
@@ -4315,7 +4315,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/join/required_joins?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4326,7 +4326,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/join/sql_foreign_key?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4337,7 +4337,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/join/sql_on?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4348,7 +4348,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/join/sql_where?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4356,10 +4356,10 @@
         "aggregate_table": {
             "type": "anonymous_construct",
             "subtype": "anonymous_construct",
-            "indent": 3,
+            "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/aggregate_table/query?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4367,10 +4367,10 @@
         "aggregate_table": {
             "type": "anonymous_construct",
             "subtype": "anonymous_construct",
-            "indent": 3,
+            "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/aggregate_table/materialization?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4378,10 +4378,10 @@
         "query": {
             "type": "list_unquoted",
             "subtype": "field-ref",
-            "indent": 4,
+            "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/query/dimensions?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4389,10 +4389,10 @@
         "query": {
             "type": "list_unquoted",
             "subtype": "field-ref",
-            "indent": 4,
+            "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/query/measures?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4400,10 +4400,10 @@
         "query": {
             "type": "list_unquoted",
             "subtype": "field-ref",
-            "indent": 4,
+            "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/query/pivots?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4414,16 +4414,16 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/application/url?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "visualization": {
             "type": "string",
             "subtype": "string",
-            "indent": 1,
+            "indent": 3,
             "default_value": "",
-            "docs_url": "https://looker.com/docs/r/lookml/types/visualization/url?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "docs_url": "https://docs.looker.com/reference/manifest-params/visualization?version=7.18&lookml=new",
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "action": {
@@ -4432,7 +4432,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/action/url?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "map_layer": {
@@ -4441,7 +4441,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/map_layer/url?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "remote_dependency": {
@@ -4450,7 +4450,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/manifest/remote_dependency?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "link": {
@@ -4459,7 +4459,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://docs.looker.com/reference/field-params/link?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4470,16 +4470,16 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/application/file?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "visualization": {
             "type": "string",
             "subtype": "string",
-            "indent": 1,
+            "indent": 3,
             "default_value": "",
-            "docs_url": "https://looker.com/docs/r/lookml/types/visualization/file?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "docs_url": "https://docs.looker.com/reference/manifest-params/visualization?version=7.18&lookml=new",
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "map_layer": {
@@ -4488,7 +4488,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/map_layer/file?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4499,7 +4499,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/application/entitlements?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4510,7 +4510,7 @@
             "indent": 3,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/entitlements/local_storage?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4521,7 +4521,7 @@
             "indent": 3,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/entitlements/navigation?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4532,7 +4532,7 @@
             "indent": 3,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/entitlements/new_window?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4543,7 +4543,7 @@
             "indent": 3,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/entitlements/allow_forms?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4554,7 +4554,7 @@
             "indent": 3,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/entitlements/allow_same_origin?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4565,7 +4565,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/entitlements/core_api_methods?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4576,7 +4576,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/entitlements/external_api_urls?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4587,7 +4587,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/entitlements/oauth2_urls?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4598,7 +4598,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/entitlements/global_user_attributes?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4609,7 +4609,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/entitlements/scoped_user_attributes?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4617,10 +4617,10 @@
         "visualization": {
             "type": "string",
             "subtype": "string",
-            "indent": 1,
+            "indent": 3,
             "default_value": "",
-            "docs_url": "https://looker.com/docs/r/lookml/types/visualization/id?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "docs_url": "https://docs.looker.com/reference/manifest-params/visualization?version=7.18&lookml=new",
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4628,10 +4628,10 @@
         "visualization": {
             "type": "string",
             "subtype": "string",
-            "indent": 1,
+            "indent": 3,
             "default_value": "",
-            "docs_url": "https://looker.com/docs/r/lookml/types/visualization/sri_hash?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "docs_url": "https://docs.looker.com/reference/manifest-params/visualization?version=7.18&lookml=new",
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4639,10 +4639,10 @@
         "visualization": {
             "type": "list_quoted",
             "subtype": "list_quoted",
-            "indent": 1,
+            "indent": 3,
             "default_value": "",
-            "docs_url": "https://looker.com/docs/r/lookml/types/visualization/dependencies?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "docs_url": "https://docs.looker.com/reference/manifest-params/visualization?version=7.18&lookml=new",
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4653,7 +4653,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/action/icon_url?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "link": {
@@ -4662,7 +4662,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://docs.looker.com/reference/field-params/link?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4673,7 +4673,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/action/form_url?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4684,7 +4684,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/action/param?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4695,7 +4695,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/action/form_param?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4706,7 +4706,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/action/user_attribute_param?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4717,7 +4717,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/form_param/name?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "option": {
@@ -4726,7 +4726,7 @@
             "indent": 5,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/option/name?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "param": {
@@ -4735,7 +4735,7 @@
             "indent": 4,
             "default_value": "",
             "docs_url": "https://docs.looker.com/reference/field-params/action?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "user_attribute_param": {
@@ -4744,7 +4744,7 @@
             "indent": 4,
             "default_value": "",
             "docs_url": "https://docs.looker.com/reference/field-params/action?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4755,7 +4755,7 @@
             "indent": 4,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/form_param/option?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4766,7 +4766,7 @@
             "indent": 4,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/form_param/required?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4777,7 +4777,7 @@
             "indent": 4,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/form_param/default?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4788,7 +4788,7 @@
             "indent": 4,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/case/when?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4799,7 +4799,7 @@
             "indent": 4,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/case/else?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4810,7 +4810,7 @@
             "indent": 5,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/column/field?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4821,7 +4821,7 @@
             "indent": 4,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/bind_filters/from_field?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4832,7 +4832,7 @@
             "indent": 4,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/bind_filters/to_field?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4843,7 +4843,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/map_layer/extents_json_url?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4854,7 +4854,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/map_layer/feature_key?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4865,7 +4865,7 @@
             "indent": 1,
             "default_value": "topojson",
             "docs_url": "https://looker.com/docs/r/lookml/types/map_layer/format?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "topojson",
                 "vector_tile_region"
@@ -4879,7 +4879,7 @@
             "indent": 1,
             "default_value": "12",
             "docs_url": "https://looker.com/docs/r/lookml/types/map_layer/max_zoom_level?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4890,7 +4890,7 @@
             "indent": 1,
             "default_value": "2",
             "docs_url": "https://looker.com/docs/r/lookml/types/map_layer/min_zoom_level?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -4901,7 +4901,7 @@
             "indent": 1,
             "default_value": "airy",
             "docs_url": "https://looker.com/docs/r/lookml/types/map_layer/projection?version=7.14&lookml=new",
-            "has_allowed_values": true,
+            "has_allowed_values": True,
             "allowed_values": [
                 "airy",
                 "aitoff",
@@ -4998,7 +4998,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/map_layer/property_key?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -5009,7 +5009,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/map_layer/property_label_key?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -5020,7 +5020,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/test/assert?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -5031,7 +5031,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/datagroup/max_cache_age?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -5042,7 +5042,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/datagroup/sql_trigger?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -5053,7 +5053,7 @@
             "indent": 1,
             "default_value": "no",
             "docs_url": "https://looker.com/docs/r/lookml/types/named_value_format/strict_value_format?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -5064,7 +5064,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/access_grant/allowed_values?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -5075,7 +5075,7 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/access_grant/user_attribute?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "user_attribute_param": {
@@ -5084,7 +5084,7 @@
             "indent": 4,
             "default_value": "",
             "docs_url": "https://docs.looker.com/reference/field-params/action?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -5095,7 +5095,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://docs.looker.com/reference/view-params/create_process?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -5106,18 +5106,18 @@
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/manifest/remote_dependency?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
     "override_constant": {
         "remote_dependency": {
-            "type": "string_unquoted",
+            "type": "named_construct",
             "subtype": "constant-ref",
             "indent": 1,
             "default_value": "",
             "docs_url": "https://looker.com/docs/r/lookml/types/manifest/remote_dependency?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -5128,7 +5128,7 @@
             "indent": 2,
             "default_value": "",
             "docs_url": "https://docs.looker.com/data-modeling/learning-lookml/importing-projects?version=7.14&lookml=new#passing_constants_between_projects",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         },
         "param": {
@@ -5137,7 +5137,7 @@
             "indent": 4,
             "default_value": "",
             "docs_url": "https://docs.looker.com/reference/field-params/action?version=7.14&lookml=new",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -5148,7 +5148,7 @@
             "indent": 3,
             "default_value": "",
             "docs_url": "https://docs.looker.com/reference/manifest-params/application?version=7.18&lookml=new#new_window",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -5159,7 +5159,7 @@
             "indent": 3,
             "default_value": "no",
             "docs_url": "https://docs.looker.com/reference/manifest-params/application?version=7.18&lookml=new#use_form_submit",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     },
@@ -5170,7 +5170,44 @@
             "indent": 3,
             "default_value": "no",
             "docs_url": "https://docs.looker.com/reference/manifest-params/application?version=7.18&lookml=new#use_embeds",
-            "has_allowed_values": false,
+            "has_allowed_values": False,
+            "allowed_values": ""
+        }
+    },
+    "project": {
+        "local_dependency": {
+            "type": "string",
+            "subtype": "string",
+            "indent": 2,
+            "default_value": "",
+            "docs_url": "https://looker.com/docs/r/lookml/types/manifest/local_dependency?version=7.14&lookml=new",
+            "has_allowed_values": False,
+            "allowed_values": ""
+        }
+    },
+    "export": {
+        "constant": {
+            "type": "options",
+            "subtype": "string",
+            "indent": 2,
+            "default_value": "none",
+            "docs_url": "https://docs.looker.com/reference/manifest-params/constant?version=7.14&lookml=new#using_export_in_imported_projects",
+            "has_allowed_values": True,
+            "allowed_values": [
+                "none",
+                "override_required",
+                "override_optional"
+            ]
+        }
+    },
+    "visualization": {
+        "manifest": {
+            "type": "named_construct",
+            "subtype": "string",
+            "indent": 1,
+            "default_value": "",
+            "docs_url": "https://docs.looker.com/reference/manifest-params/visualization?version=7.18&lookml=new",
+            "has_allowed_values": False,
             "allowed_values": ""
         }
     }

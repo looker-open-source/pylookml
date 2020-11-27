@@ -1,11 +1,10 @@
 import lookml, lkml
 from lang import ws
 import github
-import re, os, shutil, copy
+import re, os, shutil, copy, base64
  
 
 #P0: Finish defining new granular file types
-#P0: Lookml "container" (or detached model...) for generic file types? need to support props + explores + views
 '''
 Factory Function:
     routes / existing instances or New()
@@ -59,6 +58,18 @@ class baseFile(object):
                 with open(self.path, 'w') as opened_file:
                     opened_file.write(self.__str__())
 
+
+# #Set Basic Attributes
+# self.name = f._rawData['name']
+# self.sha = f._rawData['sha']
+# self.base_name = self.name.replace(".model.lkml", "").replace(".explore.lkml", "").replace(".view.lkml", "")
+# self.path = f._rawData['path']
+# #Parse Step: Github content is returned base64 encoded
+# data = base64.b64decode(f.content).decode('ascii')
+# self.json_data = lkml.load(data)
+
+
+
 class lkmlFile(baseFile):
     def __init__(self,path='',name=''):
         self.name = name
@@ -74,6 +85,35 @@ class lkmlFile(baseFile):
             return object.__getattr__(item)
 
     def __str__(self): return str(self.contents)
+
+class testClassgithub(baseFile):
+    def __init__(self,f):
+        self.name = f._rawData['name']
+        self.path = f._rawData['path']
+        self.sha = f._rawData['sha']
+# self.name = f._rawData['name']
+# self.sha = f._rawData['sha']
+# self.base_name = self.name.replace(".model.lkml", "").replace(".explore.lkml", "").replace(".view.lkml", "")
+# self.path = f._rawData['path']
+# #Parse Step: Github content is returned base64 encoded
+# data = base64.b64decode(f.content).decode('ascii')
+# self.json_data = lkml.load(data)
+        data = base64.b64decode(f.content).decode('ascii')
+        self.contents = lookml.Model(lkml.load(data))
+
+
+        
+
+    def __getattr__(self,item):
+        if item in self.__dict__.keys():
+            return self.__dict__[item]
+        elif item in self.contents.__dict__.keys():
+            return self.contents.__dict__[item]
+        else:
+            return object.__getattr__(item)
+
+    def __str__(self): return str(self.contents)
+
 
 class mnfstFile(lkmlFile):
     def __init__(self,path='',name=''):
@@ -351,3 +391,6 @@ def File(f):
             return mnfstFile(f)
         else:
             return baseFileOld(f)
+
+    elif isinstance(f,github.ContentFile.ContentFile):
+        return testClassgithub(f)
