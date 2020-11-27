@@ -56,10 +56,10 @@ view: basic {
       icon_url: "https://looker.com/favicon.ico"
       form_url: "https://beeceptor.com/post"
     
-      #param: {
-      #  name: "foo"
-      #  value: "bar"
-      #}
+      param: {
+        name: "foo"
+        value: "bar"
+      }
       form_param: {
         name: "my form param"
         type: select

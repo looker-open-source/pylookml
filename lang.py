@@ -238,9 +238,9 @@ class props:
             "visualization": {
                 "type": "string",
                 "subtype": "possibly-localized-string",
-                "indent": 1,
+                "indent": 3,
                 "default_value": "",
-                "docs_url": "https://looker.com/docs/r/lookml/types/visualization/label?version=7.14&lookml=new",
+                "docs_url": "https://docs.looker.com/reference/manifest-params/visualization?version=7.18&lookml=new",
                 "has_allowed_values": False,
                 "allowed_values": ""
             },
@@ -299,6 +299,15 @@ class props:
                 "allowed_values": ""
             },
             "link": {
+                "type": "string",
+                "subtype": "string",
+                "indent": 3,
+                "default_value": "",
+                "docs_url": "https://docs.looker.com/reference/field-params/link?version=7.14&lookml=new",
+                "has_allowed_values": False,
+                "allowed_values": ""
+            },
+            "allowed_value": {
                 "type": "string",
                 "subtype": "string",
                 "indent": 3,
@@ -475,7 +484,7 @@ class props:
         },
         "constant": {
             "manifest": {
-                "type": "string_unquoted",
+                "type": "named_construct",
                 "subtype": "constant-ref",
                 "indent": 0,
                 "default_value": "",
@@ -4461,9 +4470,9 @@ class props:
             "visualization": {
                 "type": "string",
                 "subtype": "string",
-                "indent": 1,
+                "indent": 3,
                 "default_value": "",
-                "docs_url": "https://looker.com/docs/r/lookml/types/visualization/url?version=7.14&lookml=new",
+                "docs_url": "https://docs.looker.com/reference/manifest-params/visualization?version=7.18&lookml=new",
                 "has_allowed_values": False,
                 "allowed_values": ""
             },
@@ -4517,9 +4526,9 @@ class props:
             "visualization": {
                 "type": "string",
                 "subtype": "string",
-                "indent": 1,
+                "indent": 3,
                 "default_value": "",
-                "docs_url": "https://looker.com/docs/r/lookml/types/visualization/file?version=7.14&lookml=new",
+                "docs_url": "https://docs.looker.com/reference/manifest-params/visualization?version=7.18&lookml=new",
                 "has_allowed_values": False,
                 "allowed_values": ""
             },
@@ -4658,9 +4667,9 @@ class props:
             "visualization": {
                 "type": "string",
                 "subtype": "string",
-                "indent": 1,
+                "indent": 3,
                 "default_value": "",
-                "docs_url": "https://looker.com/docs/r/lookml/types/visualization/id?version=7.14&lookml=new",
+                "docs_url": "https://docs.looker.com/reference/manifest-params/visualization?version=7.18&lookml=new",
                 "has_allowed_values": False,
                 "allowed_values": ""
             }
@@ -4669,9 +4678,9 @@ class props:
             "visualization": {
                 "type": "string",
                 "subtype": "string",
-                "indent": 1,
+                "indent": 3,
                 "default_value": "",
-                "docs_url": "https://looker.com/docs/r/lookml/types/visualization/sri_hash?version=7.14&lookml=new",
+                "docs_url": "https://docs.looker.com/reference/manifest-params/visualization?version=7.18&lookml=new",
                 "has_allowed_values": False,
                 "allowed_values": ""
             }
@@ -4680,9 +4689,9 @@ class props:
             "visualization": {
                 "type": "list_quoted",
                 "subtype": "list_quoted",
-                "indent": 1,
+                "indent": 3,
                 "default_value": "",
-                "docs_url": "https://looker.com/docs/r/lookml/types/visualization/dependencies?version=7.14&lookml=new",
+                "docs_url": "https://docs.looker.com/reference/manifest-params/visualization?version=7.18&lookml=new",
                 "has_allowed_values": False,
                 "allowed_values": ""
             }
@@ -4720,7 +4729,7 @@ class props:
         },
         "param": {
             "action": {
-                "type": "anonymous_construct",
+                "type": "anonymous_construct_plural",
                 "subtype": "anonymous_construct",
                 "indent": 3,
                 "default_value": "",
@@ -5153,7 +5162,7 @@ class props:
         },
         "override_constant": {
             "remote_dependency": {
-                "type": "string_unquoted",
+                "type": "named_construct",
                 "subtype": "constant-ref",
                 "indent": 1,
                 "default_value": "",
@@ -5172,12 +5181,30 @@ class props:
                 "has_allowed_values": False,
                 "allowed_values": ""
             },
+            "constant": {
+                "type": "string",
+                "subtype": "string",
+                "indent": 2,
+                "default_value": "",
+                "docs_url": "https://docs.looker.com/data-modeling/learning-lookml/importing-projects?version=7.14&lookml=new#passing_constants_between_projects",
+                "has_allowed_values": False,
+                "allowed_values": ""
+            },
             "param": {
                 "type": "string",
                 "subtype": "string",
                 "indent": 4,
                 "default_value": "",
                 "docs_url": "https://docs.looker.com/reference/field-params/action?version=7.14&lookml=new",
+                "has_allowed_values": False,
+                "allowed_values": ""
+            },
+            "allowed_value": {
+                "type": "string",
+                "subtype": "string",
+                "indent": 3,
+                "default_value": "",
+                "docs_url": "https://docs.looker.com/reference/field-params/parameter?version=7.14&lookml=new#specifying_allowed_values",
                 "has_allowed_values": False,
                 "allowed_values": ""
             }
@@ -5211,6 +5238,43 @@ class props:
                 "indent": 3,
                 "default_value": "no",
                 "docs_url": "https://docs.looker.com/reference/manifest-params/application?version=7.18&lookml=new#use_embeds",
+                "has_allowed_values": False,
+                "allowed_values": ""
+            }
+        },
+        "project": {
+            "local_dependency": {
+                "type": "string",
+                "subtype": "string",
+                "indent": 2,
+                "default_value": "",
+                "docs_url": "https://looker.com/docs/r/lookml/types/manifest/local_dependency?version=7.14&lookml=new",
+                "has_allowed_values": False,
+                "allowed_values": ""
+            }
+        },
+        "export": {
+            "constant": {
+                "type": "options",
+                "subtype": "string",
+                "indent": 2,
+                "default_value": "none",
+                "docs_url": "https://docs.looker.com/reference/manifest-params/constant?version=7.14&lookml=new#using_export_in_imported_projects",
+                "has_allowed_values": True,
+                "allowed_values": [
+                    "none",
+                    "override_required",
+                    "override_optional"
+                ]
+            }
+        },
+        "visualization": {
+            "manifest": {
+                "type": "anonymous_construct_plural",
+                "subtype": "string",
+                "indent": 1,
+                "default_value": "",
+                "docs_url": "https://docs.looker.com/reference/manifest-params/visualization?version=7.18&lookml=new",
                 "has_allowed_values": False,
                 "allowed_values": ""
             }
@@ -5261,6 +5325,12 @@ class props:
         'assert',
         'test',
         'aggregate_table',
+        "application",
+        "visualization",
+        "override_constant",
+        "constant",
+        "local_dependency",
+        "remote_dependency",
     )
     field_types = (
          'dimension'

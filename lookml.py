@@ -4,7 +4,11 @@ import warnings
 
 #P2: obtain the real list of timezones from Looker itself
 #P2: add CLI support
-#P0: legacy / backward compatibility methods
+#P0: legacy / backward compatibility methods:
+    #addJoin()
+    #file.setProperty()
+    #Instantiate a view from 
+    #Adding and subtracting 
 #P2: option to omit defaults
 #P2: add looker version numbers to the lang map and throw warning if prop depreicated or error if not yet supported
 #P1: add warnings / error types
@@ -218,7 +222,6 @@ class Field(lookml):
         else:
             super().__getattr__(key)
             #return prop_router(key,'__default__', self)
-
 class Dimension(Field):
     def _add_hook_primary_key(self, candidate_prop):
         if self.parent.__pk:
@@ -304,9 +307,13 @@ class Explore(lookml):
                 f'{ws.nl}}}')
 
 class Join(lookml): pass
-#P0: create manifest type
+
 class Manifest(lookml):
     _member_classes = []
+    def __str__(self):
+        return (
+            f'{ self._s() }'
+        )
 
     
 #P0: re-integrate File type
@@ -727,3 +734,4 @@ classMap = {
     ,'model': Model
     ,'manifest': Manifest
 }
+

@@ -2,8 +2,11 @@ import lookml, lang
 import unittest
 import lkml as lkml
 from pprint import pprint
-import file
+import file, project
 import warnings
+import configparser
+config = configparser.ConfigParser()
+config.read('tests/settings.ini')
 
 # Objective / coverage
 #     Read all file types from filesystem: 
@@ -50,7 +53,6 @@ class testView(unittest.TestCase):
         self.myView = lookml.View(self.parsed_view['views'][0])
 
     def test_parse_print(self):
-        #P0: fix the issue with actions / forms
         print(self.myView)
 
     def test_filters(self):
@@ -198,7 +200,7 @@ class testView(unittest.TestCase):
         #     print(p)
 class testOtherFiles(unittest.TestCase):
     def setUp(self):
-        self.model_file = file.File('tests/files/basic_parsing/basic.model.lkml')
+        pass
 
     def test_parsing_aggregate_tables(self):
         #P0: include coming back funny
@@ -209,6 +211,7 @@ class testOtherFiles(unittest.TestCase):
         print(x.explores.foo.aggregate_table.bar)
 
     def test_model_file(self):
+        self.model_file = file.File('tests/files/basic_parsing/basic.model.lkml')
         print(str(self.model_file))
 
     def test_view_refinement(self):
@@ -217,8 +220,26 @@ class testOtherFiles(unittest.TestCase):
 
     def test_other_lkml_file(self):
         pass
+
     def test_manifest_file(self):
-        pass
+        #P0: accessors and namespace for manifest file is bunk
+        x = file.File('tests/files/basic_parsing/manifest.lkml')
+        #anon: local_dependency, visualization, 
+        #named: constant, application, 
+        #other props / project name etc 
+        
+        print(str(x.contents.project_name))
+
+    def test_project_connectivity(self):
+        proj = project.Project(
+            repo= "llooker/russ_sandbox",
+            access_token=config['project1']['access_token'],
+        )
+        #P0: --> param key issue
+        mf = proj.file('01_order_items.view.lkml')
+        # mf = proj.file('11_order_facts.view.lkml')
+        print(str(mf))
+
     def test_dashboard_file(self):
         pass
     def test_js_file(self):
