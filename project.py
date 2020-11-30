@@ -92,7 +92,8 @@ class project:
         :rtype: generator of lookml File objects
         '''
         for f in  self.repo.get_contents(path):
-            yield lookml.File(f)
+            if f.type != 'dir':
+                yield file.File(f)
 
     def file(self,path):
         '''
@@ -275,7 +276,7 @@ class shellProject(project):
         for root, dirs, files in os.walk(self.gitControllerSession.absoluteOutputPath + '/' + path, topdown=False):
             for name in files:
                 if name.endswith('.lkml'):
-                    yield lookml.File(os.path.join(root, name))
+                    yield file.File(os.path.join(root, name))
 
     def file(self,path):
         '''
@@ -289,7 +290,7 @@ class shellProject(project):
         :return: a single lookml File
         :rtype: File
         '''
-        return lookml.File(self.gitControllerSession.absoluteOutputPath + '/' + path)
+        return file.File(self.gitControllerSession.absoluteOutputPath + '/' + path)
 
     def update(self,f):
         '''
@@ -341,7 +342,7 @@ class shellProject(project):
         :return: None
         :rtype: None
         '''
-        if isinstance(f,lookml.File):
+        if isinstance(f,file.File):
             return os.path.exists(f.path)
         elif isinstance(f,str):
             #Check a naked path first, then fall back on the user having provided the full project path
@@ -362,7 +363,7 @@ class shellProject(project):
         '''
         if isinstance(f,str):
             os.remove(f)
-        elif isinstance(f,lookml.File):
+        elif isinstance(f,file.File):
             os.remove(f.path)
         else:
             raise Exception('Not a File Insance or path')
@@ -392,7 +393,7 @@ class githubProject(project):
             except github.GithubException as e:
                 if e._GithubException__status == 404:
                     return False
-        if isinstance(f,lookml.File):
+        if isinstance(f,file.File):
             return checkgithub(f.path)
         elif isinstance(f,str):
             return checkgithub(f)

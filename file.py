@@ -59,17 +59,6 @@ class baseFile(object):
                     opened_file.write(self.__str__())
 
 
-# #Set Basic Attributes
-# self.name = f._rawData['name']
-# self.sha = f._rawData['sha']
-# self.base_name = self.name.replace(".model.lkml", "").replace(".explore.lkml", "").replace(".view.lkml", "")
-# self.path = f._rawData['path']
-# #Parse Step: Github content is returned base64 encoded
-# data = base64.b64decode(f.content).decode('ascii')
-# self.json_data = lkml.load(data)
-
-
-
 class lkmlFile(baseFile):
     def __init__(self,path='',name=''):
         self.name = name
@@ -91,18 +80,8 @@ class testClassgithub(baseFile):
         self.name = f._rawData['name']
         self.path = f._rawData['path']
         self.sha = f._rawData['sha']
-# self.name = f._rawData['name']
-# self.sha = f._rawData['sha']
-# self.base_name = self.name.replace(".model.lkml", "").replace(".explore.lkml", "").replace(".view.lkml", "")
-# self.path = f._rawData['path']
-# #Parse Step: Github content is returned base64 encoded
-# data = base64.b64decode(f.content).decode('ascii')
-# self.json_data = lkml.load(data)
-        data = base64.b64decode(f.content).decode('ascii')
+        data = base64.b64decode(f.content).decode('utf-8')
         self.contents = lookml.Model(lkml.load(data))
-
-
-        
 
     def __getattr__(self,item):
         if item in self.__dict__.keys():
