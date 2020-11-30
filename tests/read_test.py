@@ -235,10 +235,18 @@ class testOtherFiles(unittest.TestCase):
             repo= "llooker/russ_sandbox",
             access_token=config['project1']['access_token'],
         )
-        #P0: --> param key issue
-        mf = proj.file('01_order_items.view.lkml')
+
+        # mf = proj.file('01_order_items.view.lkml')
+        for f in proj.files():
+            print(f.path)
+            for v in f.contents.views.values():
+                print(' '*2,v.name)
+        #P0: iterate over: f.views:, f.views['order_items'], f.views.order_items
+        #P0: create a new type of each file
+        #P0: context manager for project
+
         # mf = proj.file('11_order_facts.view.lkml')
-        print(str(mf))
+        # print(str(mf))
 
     def test_dashboard_file(self):
         pass
