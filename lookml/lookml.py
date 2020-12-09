@@ -379,7 +379,7 @@ class base(object):
 
     def unHide(self):
         ''''''
-        self.properties.delProperty('hidden')
+        self.properties.removeProperty('hidden')
         return self
 
     def setMessage(self,message):
@@ -403,7 +403,7 @@ class base(object):
 
     def unSetProperty(self, name):
         ''''''
-        self.properties.__del__(name)
+        self.properties.removeProperty(name)
         return self
 
     def getProperties(self):
@@ -1521,7 +1521,7 @@ class Properties(object):
         else:
             self.schema.update({name: value})
 
-    def __delete__(self, identifier):
+    def removeProperty(self, identifier):
         if isinstance(self.schema,dict):
             self.schema.pop(identifier, None)
         elif isinstance(self.schema,list):
