@@ -799,7 +799,6 @@ class View(base):
         if isinstance(field,Field):
             if isinstance(field,Dimension):
                 pk(field)
-            pk(self.field(field.identifier))
             return self._fields.pop(field.identifier, None)
         elif isinstance(field,str):
             dimToDel = self.field(field)
