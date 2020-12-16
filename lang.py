@@ -17,9 +17,13 @@ class ws:
     filtersPattern = r' \_filters\[\s{0,10}\'([a-z\._0-9]*)\'\]'
     fullPattern = r'(' + mustachePattern + r'|' + conditionPattern + r'|' + parameterPattern + r'|' + doubleBracesPattern + r'|' + filtersPattern + r')'
     lookml_name = r'^[a-z_]{1,150}$'
+    view_pattern = r'^\s*view\:\s[a-z_]{1,150}\s\{(\s|.)*\}\s*$' #P3 pattern will match multiple views in a row
 
 def valid_name(name):
     return re.match(ws.lookml_name,name)
+
+def possible_view_str(s):
+    return re.match(ws.view_pattern,s)
 
 def parse_references(inputString):
     '''
