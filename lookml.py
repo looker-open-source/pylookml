@@ -1,18 +1,9 @@
 import lkml, copy 
-from lang import ws,props,DuplicatePrimaryKey
+from lang import ws,props,DuplicatePrimaryKey, valid_name, possible_view_str
 import warnings
+# from types import GeneratorType
+from typing import NewType, Any, Generator
 
-#P2: obtain the real list of timezones from Looker itself
-#P2: add CLI support
-#P0: legacy / backward compatibility methods:
-    #addJoin()
-    #file.setProperty()
-    #Instantiate a view from 
-    #Adding and subtracting 
-#P2: option to omit defaults
-#P2: add looker version numbers to the lang map and throw warning if prop depreicated or error if not yet supported
-#P1: add warnings / error types
-#P0: complex props / constructs do not support an add method and + operator overloading
 class prop(object):
     def __init__(self, key, value, parent, conf={}):
         self.key = key
@@ -42,7 +33,6 @@ class lookml(object):
     def __init__(self, data, parent=None):
         self.parent = parent
         self + data
-    
     def __setattr__(self, key, value):
         if key in self._allowed_children():
             self._insert(key,value)
@@ -113,7 +103,6 @@ class lookml(object):
         string = string + ' ' if len(data) > 0 else string
         # string = string + ws.nl if len(data) > 0 else string
         return string
-
     def _type(self): return self.__class__.__name__.lower()
     def __len__(self): return len([i for i in self()])
     def _length(self): return len([str(i) for i in self()])
@@ -238,7 +227,6 @@ class Filter(Field): pass
 class Parameter(Field): pass
 class Dimension_Group(Field): pass
 
-#P0: create model type
 class Model(lookml):
     _member_classes = [
         #  'explore'
@@ -320,7 +308,32 @@ class Manifest(lookml):
 #P0: re-integrate project type
 
 class View(lookml):
-    # top level namespace
+    """
+    LookML View Object
+    construct with name, short string or lkml json
+.. code-block:: python
+    :linenos:
+
+    #construct via name string
+    myView = lookml.View('foo')
+    myView.view_label = "made by name"
+    print(myView)
+    >>> view: foo {
+           view_label: "made by name"
+         }
+    #construct via string of LookML
+    myView = lookml.View('view: foo { view_label: "made by string" }')
+    print(myView)
+    >>> view: foo {
+           view_label: "made by string"
+         }
+    #construct via json (in lkml format)
+    myView = lookml.View({'name':'foo', 'view_label':'made by json'})
+    print(myView)
+    >>> view: foo {
+           view_label: "made by json"
+         }
+    """
     _member_classes = [
          'dimension'
         ,'measure'
@@ -329,24 +342,64 @@ class View(lookml):
         ,'parameter'
     ]
     def __init__(self, data, parent=None):
+        if isinstance(data,dict):
+            pass
+        elif isinstance(data, str):
+            if valid_name(data):
+                data = {'name':data}
+            elif possible_view_str(data):
+                   parsed = lkml.load(data)
+                   if 'views' in parsed.keys():
+                       if len(parsed['views']) == 1:
+                           data = parsed['views'][0]
+                       else:
+                            raise Exception("Input string contains more than one view")
+                   else:
+                        raise Exception("Input string does not contain views")
+                   
+        else:
+            raise Exception("Views must be constructed with names," + 
+                    " valid lookml, or a dict from lkml parser")
+
         self.__pk = None
         super().__init__(data, parent)
 
-    def _first_order_fields(self):
+    def _first_order_fields(self) -> Generator:
         '''
-            returns: generates fields that reference DB fields directly
+        generates fields that reference DB fields directly
+
+        :return: Generator of type Field
+        :rtype: Field
         '''
         for field in self(type=Field):
             if '${TABLE}.' in field.sql:
                 yield field
 
-    def _fields(self): return self(type=Field)
-    def _dims(self): return self(type=Dimension)
-    def _dim_groups(self): return self(type=Dimension_Group)
-    def _measures(self): return self(type=Measure)
-    def _params(self): return self(type=Parameter)
-    def _filters(self): return self(type=Filter)
-    def _dense(self): return False
+    def _fields(self) -> Generator: return self(type=Field)
+    def _dims(self) -> Generator: return self(type=Dimension)
+    def _dim_groups(self) -> Generator: return self(type=Dimension_Group)
+    def _measures(self) -> Generator: return self(type=Measure)
+    def _params(self) -> Generator: return self(type=Parameter)
+    def _filters(self) -> Generator: return self(type=Filter)
+    def _dense(self) -> Generator: return False
+
+    #Gold Standard of Sphinx method Doc
+    # def send_message(self, sender: str, 
+    #     recipient: str, message_body: str, priority: int=1) -> int:
+    #     '''
+    #     Send a message to a recipient
+
+    #     :param str sender: The person sending the message
+    #     :param str recipient: The recipient of the message
+    #     :param str message_body: The body of the message
+    #     :param priority: The priority of the message, can be a number 1-5
+    #     :type priority: integer or None
+    #     :return: the message id
+    #     :rtype: int
+    #     :raises ValueError: if the message_body exceeds 160 characters
+    #     :raises TypeError: if the message_body is not a basestring
+    #     '''
+    #     return 1
 
     def __str__(self):
         return (

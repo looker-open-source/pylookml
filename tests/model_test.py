@@ -4,10 +4,7 @@ import lkml as lkml
 from pprint import pprint
 import file
 
-#P0: things to look into
-# model.connection
-# model.datagroup
-# model.include
+
 
 class testModel(unittest.TestCase):
   def setUp(self):
@@ -28,7 +25,7 @@ class testModel(unittest.TestCase):
     assert explore2.hidden.value == 'yes'
     assert type(explore.view_name) == lookml.prop_string_unquoted
     assert explore2.view_name.value == 'weather_forecast'
-    #P0: add support for getitem[] syntax at all levels
+    
     # assert explore2.from == lookml.prop.string_unquoted
 
   def test_walk_join(self):

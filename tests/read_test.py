@@ -159,6 +159,7 @@ class testView(unittest.TestCase):
         x.path = 'example2.model.lkml'
         x.write()
 
+
     def test_other(self):
         # if isinstance(self.myView.sum_foo.sql,lookml.prop):
         # if not isinstance(self.myView.sum_foo.sql,tuple()):
@@ -198,6 +199,121 @@ class testView(unittest.TestCase):
         # for p in self.myView.transaction(type=lookml.prop, sub_type='timeframes', exclude_subtype='timeframes'):
         #     # if isinstance(p,lookml.prop_list_unquoted):
         #     print(p)
+
+    #P0: add support for getitem[] syntax at all levels
+    def test_all_subscriptability(self):
+        pass
+    def test_constructor(self):
+        a = lookml.View('''
+            view: foo {
+                sql_table_name: public.order_items ;;
+                dimension: foo {}
+                measure: count {}
+            }
+        ''')
+        self.assertTrue(isinstance(a,lookml.View))
+        self.assertEqual(a.name,'foo')
+        b = lookml.View('foo')
+        self.assertTrue(isinstance(b,lookml.View))
+        self.assertEqual(b.name,'foo')
+        c = lookml.View({'name':'foo'})
+        self.assertTrue(isinstance(c,lookml.View))
+        self.assertEqual(c.name,'foo')
+        with self.assertRaises(Exception) as context:
+            lookml.View('''
+            view: foo {
+                sql_table_name: public.order_items ;;
+                dimension: foo {}
+                measure: count {}
+            }
+            view: bar {}
+            ''')
+        self.assertTrue('contains more than one view' in str(context.exception))
+        #P3 does not throw the right exception, something is wrong with the ws.view_pattern and checker function
+        with self.assertRaises(Exception) as context:
+            lookml.View('explore: foo {}')
+        # self.assertTrue('contains more than one view' in str(context.exception))
+        
+
+    # def test_legacy_methods(self):
+    #     #P0: legacy / backward compatibility methods: 
+    #     #addProperty, addDimension, addMeasure, addJoin etc....
+    #     x = lookml.View('x')
+    #     foo = lookml.Dimension('foo')
+    #     x.addField(foo)
+    #     x.getPrimaryKey()
+    #     x.removeField(foo)
+    #     x.addField(foo)
+    #     x.search('sql','${TABLE}')
+    #     x.setExtensionRequired()
+    #     x.setPrimaryKey(x.foo)
+    #     for i in x.fieldNames():
+    #         print(i)
+    #     for i in x.fields():
+    #         print(i)
+    #     #P3 dimensions()
+    #     # for i in x.dimensions():
+    #     #     print(i)
+    #     for i in x.dimensionGroups():
+    #         print(i)
+    #     for i in x.filters():
+    #         print(i)
+    #     for i in x.getFieldsByTag('my_tag'):
+    #         print(i)
+    #     for i in x.getFieldsByTag('my_tag'):
+    #         print(i)
+    #     for i in x.getFieldsByType('string'):
+    #         print(i)
+    #     for i in x.getFieldsSorted():
+    #         print(i)
+    #     foo.setProperty('sql','${TABLE}.foo')
+    #     foo.setMessage('comment')
+    #     foo.getMessage()
+    #     foo.addTag('my_tag')
+    #     foo.setName('foo1')
+    #     foo.setPrimaryKey()
+    #     bar = lookml.Dimension('bar')
+    #     x.addDimension(bar)
+    #     bar.setType('number')
+    #     x.addCount()
+    #     # x.addAverage(x.foo)
+    #     # x.addComparisonPeriod(x.foo,'')
+    #     x.addCountDistinct(x.foo)
+    #     x.sum(x.foo)
+    #     x.sumAllNumDimensions()
+    #     bar.setView(x)
+    #     bar.setViewLabel("foo")
+    #     # foo.setName_safe('wawa')
+    #     # x.unSetPrimaryKey()
+    #     bar.hasProp('view_label')
+    #     bar.rawProp('view_label')
+    #     foo.setDescription('this is very cool')
+    #     foo.setAllLabels( group: None, item: None, label: None)
+    #     foo.setDBColumn( dbColumn, changeIdentifier=True)
+    #     foo.setTier(tiers=[])
+    #     foo.setSql('')
+    #     foo.setType('')
+    #     foo.setNumber()
+    #     foo.setString()
+    #     foo.removeTag()
+    #     foo.addLink(url,label,icon_url='https://looker.com/favicon.ico')
+    #     for i in foo.children():
+    #         print(i)
+
+
+
+    def test_new_file(self):
+        pass
+
+
+
+
+#P2: obtain the real list of timezones from Looker itself
+#P2: add CLI support
+#P2: option to omit defaults
+#P2: add looker version numbers to the lang map and throw warning if prop depreicated or error if not yet supported
+#P0: complex props / constructs do not support an add method and + operator overloading
+
 class testOtherFiles(unittest.TestCase):
     def setUp(self):
         pass
