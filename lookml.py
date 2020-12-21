@@ -1,16 +1,25 @@
 import lkml, copy 
-from lang import ws,props,DuplicatePrimaryKey, valid_name, possible_view_str
+from lang import *
 import warnings
-# from types import GeneratorType
 from typing import NewType, Any, Generator
+OMIT_DEFAULTS = False
+def omit_defaults(f):
+    def wrapper(*args,**kwargs):
+        if OMIT_DEFAULTS and args[0]._is_default():
+            return ''
+        else:            
+            return f(*args,**kwargs)
+    return wrapper
 
 class prop(object):
-    def __init__(self, key, value, parent, conf={}):
+    def __init__(self, 
+            key: str, value: any, 
+            parent: any, conf: dict={}):
         self.key = key
         self.value = value
         self.parent = parent
         self.conf = conf
-
+    @omit_defaults
     def __str__(self):
         indent = ws.nl + (self.conf['indent'] * ws.s)
         if self.parent._dense():
@@ -27,9 +36,11 @@ class prop(object):
     def __contains__(self,item): return item in self.value
     def _type(self): return self.key
     def _dense(self): return len(self.value) <= ws.dense_str_len
+    def _is_default(self): return True if self.conf['default_value'] == self.value else False
 
 class lookml(object):
     _member_classes  = list()
+    _private_items = list()
     def __init__(self, data, parent=None):
         self.parent = parent
         self + data
@@ -75,7 +86,12 @@ class lookml(object):
 
     def __iter__(self):
         def i():
-            for v in list(self.__dict__.values()):
+            public_items = [
+                v for k,v in 
+                self.__dict__.items() 
+                if k not in self._private_items
+                ]
+            for v in public_items:
                 yield v
         self._valueiterator = iter(i())
         return self
@@ -86,7 +102,12 @@ class lookml(object):
         except:
             raise StopIteration
 
-    def __call__(self,type=prop, exclude_type=tuple(), sub_type=None, exclude_subtype=None):
+    def __call__(self, 
+        type=prop, 
+        exclude_type=tuple(), 
+        sub_type=None, 
+        exclude_subtype=None,
+        ) -> Generator:
         for item in self:
             if isinstance(item,type)\
                 and not isinstance(item, exclude_type)\
@@ -119,8 +140,15 @@ class lookml(object):
         elif key in self._allowed_children():
             #step 1) instantiate the property
             candidate = prop_router( key, value, self )
+            #step 2) if the hook lookup fails do nothing
             if self._add_hook(key, candidate):
-                self.__dict__.update( { key: candidate } )
+                if isinstance(candidate,prop_named_construct):
+                    if key not in self.__dict__.keys():
+                        self.__dict__.update( { key: candidate } )
+                    else:
+                        self.__dict__[key].children.update(candidate.children)
+                else:
+                    self.__dict__.update( { key: candidate } )
             
         #special private attribute insertion, currently limited to 'name'
         elif key == 'name':
@@ -132,8 +160,8 @@ class lookml(object):
                 f'refer to: {self._conf()["docs_url"]}'
                 )
     def _add_hook_type(self,candidate_prop):
-        # print(self.parent)
-        # print(candidate_prop)
+        #currently doesn't do anything
+        # candidate_prop
         return True
     
 
@@ -213,14 +241,23 @@ class Field(lookml):
             #return prop_router(key,'__default__', self)
 class Dimension(Field):
     def _add_hook_primary_key(self, candidate_prop):
-        if self.parent.__pk:
-            if candidate_prop:
-                raise DuplicatePrimaryKey( self.parent, self)
+        # if self.parent.__pk.primary_key:
+        self
+        if self.parent._View__pk is not None:
+            # if self.parent.__pk.primary_key:
+            if self.parent._View__pk.primary_key:
+                if candidate_prop:
+                    raise DuplicatePrimaryKey( self.parent, self)
+                else:
+                    self.parent._View__pk = self
+                    # self.parent.__pk = candidate_prop
+                    return True #returns true to allow the dict.update
             else:
-                self.parent.__pk = candidate_prop
+                return True
         else:
-            self.parent.__pk = candidate_prop
-            return True
+            self.parent._View__pk = self
+            return True #returns true to allow the dict.update
+
 
 class Measure(Field): pass
 class Filter(Field): pass
@@ -303,10 +340,6 @@ class Manifest(lookml):
             f'{ self._s() }'
         )
 
-    
-#P0: re-integrate File type
-#P0: re-integrate project type
-
 class View(lookml):
     """
     LookML View Object
@@ -341,6 +374,7 @@ class View(lookml):
         ,'filter'
         ,'parameter'
     ]
+    _private_items = ['_View__pk']
     def __init__(self, data, parent=None):
         if isinstance(data,dict):
             pass
@@ -364,9 +398,10 @@ class View(lookml):
         self.__pk = None
         super().__init__(data, parent)
 
-    def _first_order_fields(self) -> Generator:
+    def first_order_fields(self) -> Generator:
         '''
         generates fields that reference DB fields directly
+        having the ${TABLE} syntax
 
         :return: Generator of type Field
         :rtype: Field
@@ -382,6 +417,27 @@ class View(lookml):
     def _params(self) -> Generator: return self(type=Parameter)
     def _filters(self) -> Generator: return self(type=Filter)
     def _dense(self) -> Generator: return False
+
+    def _add_hook_sql_table_name(self, sql_table_name):
+        if 'derived_table' in self:
+            raise CoexistanceError(
+                self.derived_table,
+                sql_table_name,
+                additional_message='Try running del yourViewName.derived_table '
+                +'before adding the sql_table_name'
+                )
+        else:
+            return True
+    def _add_hook_derived_table(self, derived_table):
+        if 'sql_table_name' in self:
+            raise CoexistanceError(
+                self.sql_table_name,
+                derived_table,
+                additional_message='Try running del yourViewName.sql_table_name '
+                +'before adding the derived_table'
+                )
+        else:
+            return True
 
     #Gold Standard of Sphinx method Doc
     # def send_message(self, sender: str, 
@@ -485,6 +541,26 @@ class prop_named_construct(prop):
     def __getitem__(self,item):
         if isinstance(item, int):
             return self.children[item]
+    
+    def __add__(self,other):
+        #P3: since this is on the props hierarchy, need to refactor addition so it's not challenging
+        #do after extensive unit tests are in place
+        if isinstance(other,str):
+            try:
+                parsed = lkml.load(other)[self.key+'s']
+            except:
+                raise Exception(f'can only add {self.key} to {self.key}')
+
+        elif isinstance(other,dict):
+            parsed = other
+        for item in parsed:
+            candidate = prop_named_construct_single(
+                    self.key, 
+                    item, 
+                    self.parent, 
+                    conf=props.cfg[self.key][self.parent._type()]
+                    )
+            self.children.update({candidate.name: candidate})
 
     def __str__(self):
         dense = True if self.parent._dense() else False
@@ -521,6 +597,8 @@ class prop_anonymous_construct(prop):
         else:
             return None
 
+    # def 
+
     def print_children(self):
         rendered_children = ''
         for child in self.children.values():
@@ -535,22 +613,31 @@ class prop_anonymous_construct(prop):
         __ = ws.nl + (ws.s * i) if not dense else ws.s
         return f'''{__}{self.key}: {{ { self.print_children() } }}'''
 
-class prop_anonymous_construct_plural(prop): 
+class prop_anonymous_construct_plural(prop):
+    class prop_anonymous_construct_child(prop_anonymous_construct):
+        def remove(self):
+            #P2: docstring needed
+            self.parent.link.children.remove(self)
+
     def __init__(self, key, value, parent, conf={}):
         self.key = key
         self.value = value
         self.parent = parent
         self.conf = conf
-        #P0: need to loop over / iterate over the contents of children
         self.children = []
-        # P0: create an add method for adding additional children 
         for construct in value:
-            child = []
-            for name,attr in construct.items():
-                child.append(prop_router(name,attr,self))
+            child = self.prop_anonymous_construct_child(
+                        key, 
+                        construct, 
+                        self.parent, 
+                        conf=conf
+                        )
             self.children.append(child)
 
-    #P0: add support for textual addition / + operator overloading at any level. Need to support parsing if string, consume if dict
+    def remove(self,item):
+        #P2: docstring needed
+        self.children.remove(item)
+        
     def __setattr__(self, key, value):
         if key in ('key','value','parent','conf','children'):
             object.__setattr__(self, key, value)
@@ -568,21 +655,33 @@ class prop_anonymous_construct_plural(prop):
     def __getitem__(self,item):
         if isinstance(item, int):
             return self.children[item]
+    
+    def __add__(self,other):
+        #P3: since this is on the props hierarchy, need to refactor addition so it's not challenging
+        #do after extensive unit tests are in place
+        if isinstance(other,str):
+            try:
+                parsed = lkml.load(other)[self.key+'s']
+            except:
+                raise Exception(f'can only add {self.key} to {self.key}')
 
-    def _print_child(self, child):
-        rendered = ''
-        for attr in child:
-            rendered += ws.nl + (attr.conf['indent'] * ws.s) + str(attr)
-        rendered += ws.nl + (self.conf['indent'] * ws.s)
-        return rendered
+        elif isinstance(other,dict):
+            parsed = other
+        for item in parsed:
+            candidate = self.prop_anonymous_construct_child(
+                    self.key, 
+                    item, 
+                    self.parent,
+                    conf=props.cfg[self.key][self.parent._type()]
+                    )
+            self.children.append(candidate)
 
     def __str__(self):
-        # dense = True if self.parent._dense() else False
         dense = True if self.parent._dense() and self._dense() else False
         __ = ws.nl + (ws.s * self.conf['indent']) if not dense else ws.s
         rendered = ''
         for child in self.children:
-            rendered += f'''{__}{self.key}: {{ { self._print_child(child) } }}'''
+            rendered += f'''{ str(child) }'''
         return rendered
 
 class common_list_functions(object):
@@ -734,7 +833,9 @@ class prop_yesno(prop):
     def __bool__(self): return True if self.value == 'yes' else False
 
 class prop_html(prop_block): pass
-class prop_sql(prop_block): pass
+class prop_sql(prop_block):
+    def nvl(self):
+        self.value = f"nvl({self.value},0)"
 
 def prop_router(key,value, parent):
     is_plural = True if key[:-1] in props.plural_keys else False

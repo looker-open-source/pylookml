@@ -125,4 +125,4 @@ class test_view(unittest.TestCase):
     assert type(dimension.sql) == lookml.prop_sql
     assert dimension.sql.value == '${TABLE}.foo'
 
-    assert type(dimension.links) == lookml.prop_anonymous_construct_plural
+    assert type(dimension.link) == lookml.prop_anonymous_construct_plural

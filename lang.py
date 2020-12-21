@@ -925,7 +925,7 @@ class props:
                                     'default_value': '',
                                     'docs_url': 'https://looker.com/docs/r/lookml/types/bind_filters/from_field?version=7.14&lookml=new',
                                     'has_allowed_values': False,
-                                    'indent': 4,
+                                    'indent': 5,
                                     'subtype': 'field-ref',
                                     'type': 'string_unquoted'}},
   'full_suggestions': { 'dimension': { 'allowed_values': '',
@@ -1429,7 +1429,7 @@ class props:
                             'default_value': '',
                             'docs_url': 'https://looker.com/docs/r/lookml/types/form_param/name?version=7.14&lookml=new',
                             'has_allowed_values': False,
-                            'indent': 3,
+                            'indent': 4,
                             'subtype': 'string',
                             'type': 'string'},
             'option': { 'allowed_values': '',
@@ -3595,7 +3595,7 @@ class props:
                                   'default_value': '',
                                   'docs_url': 'https://looker.com/docs/r/lookml/types/bind_filters/to_field?version=7.14&lookml=new',
                                   'has_allowed_values': False,
-                                  'indent': 4,
+                                  'indent': 5,
                                   'subtype': 'field-ref',
                                   'type': 'string_unquoted'}},
   'type': { 'dimension': { 'allowed_values': [ 'date',
@@ -4198,4 +4198,12 @@ class DuplicatePrimaryKey(Exception):
     '''
     def __init__(self, view, dim ):
         self.message = f'A primary key cannot be added because one already exists'
+        super().__init__(self.message)
+
+class CoexistanceError(Exception):
+    '''
+        Provides messaging when a second primary key is attempted to be added
+    '''
+    def __init__(self, existing, new ,additional_message=''):
+        self.message = f'A {new._type()} property cannot be added when a(n) {existing._type()} already exists. {additional_message}'
         super().__init__(self.message)

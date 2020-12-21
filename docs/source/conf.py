@@ -26,6 +26,16 @@ author = 'Russell Garner'
 # The full version, including alpha/beta/rc tags
 release = '2.0.0'
 
+#P0: Things to doc:
+# Iteration
+# subscriptability
+# subclassing
+# primary key accessor _View__pk
+# removing properties (del obj.prop)
+# _json() method
+# which properties del and which .remove() i.e. anonymous plural constructs
+# How to use the lang map generator
+
 
 # -- General configuration ---------------------------------------------------
 
