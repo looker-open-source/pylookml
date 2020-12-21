@@ -40,22 +40,56 @@ class testExceptions(unittest.TestCase):
                 print(w)
 
     def test_duplicate_primary_key(self):
-        #P0: test to ensure that primary key is added, then if another primary key is set it throws an error, unless
+        #test to ensure that primary key is added, then if another primary key is set it throws an error, unless
         #the original primary key was set to no prior to the operation
-        pass
+        lookml.OMIT_DEFAULTS = True
+        x = lookml.View('''
+                view: x {
+                    dimension: x {
+                        primary_key: yes
+                    }
+                    dimension: y {}
+                }
+            ''')
+        with self.assertRaises(lang.DuplicatePrimaryKey) as context:
+            x.y.primary_key = 'yes'
+        x.x.primary_key = 'no'
+        # print(x)
+        x.y.primary_key = 'yes'
+        #P2: document that this is the way to print and __pk does not return the pk
+        # print(x)
+        # print(x._View__pk)
+    
+    def test_coexistance_error(self):
+        #checks to ensure the add_hook / exception process is working
+        x = lookml.View('foo')
+        x.sql_table_name = 'public.foo'
+        with self.assertRaises(lang.CoexistanceError) as context:
+            x + 'derived_table: { sql: select * from foo ;; }'
+        del x.sql_table_name
+        x + 'derived_table: { sql: select * from foo ;; }'
+        with self.assertRaises(lang.CoexistanceError) as context:
+            x.sql_table_name = 'public.foo'
+
+
+
+
 
 class testView(unittest.TestCase):
     '''
         Read a view file, test its methods and manipulation
     '''
     def setUp(self):
-        self.parsed_view = lkml.load(open('tests/files/basic_parsing/basic.view.lkml'))
-        self.myView = lookml.View(self.parsed_view['views'][0])
+        pass
 
     def test_parse_print(self):
+        self.parsed_view = lkml.load(open('tests/files/basic_parsing/basic.view.lkml'))
+        self.myView = lookml.View(self.parsed_view['views'][0])
         print(self.myView)
 
     def test_filters(self):
+        self.parsed_view = lkml.load(open('tests/files/basic_parsing/basic.view.lkml'))
+        self.myView = lookml.View(self.parsed_view['views'][0])
         self.myView.sum_foo.filters.foo.contains('test')
         self.myView + '''
             measure: total_sales {type: sum sql: ${TABLE}.sales ;;}
@@ -67,10 +101,14 @@ class testView(unittest.TestCase):
         self.assertEqual(self.myView.sum_foo.filters.foo.value,'%test%')
 
     def test_json_serialization(self):
+        self.parsed_view = lkml.load(open('tests/files/basic_parsing/basic.view.lkml'))
+        self.myView = lookml.View(self.parsed_view['views'][0])
         self.assertIsNotNone(self.myView._json())
         print(self.myView._json())
 
     def test_refs(self):
+        self.parsed_view = lkml.load(open('tests/files/basic_parsing/basic.view.lkml'))
+        self.myView = lookml.View(self.parsed_view['views'][0])
         for f in self.myView._fields():
             #full reference
             print('full ref __ref__: ',f.__ref__)
@@ -87,8 +125,27 @@ class testView(unittest.TestCase):
             #Raw Reference regex
             print('raw ref regex __refrre__: ',f.__refrre__)
 
+    def test_addition(self):
+        tmp = lookml.View('''
+            view: foo {
+                derived_table: {
+                    explore_source: order_items {
+                        column: id { field: id }
+                        column: id_2 { field: id }
+                    }
+                }
+            }
+        ''')
+        tmp.derived_table.explore_source.column + 'column: foo {}'
+        tmp.derived_table.explore_source + 'limit: 500'
+        self.assertTrue('column: id_2 ' in str(tmp.derived_table.explore_source))
+        print(tmp)
+
+
 
     def test_tags(self):
+        self.parsed_view = lkml.load(open('tests/files/basic_parsing/basic.view.lkml'))
+        self.myView = lookml.View(self.parsed_view['views'][0])
         self.myView.transaction.tags + ['tag5','tag6','tag7','tag8']
         self.myView.transaction.tags - 'tag7'
         self.myView.transaction.tags - ['tag6','tag4']
@@ -130,7 +187,7 @@ class testView(unittest.TestCase):
                         pivots: [dim4]
                     }
                     materialization: {
-                        datagroup_trigger: yes
+                        datagroup_trigger: foo
                     }
                 }
             }
@@ -149,24 +206,20 @@ class testView(unittest.TestCase):
     def test_deleteme_adhoc_file_model_binding(self):
         x = file.File('tests/files/basic_parsing/basic.model.lkml')
         print(x.path)
-        cool = 'test123'
-        #P0: replacing rather than additive
-        x.explores['trip'] + f'''
-        join: {cool} {{
-
-        }}
-        '''
-        x.path = 'example2.model.lkml'
-        x.write()
-
+        cool = ['test123','test456','test890']
+        x.explores['trip'] + ''.join([f'''
+         join: {item} {{}}
+         ''' for item in cool])
+        self.assertTrue('test890' in str(x.explores.trip))
 
     def test_other(self):
+        self.parsed_view = lkml.load(open('tests/files/basic_parsing/basic.view.lkml'))
+        self.myView = lookml.View(self.parsed_view['views'][0])
         # if isinstance(self.myView.sum_foo.sql,lookml.prop):
         # if not isinstance(self.myView.sum_foo.sql,tuple()):
         # if (True if self.myView.sum_foo.sql._type() == '' else False):
         #     print('wow')
         # pprint(self.myView.transaction.__dict__)
-        #P0: fix link accessors
         # print(self.myView.foo.link[0])
         # if 'transaction' in self.myView:
         #     print(self.myView.transaction)
@@ -193,16 +246,77 @@ class testView(unittest.TestCase):
         # print(self.myView.__dict__)
         # print(self.myView.set.__dict__)
         # print(self.myView.set.set1)
-        self.myView.set.set1.fields + 'foo'
-        print(self.myView.foo.link[1])
+        # self.myView.set.set1.fields + 'foo'
+        print(self.myView.foo.link[0].url.value)
+        # print(self.myView)
         # for p in self.myView.bar.__iter__(type=lookml.prop):
         # for p in self.myView.transaction(type=lookml.prop, sub_type='timeframes', exclude_subtype='timeframes'):
         #     # if isinstance(p,lookml.prop_list_unquoted):
         #     print(p)
+    def test_plural_anonymous_constructs(self):
+        raw = '''
+        view: x {
+            derived_table: {
+                explore_source: order_items {
+                    column: id { field: order_items.id }
+                    column: date { field: order_items.created_date }
+                    column: status { field: order_items.status }
+                    bind_filters: {
+                        from_field: created_date
+                        to_field: date
+                    }
+                    bind_filters: {
+                        from_field: order_items.id
+                        to_field: id
+                    }
+                    bind_filters: {
+                        from_field: order_items.status
+                        to_field: status
+                    }
+                }
+            }
+                dimension: date { type: date }
+                dimension: id { type: number }
+                dimension: status { 
+                    type: string 
+                    link: {
+                        url: "http://facebook.com"
+                    }
+                    link: {
+                        url: "http://yahoo.com"
+                    }
+                    link: {
+                        url: "http://myspace.com"
+                    }
+                    }
+                measure: count { type: count }
+        }
+        '''
+        x = lookml.View(raw)
+        self.assertTrue(x.derived_table.explore_source.bind_filters[0].from_field.value=='created_date')
+        i = 0
+        for item in x.derived_table.explore_source.bind_filters:
+            i +=1 
+        self.assertEqual(i,3)
+        x.status.link + 'link: { url: "http://foo.com" }'
+        # print(x.status.link)
+        
+        self.assertTrue(x.status.link[3].url.value=='http://foo.com')
+        x.status.link[3].remove()
+        i=0
+        for link in x.status.link:
+            i += 1
+        self.assertEqual(i,3)
 
     #P0: add support for getitem[] syntax at all levels
     def test_all_subscriptability(self):
         pass
+        #test file from project
+        #test view/explore/prop from file/model
+        #test field/prop from view
+        #test prop from field
+        
+
     def test_constructor(self):
         a = lookml.View('''
             view: foo {
@@ -234,12 +348,36 @@ class testView(unittest.TestCase):
             lookml.View('explore: foo {}')
         # self.assertTrue('contains more than one view' in str(context.exception))
         
+    def test_sql_enahancement_methods(self):
+        tmp = lookml.View(
+            '''
+            view: tmp {
+                dimension: foo {
+                    sql: ${TABLE}.foo ;;
+                }
+            }
+            '''
+        )
+        #P3: add arguments and date casting 
+        tmp.foo.sql.nvl()
+        self.assertTrue('nvl' in tmp.foo.sql.value)
+        print(tmp)
 
-    # def test_legacy_methods(self):
+    def test_more_add_hooks(self):
+        #P2: other rules that should be run: various coexistence errors
+        #P3: run coexistence errors and warnings and put to CSV
+        foo = lookml.View('view: foo {}')
+        foo + 'dimension: foo {}'
+        # throws an assertion error:
+        # foo.foo + 'type: count'
+
+
+    def test_legacy_methods(self):
     #     #P0: legacy / backward compatibility methods: 
     #     #addProperty, addDimension, addMeasure, addJoin etc....
-    #     x = lookml.View('x')
-    #     foo = lookml.Dimension('foo')
+        x = lookml.View('x')
+        #P0: add multi-constructor capabilities to all LookML objects
+        # foo = lookml.Dimension('foo')
     #     x.addField(foo)
     #     x.getPrimaryKey()
     #     x.removeField(foo)
@@ -305,21 +443,17 @@ class testView(unittest.TestCase):
     def test_new_file(self):
         pass
 
-
-
-
 #P2: obtain the real list of timezones from Looker itself
-#P2: add CLI support
-#P2: option to omit defaults
-#P2: add looker version numbers to the lang map and throw warning if prop depreicated or error if not yet supported
-#P0: complex props / constructs do not support an add method and + operator overloading
+#P3: add CLI support
+#P3: option to omit defaults
+#P3: add looker version numbers to the lang map and throw warning if prop depreicated or error if not yet supported
 
 class testOtherFiles(unittest.TestCase):
     def setUp(self):
         pass
 
     def test_parsing_aggregate_tables(self):
-        #P0: include coming back funny
+        #P0: include coming back funny becuase it's the wrong type. Needs to be multi-value / list type, but print as string
         x = file.File('tests/files/basic_parsing/agg.model.lkml')
         # x = lkml.load(open('tests/files/basic_parsing/agg.model.lkml','r', encoding="utf-8"))
         # x = open('tests/files/basic_parsing/agg.model.lkml','r', encoding="utf-8")
@@ -372,6 +506,3 @@ class testOtherFiles(unittest.TestCase):
         pass
     def test_maplayer_topojson(self):
         pass
-
-    # def tearDown(self):
-    #     pass

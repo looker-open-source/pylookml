@@ -12,9 +12,9 @@ class testModel(unittest.TestCase):
       self.explore_names = ['trip', 'station_weather_forecast', 'station_forecasting']
 
   def test_walking(self):
-    for explore in self.model.explores:
-      assert explore.name in self.explore_names
-      assert type(explore.join) == lookml.prop_named_construct
+    for explore in self.model:
+      assert explore.name in self.model.explores
+      assert isinstance(explore.join, lookml.prop_named_construct)
 
   def test_walk_explore(self):
     explore = self.model.explores.trip

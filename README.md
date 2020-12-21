@@ -36,5 +36,3 @@ order_items.addSum('id')
 order_items.write()
 
 ```
-
-P0: How to use the lang map generator
