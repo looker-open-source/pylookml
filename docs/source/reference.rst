@@ -37,6 +37,6 @@ Full API Reference
     :inherited-members:
     :members:
 
-.. autoclass:: lookml.DimensionGroup
+.. autoclass:: lookml.Dimension_Group
     :inherited-members:
     :members:

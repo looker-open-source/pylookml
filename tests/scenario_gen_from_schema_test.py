@@ -11,28 +11,14 @@ config.read('settings.ini')
 
 
 
-class testScenarios(unittest.TestCase):
+class testScenariosGenerateFromSchema(unittest.TestCase):
     '''
         Objective: test end to end common use case scenarios 
     '''
     def setUp(self):
         pass
-    def test_eav_unnester(self):
-        pass
-    def test_deploy_extension(self):
-        #deploy a parametarized extension
-        pass
-    def test_generate_aggregate_table(self):
-        #loop through an aggregate awareness scenario
-        pass
-    def test_tuning_whitespace(self):
-        #once it's parameterizable
-        pass
     
     def test_generating_lookml_from_schema(self):
-        pass
-
-    def test_replacing_child_and_ancestor_references(self):
         pass
 
     def tearDown(self):

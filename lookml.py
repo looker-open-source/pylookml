@@ -1,8 +1,10 @@
-import lkml, copy 
+import lkml, copy, re
 from lang import *
 import warnings
-from typing import NewType, Any, Generator
+from typing import NewType, Any, Generator, Union, Tuple
 OMIT_DEFAULTS = False
+DB_FIELD_DELIMITER_START = '`' 
+DB_FIELD_DELIMITER_END = '`'
 def omit_defaults(f):
     def wrapper(*args,**kwargs):
         if OMIT_DEFAULTS and args[0]._is_default():
@@ -10,6 +12,43 @@ def omit_defaults(f):
         else:            
             return f(*args,**kwargs)
     return wrapper
+
+def possible_obj_str(
+    s: str, 
+    # t: Union[View,Field,Explore,Model,Manifest]) -> bool:
+    t: Any) -> bool:
+    """
+    Check if the string matches the pattern of a specific object type
+
+    Args:
+        s (str): the string to check
+        t (Union[View, Field, Explore, Model, Manifest]): the object type / class
+
+    Returns:
+        bool: is it a string of that object type
+    """
+    if isinstance(t,View):
+        return re.match(ws.view_pattern,s)
+    elif isinstance(t,Field):
+        return re.match(ws.field_pattern,s)
+    elif isinstance(t,Explore):
+        return re.match(ws.explore_pattern,s)
+    elif isinstance(t,Model):
+        return re.match(ws.model_pattern,s)
+    elif isinstance(t,Manifest):
+        return re.match(ws.manifest_pattern,s)
+    else:
+        return False
+
+def snakeCase(string: str) -> str:
+    str1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', string)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', str1).lower()
+
+def removeSpace(string: str) -> str:  # removing special character / [|]<>,.?}{+=~!$%^&*()-
+    return re.sub('(\s|/|\[|\]|\||\,|<|>|\.|\?|\{|\}|#|=|~|!|\+|\$|\%|\^|\&|\*|\(|\)|\-|\:)+', r'', string)
+
+def lookCase(string: str) -> str:
+    return removeSpace(snakeCase(string))
 
 class prop(object):
     def __init__(self, 
@@ -42,6 +81,21 @@ class lookml(object):
     _member_classes  = list()
     _private_items = list()
     def __init__(self, data, parent=None):
+        if isinstance(data,dict):
+            pass
+        elif isinstance(data, str):
+            if valid_name(data):
+                data = {'name':data}
+            elif possible_obj_str(data,self):
+                   parsed = lkml.load(data)
+                   typ = self._type()+'s'
+                   if typ in parsed.keys():
+                       if len(parsed[typ]) == 1:
+                           data = parsed[typ][0]
+                       else:
+                            raise Exception("Input string contains more than one " + self._type())
+                   else:
+                        raise Exception(f"Input string does not contain {typ}")
         self.parent = parent
         self + data
     def __setattr__(self, key, value):
@@ -49,6 +103,9 @@ class lookml(object):
             self._insert(key,value)
         else:
             object.__setattr__(self, key, value)
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__}: {self.name} @{hex(id(self))}>'
 
     def __getattr__(self,key):
         if key.startswith('_add_hook'):
@@ -83,6 +140,15 @@ class lookml(object):
 
     def _dense(self): return len(list(self())) <= ws.dense_children_threshold 
     #P2: this causes a stack overflow: or self._length() <= ws.dense_str_len
+
+    def __sub__(self,other):
+        if isinstance(other, str):
+            if other in self.__dict__.keys():
+                del self.__dict__[other]
+            else:
+                warnings.warn(f'{other} did not exist on {self.name}')
+        else:
+            raise OperationError(self,' - ',other)
 
     def __iter__(self):
         def i():
@@ -124,12 +190,12 @@ class lookml(object):
         string = string + ' ' if len(data) > 0 else string
         # string = string + ws.nl if len(data) > 0 else string
         return string
-    def _type(self): return self.__class__.__name__.lower()
-    def __len__(self): return len([i for i in self()])
-    def _length(self): return len([str(i) for i in self()])
-    def __bool__(self): return len(self) > 0
-    def _json(self): return lkml.load(str(self))
-    def _insert(self,key,value):
+    def _type(self) -> str: return self.__class__.__name__.lower()
+    def __len__(self) -> int: return len([i for i in self()])
+    def _length(self) -> int: return len([str(i) for i in self()])
+    def __bool__(self) -> bool: return len(self) > 0
+    def _json(self) -> dict: return lkml.load(str(self))
+    def _insert(self,key: str, value: dict) -> None:
         #special top level namespace insertion for 'member classes', careful of filters keyword issues
         if key in self._member_classes and self._type() not in props.cfg['filters'].keys():
             for member in value:
@@ -159,12 +225,70 @@ class lookml(object):
                 f'{key} skipped. {key} not a valid attribute of {self._type()} '
                 f'refer to: {self._conf()["docs_url"]}'
                 )
-    def _add_hook_type(self,candidate_prop):
+    def _add_hook_type(self,candidate_prop) -> bool:
         #currently doesn't do anything
         # candidate_prop
         return True
-    
+    ##### Legacy Methods #####
+    def setProperty(self,key: str, value: dict):
+        self._insert(key,value)
+        return self
+    def setName(self, name: str):
+        """
+        Set your Field's name value
 
+        Args:
+            name (str): a valid lookml name a to z, numbers and underscores
+
+        Returns:
+            Field: Your field for method chaining
+
+        Raises:
+            Exception: invalid lookml name
+        """
+        if valid_name(name):
+            old_name = self.name
+            self.name = name
+            self.parent.__dict__.pop(old_name)
+            self.parent + self
+            return self
+        else:
+            raise Exception("invalid LookML Name")
+    def setDescription(self, description: str):
+        """
+        Set your object's description
+
+        Warning: 
+        not all LookML objects support a description attribute. This method is present
+        in a small number of cases on objects which do not support the parameter.
+
+        Args:
+            description (str): a description string
+
+        Returns:
+            Field: Your field for method chaining
+        """
+        self.description = description
+        return self
+    def hasProp(self, p: str) -> bool:
+        """
+            Check if a property is in your object
+
+        Args:
+            p (str): the string of the property
+            i.e. dim.hasProp('type') -> True
+
+        Returns:
+            Boolean: True if prop present, false if not
+        """
+        if p in self.__dict__.keys():
+            if isinstance(self.__dict__[p],prop):
+                return True
+            else:
+                return False
+        else:
+            return False
+    ##### Legacy Methods #####
     def _add_hook(self, key, candidate_val):
         callback = '_add_hook_' + key
         func = getattr(self, callback, None)
@@ -172,8 +296,18 @@ class lookml(object):
             return func(candidate_val)
         else:
             return True
+    #P2: _add_hook_x is not invoked for name, want to add it so that valid_name can be run
+    # def _add_hook_name(self,candidate):
+    #     pass
 
     def __add__(self,other):
+        # start object addition routine
+        #P1: implment add hooks here and for member classes types
+        if not isinstance(other,(str,dict)):
+            if isinstance(self,View) and isinstance(other,Field):
+                self.__dict__.update({other.name:other})
+
+        # end object addition 
         if isinstance(other,str):
             try:
                 # Handles the special case where lkml passes single object wrapped in a collection list
@@ -184,17 +318,17 @@ class lookml(object):
         elif isinstance(other,dict):
             parsed = other
 
-        for key,value in parsed.items():
-            is_plural = True if (key[:-1] in props.plural_keys) else False
-            key = key[:-1] if is_plural else key
-            #special cases to treat as singular
-            if self._type() in props.cfg['filters'].keys() and key == 'filter': 
-                key = key + 's'
-            elif self._type() == 'explore_source' and key == 'bind_filter':
-                key = key + 's'
+        if isinstance(other,str) or isinstance(other,dict):
+            for key,value in parsed.items():
+                is_plural = True if (key[:-1] in props.plural_keys) else False
+                key = key[:-1] if is_plural else key
+                #special cases to treat as singular
+                if self._type() in props.cfg['filters'].keys() and key == 'filter': 
+                    key = key + 's'
+                elif self._type() == 'explore_source' and key == 'bind_filter':
+                    key = key + 's'
 
-            self._insert(key,value)
-
+                self._insert(key,value)
 class Field(lookml):
     def __str__(self):
         if self._dense():
@@ -207,10 +341,9 @@ class Field(lookml):
             )
 
     def __getattr__(self,key):
-
         #full reference
         if key == '__ref__' and self._type() in props.field_types:
-            if self.parent:
+            if self.parent is not None:
                 return ('${' + self.parent.name + '.' + self.name + '}')
         #Short Reference
         elif key == '__refs__' and self._type() in props.field_types:
@@ -218,45 +351,306 @@ class Field(lookml):
 
         #full reference -- regex escaped
         elif key == '__refre__' and self._type() in props.field_types:
-            if self.parent:
+            if self.parent is not None:
                 return ('\$\{' + self.parent.name + '\.' + self.name + '\}')
         #Short reference -- regex escaped
         elif key == '__refsre__' and self._type() in props.field_types:
-            if self.parent:
+            if self.parent is not None:
                 return ('\$\{' + self.name + '\}')
         #Raw Reference
         elif key == '__refr__' and self._type() in props.field_types:
-            if self.parent:
+            if self.parent is not None:
                 return (self.parent.name + '.' + self.name)
         #Raw refence short
         elif key == '__refrs__' and self._type() in props.field_types:
-            if self.parent:
+            if self.parent is not None:
                 return (self.name)
         #Raw Reference regex
         elif key == '__refrre__' and self._type() in props.field_types:
-            if self.parent:
+            if self.parent is not None:
                 return (self.parent.name + '\.' + self.name)
+        #return prop defaults
+        elif key in self._allowed_children():
+            return prop_router(key,'__default__', self)
         else:
             super().__getattr__(key)
             #return prop_router(key,'__default__', self)
+    
+    def addTag(self,tag: str):
+        """
+        Add a tag to the field's tag collection
+
+        Args:
+            tag (str): the tag to add
+
+        Returns:
+            [type]: returns your field for method chaining
+
+        """
+        self.tags + tag
+        return self
+    def removeTag(self,tag: str):
+        """
+        Remove a tag from the field's tag collection
+
+        Args:
+            tag (str): the tag to remove
+
+        Returns:
+            [type]: returns your field for method chaining
+
+        """
+        self.tags - tag
+        return self
+    def setType(self,typ: str):
+        """
+        Sets the Fields type attribute to the specified value
+        i.e. dim.setType('number')
+
+        Args:
+            typ (str): an allowed lookml type for the field
+
+        Returns:
+            Field: returns itself for chaining dim.setType('number').setPrimaryKey()
+        """
+        self.type = typ
+        return self
+
+    def setViewLabel(self, view_label: str):
+        """
+        sets the view_label attribute for the field
+        controlling where it rolls up on the explore screen
+
+        Args:
+            view_label (str): view_label
+
+        Returns:
+            [type]: [description]
+        """
+        self.view_label = view_label
+        return self
+
+    def dependency_chain(self,i=0):
+        """
+        Yields nested tuple datastructures showing each of the
+        dependency chains coming from your field
+        
+        Yields:
+            Tuple: (1,dimA,(2,dimB,(3,dimC,...)))
+        """
+        if self.parent is not None:
+            i += 1
+            for dependent in list(self.parent.search('sql',[self.__refsre__,self.__refre__])):
+                if dependent is not None:
+                    for dep in dependent.dependency_chain(i=i):
+                        if dep is not None:
+                            yield  i, dependent, dep
+                    yield  i, dependent
+
+    def children_all(self,i=0):
+        """
+        Returns the fields in the same view which directly or indirectly 
+        reference your field. I.e. dim B references dim A and dim C 
+        references dim B. This method returns B and C
+
+        Yields:
+            Field: fields dependent upon your field
+        """
+        if self.parent is not None:
+            i += 1
+            for dependent in list(self.parent.search('sql',[self.__refsre__,self.__refre__])):
+                if dependent is not None:
+                    for dep in dependent.dependency_chain(i=i):
+                        if dep is not None:
+                            yield dep
+                    yield dependent
+
+    def children(self):
+        """
+        Returns the fields in the same view which directly reference 
+        the field in their sql parameter
+
+        Yields:
+            Field: fields directly referencing your field
+        """
+        if self.parent is not None:
+            for dependent in list(self.parent.search('sql',[self.__refsre__,self.__refre__])):
+                if dependent is not None:
+                    yield dependent
+
+    def _ancestor_chain(self,i=0):
+        for f in re.finditer(ws.mustachePattern, self.sql.value):
+            yield f.group(1)
+
+    def ancestors(self):
+        """
+        return the fields directly referenced by your field
+
+        Yields:
+            Field: a generator of direct ancestors
+        """
+        for ref in self._ancestor_chain():
+            yield self.parent[ref]
+    
+    def ancestors_all(self):
+        for f in re.finditer(ws.mustachePattern, self.sql.value):
+            yield f.group(1)
+
+    def _render_dependency_map(self,depChain,i=0):
+        # depChain = (1, 'c', (2, 'd', (3, 'e')))
+        # a -> c -> d -> e
+        length = len(depChain)
+        if i == 0:
+            print(self.name, end=" -> ")
+        if length == 3:
+            print(depChain[1].name,end=" -> ")
+            self._render_dependency_map(depChain[2],i=1)
+        elif length == 2:
+            print(depChain[1].name)
+
+    def setName_replace_references(self, newName: str):
+        """
+        Alias for Field.setName_safe() method
+        """
+        self.setName_safe(newName)
+        return self
+
+    def setName_safe(self, newName: str):
+        """
+        Change the name of the field and references to it in sql 
+        (does not yet perform the same for HTML / Links / Drill Fields / Sets / Actions etc)
+
+        Args:
+            newName (str): the new name
+
+        Returns:
+            self for method chaining
+        """
+        #P2: complete checking all places for dependencies, html, links etc
+        old = copy.deepcopy(self.name)
+        oldrefsre = copy.deepcopy(self.__refsre__)
+        oldrefre = copy.deepcopy(self.__refre__)
+        self.setName(newName)
+        for f in self.parent.search('sql',[oldrefsre,oldrefre]):
+            f.sql = re.sub(oldrefsre, self.__refs__, str(f.sql.value))
+            f.sql = re.sub(oldrefre, self.__ref__, str(f.sql.value))
+        self.parent.removeField(old)
+        self.parent + self
+        return self
+
+    def setSql(self,sql: str):
+        """
+        Set the value of your sql
+        We reccomend you 
+        use the preffered method of setting directly: dim.sql = "${TABLE}.id"
+
+        Args:
+            sql (str): string of your sql
+
+        Returns:
+            [type]: [description]
+        """
+        self.sql = sql
+        return self
+
+    def addLink(self,url: str,label: str,icon_url: str ='https://looker.com/favicon.ico'):
+        """
+        Add a link
+        Args:
+            url (str): string for your url (can contain liquid)
+            label (str): string for your label (can contain liquid)
+            icon_url (str): default is "https://looker.com/favicon.ico"
+
+        Returns:
+            [type]: [description]
+        """
+        self + f"""
+        link: {{
+            url: "{url}"
+            label: "{label}"
+            icon_url: "{icon_url}"
+        }}
+        """
+        return self
+
+    def setString(self):
+        """
+        Sets the Dimension to type string
+
+        Returns:
+            Dimension: returns your dimension for chaining 
+            dim.setPrimaryKey().setType('number')
+        """
+        self.type = 'string'
+        return self
+
 class Dimension(Field):
+    def setPrimaryKey(self):
+        """
+        Sets the Dimension as it's parent view's primary key 
+        and adds primary_key: yes to the field
+
+        Returns:
+            Dimension: returns your dimension for chaining 
+            dim.setPrimaryKey().setType('number')
+        """
+        self.primary_key = 'yes'
+        return self
+    def unSetPrimaryKey(self):
+        """
+        Unregisters the Field as it's parents pk and adds
+        primary_key: no to the field
+
+        Returns:
+            Dimension: returns your dimension for chaining 
+            dim.setPrimaryKey().setType('number')
+        """
+        self.primary_key = 'no'
+        return self
+    def setDBColumn(self, dbColumn: str,changeIdentifier: bool=True):
+        """
+        Sets changes your sql to refer to the new column name
+
+        Args:
+            dbColumn (str): [description]
+            changeIdentifier (bool, optional): [description]. Defaults to True.
+
+        Returns:
+            Dimension: returns your dimension for chaining 
+            dim.setPrimaryKey().setType('number')
+        """
+        self.sql = (f'${{TABLE}}.{DB_FIELD_DELIMITER_START}'
+                    f'{dbColumn}{DB_FIELD_DELIMITER_END}')
+        if changeIdentifier:
+            self.setName_safe(lookCase(dbColumn)) 
+        return self
+    def setNumber(self):
+        """
+        Sets the Dimension to type number
+
+        Returns:
+            Dimension: returns your dimension for chaining 
+            dim.setPrimaryKey().setType('number')
+        """
+        self.type = 'number'
+        return self
+
     def _add_hook_primary_key(self, candidate_prop):
-        # if self.parent.__pk.primary_key:
-        self
         if self.parent._View__pk is not None:
-            # if self.parent.__pk.primary_key:
             if self.parent._View__pk.primary_key:
                 if candidate_prop:
                     raise DuplicatePrimaryKey( self.parent, self)
                 else:
                     self.parent._View__pk = self
-                    # self.parent.__pk = candidate_prop
-                    return True #returns true to allow the dict.update
+                    #returns true to allow the dict.update
+                    return True 
             else:
+                self.parent._View__pk = self
                 return True
         else:
             self.parent._View__pk = self
-            return True #returns true to allow the dict.update
+            #returns true to allow the dict.update
+            return True 
 
 
 class Measure(Field): pass
@@ -331,8 +725,6 @@ class Explore(lookml):
                 f'{ self._s(type=(prop),exclude_subtype="join") }'
                 f'{ws.nl}}}')
 
-class Join(lookml): pass
-
 class Manifest(lookml):
     _member_classes = []
     def __str__(self):
@@ -376,40 +768,33 @@ class View(lookml):
     ]
     _private_items = ['_View__pk']
     def __init__(self, data, parent=None):
-        if isinstance(data,dict):
-            pass
-        elif isinstance(data, str):
-            if valid_name(data):
-                data = {'name':data}
-            elif possible_view_str(data):
-                   parsed = lkml.load(data)
-                   if 'views' in parsed.keys():
-                       if len(parsed['views']) == 1:
-                           data = parsed['views'][0]
-                       else:
-                            raise Exception("Input string contains more than one view")
-                   else:
-                        raise Exception("Input string does not contain views")
-                   
-        else:
-            raise Exception("Views must be constructed with names," + 
-                    " valid lookml, or a dict from lkml parser")
-
         self.__pk = None
         super().__init__(data, parent)
 
-    def first_order_fields(self) -> Generator:
-        '''
-        generates fields that reference DB fields directly
-        having the ${TABLE} syntax
-
-        :return: Generator of type Field
-        :rtype: Field
-        '''
-        for field in self(type=Field):
-            if '${TABLE}.' in field.sql:
-                yield field
-
+    def __sub__(self,other):
+        if isinstance(other, Field):
+            if other.name in self.__dict__.keys():
+                if len(list(other.dependency_chain())) > 1:
+                    warnings.warn(
+                        f'{other.__refrs__} had dependencies: '
+                        f'{[f.name for f in other.children_all()]}'
+                        )
+                del self.__dict__[other.name]
+            else:
+                warnings.warn(f'{other.name} did not exist in {self.name}')
+        elif isinstance(other, str):
+            if other in self.__dict__.keys():
+                if isinstance(self[other],Field):
+                    if len(list(self[other].dependency_chain())) > 1:
+                        warnings.warn(
+                            f'{self[other].__refrs__} had dependencies: '
+                            f'{[f.name for f in self[other].children_all()]}'
+                            )
+                del self.__dict__[other]
+            else:
+                warnings.warn(f'{other} did not exist on {self.name}')
+        else:
+            raise OperationError(self,' - ',other)
     def _fields(self) -> Generator: return self(type=Field)
     def _dims(self) -> Generator: return self(type=Dimension)
     def _dim_groups(self) -> Generator: return self(type=Dimension_Group)
@@ -439,22 +824,57 @@ class View(lookml):
         else:
             return True
 
+    def search(self, prop, pattern):
+        '''
+        pass a regex expression and will return the fields whose sql match
+        :param prop: name of proprty you'd like to search
+        :param pattern: the regex pattern
+        :type prop: str
+        :type patter: a regex search string
+        :return: a generator / iteratble set of fields who have a member property matching the pattern
+        :rtype: Field
+        '''
+        if isinstance(pattern,list):
+            pattern = '('+'|'.join(pattern)+')'
+        find_this = r''.join([r'.*',pattern,r'.*'])
+        for field in self.fields():
+            if prop in field.__dict__.keys():
+                string_to_search = field.__dict__[prop].value
+            else:
+                string_to_search = ''
+            if re.match(find_this,string_to_search):
+                yield field
+
+    def removeField(self,field):
+        """
+        Remove a Field from your View
+
+        Args:
+            field ([type]): [description]
+
+        Returns:
+            View: returns your view for method chaining 
+            i.e. view.removeField(view.id).addCount()
+        """
+        self - field
+        return self
+
     #Gold Standard of Sphinx method Doc
     # def send_message(self, sender: str, 
     #     recipient: str, message_body: str, priority: int=1) -> int:
-    #     '''
-    #     Send a message to a recipient
+        # '''
+        # Send a message to a recipient
 
-    #     :param str sender: The person sending the message
-    #     :param str recipient: The recipient of the message
-    #     :param str message_body: The body of the message
-    #     :param priority: The priority of the message, can be a number 1-5
-    #     :type priority: integer or None
-    #     :return: the message id
-    #     :rtype: int
-    #     :raises ValueError: if the message_body exceeds 160 characters
-    #     :raises TypeError: if the message_body is not a basestring
-    #     '''
+        # :param str sender: The person sending the message
+        # :param str recipient: The recipient of the message
+        # :param str message_body: The body of the message
+        # :param priority: The priority of the message, can be a number 1-5
+        # :type priority: integer or None
+        # :return: the message id
+        # :rtype: int
+        # :raises ValueError: if the message_body exceeds 160 characters
+        # :raises TypeError: if the message_body is not a basestring
+        # '''
     #     return 1
 
     def __str__(self):
@@ -469,6 +889,234 @@ class View(lookml):
                 f'{ self._s(sub_type="set") }'
             f'{ws.nl}}}'
         )
+    ##### Legacy Methods #####
+    # generators #
+    def fieldNames(self):
+        """
+        returns all the field names
+
+        Yields:
+            [type]: iteration of the fields names
+        """
+        for field in self._fields():
+            yield field.name
+
+    def fields(self): 
+        """
+        get all the Views Fields
+
+        Returns:
+            [type]: iterable collection of Fields
+        """
+        for f in self._fields():
+            yield f
+
+    def dimensions(self): 
+        """
+        get all the Views Dimensions
+
+        Returns:
+            Dimension: iterable collection of Dimensions
+        """
+        for d in self._dims():
+            yield d
+
+    def measures(self): 
+        """
+        get all the Views Measures
+
+        Returns:
+            Measure: iterable collection of Measures
+        """
+        for d in self._measures():
+            yield d
+
+    def dimensionGroups(self): 
+        """
+        iterate over the dimension_group fields in your view
+
+        Returns:
+            Iterator: Iterator of type dimension_group Field
+        """
+        for dg in self._dim_groups():
+            yield dg
+
+    def filters(self): 
+        """
+        iterate over the filter fields in your view
+
+        Returns:
+            Iterator: Iterator of type Filter Field
+        """
+        for f in self._filters():
+            yield f 
+
+    def parameters(self): 
+        """
+        iterate over the parameter fields in your view
+
+        Returns:
+            Iterator: Iterator of type Parameter Field
+        """
+        for p in self._params():
+            yield p
+
+    def getFieldsByTag(self,tag: str):
+        """
+        Loop through your fields with a specific tag present
+
+        Args:
+            tag (str): 
+        Yields:
+            Field: Fields with the selected tag
+        """
+        for f in self._fields():
+            if tag in f.tags:
+                yield f
+
+    def getFieldsByType(self, typ: str):
+        """
+        Loop over fields with a certain type
+
+        Args:
+            typ (str): 'string','number','count'...
+
+        Yields:
+            Field: Field with the selected type attribute
+        """
+        for f in self._fields():
+            if f.type.value == typ:
+                yield f
+
+    def getFieldsSorted(self):
+        '''
+        return the fields sorted first conventionally by type, then alphabetically
+
+        Yields:
+            Field: a list of fields in the natural sort order
+        '''
+        return sorted(self._fields(), key=lambda field: ''.join([str(isinstance(field, Measure)), field.name]))
+    # end generators
+        
+    def addDimension(self,d: (str,Dimension),type: str = 'string'): 
+        """
+        Add a dimension object, or add a string DB column you would like added 
+
+        Args:
+            d ([type]): [description]
+            type (str, optional): [description]. Defaults to 'string'.
+
+        Returns:
+            [type]: [description]
+        """
+        if isinstance(d,Dimension):
+            self + d
+        if isinstance(d,str):
+            name = lookCase(d)
+            self + f'''
+            dimension: {name} {{
+                type: {type}
+                sql: {d} ;;
+            }}
+            '''
+        return self
+
+    def addCount(self): 
+        """
+        Adds a basic measure type count to your view
+
+        Returns:
+            self: allows for chaining myView.addCount().addDimension()
+        """
+        self + 'measure: count { type: count }'
+        return self
+
+    def addAverage(self, field: Dimension):
+        """
+        Add an average of a dimension to your view
+
+        Args:
+            field (Dimension): add a dimension object you'd like the average on
+        """
+        self + f'''
+            measure: {field.name}_avg {{
+                type: average
+                sql: {field.__ref__} ;;
+            }} 
+        '''
+        return self
+
+    def addCountDistinct(self,field: Dimension): 
+        """
+        Add a count distinct of a dimension to your view
+
+        Args:
+            field (Dimension): add a dimension object you'd like the distinct on
+        """
+        self + f'''
+            measure: {field.name}_count_distinct {{
+                type: count_distinct
+                sql: {field.__ref__} ;;
+            }} 
+        '''
+        return self
+
+    def sum(self,field: Dimension): 
+        """
+        Add a sum of a dimension to your view
+
+        Args:
+            field (Dimension): add a dimension object you'd like the sum on
+        """
+        self + f'''
+            measure: {field.name}_sum {{
+                type: tum
+                sql: {field.__ref__} ;;
+            }} 
+        '''
+        return self
+
+    def sumAllNumDimensions(self):
+        """
+        creates a sum measure for each Dimension of type number
+
+        Returns:
+            View: returns your View for method chaining view.sumAllNumDimensions().addCount()...
+        """
+        for numDim in self.getFieldsByType('number'):
+            self.sum(numDim)
+        return self
+
+    def setViewLabel(self,label: str):
+        """
+        Add a view_label to your view
+
+        Args:
+            label (str): the text of the View Label
+
+        Returns:
+            View: returns your View for method chaining view.sumAllNumDimensions().addCount()...
+        """
+        self.setProperty('view_label',label)
+        return self
+
+    def print_dependency_map(self):
+        for field in list(self.fields()):
+            for referenceChain in field.dependency_chain():
+                field._render_dependency_map(referenceChain)
+
+    def first_order_fields(self) -> Generator:
+        '''
+        generates fields that reference DB fields directly
+        having the ${TABLE} syntax
+
+        :return: Generator of type Field
+        :rtype: Field
+        '''
+        for field in self(type=Field):
+            if '${TABLE}.' in field.sql:
+                yield field
+    ##### Legacy Methods #####
 
 class prop_block(prop):
     def __str__(self):
@@ -539,8 +1187,9 @@ class prop_named_construct(prop):
             return None
 
     def __getitem__(self,item):
-        if isinstance(item, int):
-            return self.children[item]
+        # if isinstance(item, int):
+        return self.children[item]
+        
     
     def __add__(self,other):
         #P3: since this is on the props hierarchy, need to refactor addition so it's not challenging
@@ -738,6 +1387,11 @@ class prop_list_quoted(prop, common_list_functions):
         else:
             return f'{__}{self.key}: { "[]" }'
 
+class prop_includes(prop, common_list_functions):
+    def __str__(self):
+        rendered = [f'include: "{val}"' for val in self.value]
+        return ws.nl.join(rendered)
+
 class prop_options(prop):
     def __init__(self, key, value, parent, conf={}):
         self.key = key
@@ -868,6 +1522,7 @@ def prop_router(key,value, parent):
         ,'html': prop_html
         ,'sorts': prop_sorts
         ,'sql': prop_sql
+        ,'include': prop_includes
     }
     if value == '__default__':
         return prop_map[prop_type]( key, default, parent, conf=conf)

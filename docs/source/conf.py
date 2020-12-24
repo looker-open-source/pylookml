@@ -35,6 +35,16 @@ release = '2.0.0'
 # _json() method
 # which properties del and which .remove() i.e. anonymous plural constructs
 # How to use the lang map generator
+# Updated EAV
+# How to create a new model file
+# How to load a project from the filestystem
+# Omitting defaults
+# logging issues to a csv
+# dim.filters + {'view.field':'>1'}
+# adding and subtracting properties
+# view + 'sql_table_name: order_items ;;'
+# view - 'sql_table_name'
+# x.foo.setName_replace_references('bar')
 
 
 # -- General configuration ---------------------------------------------------
