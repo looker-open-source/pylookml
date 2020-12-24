@@ -395,7 +395,9 @@ class githubProject(project):
             except github.GithubException as e:
                 if e._GithubException__status == 404:
                     return False
-        if isinstance(f,file.File):
-            return checkgithub(f.path)
-        elif isinstance(f,str):
-            return checkgithub(f)
+        #P0: types are not aligned to the new types
+        # if isinstance(f,file.File):
+        # if isinstance(f,file.testClassgithub):
+        return checkgithub(f.path)
+        # elif isinstance(f,str):
+        #     return checkgithub(f)

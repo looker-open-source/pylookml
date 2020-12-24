@@ -18,12 +18,23 @@ class ws:
     fullPattern = r'(' + mustachePattern + r'|' + conditionPattern + r'|' + parameterPattern + r'|' + doubleBracesPattern + r'|' + filtersPattern + r')'
     lookml_name = r'^[a-z_]{1,150}$'
     view_pattern = r'^\s*view\:\s[a-z_]{1,150}\s\{(\s|.)*\}\s*$' #P3 pattern will match multiple views in a row
+    explore_pattern = r'^\s*explore\:\s[a-z_]{1,150}\s\{(\s|.)*\}\s*$' #P3 pattern will match multiple views in a row
+    join_pattern = r'^\s*join\:\s[a-z_]{1,150}\s\{(\s|.)*\}\s*$' #P3 pattern will match multiple views in a row
+    field_pattern = r'^\s*(dimension|measure|filter|parameter|dimension_group)\:\s[a-z_]{1,150}\s\{(\s|.)*\}\s*$'
+    model_pattern = r'.*'
+    manifest_pattern = r'.*'
 
 def valid_name(name):
     return re.match(ws.lookml_name,name)
 
 def possible_view_str(s):
     return re.match(ws.view_pattern,s)
+
+def possible_field_str(s):
+    return re.match(ws.field_pattern,s)
+
+
+    
 
 def parse_references(inputString):
     '''
@@ -1137,7 +1148,7 @@ class props:
                           'has_allowed_values': False,
                           'indent': 0,
                           'subtype': 'string',
-                          'type': 'string'}},
+                          'type': 'include'}},
   'indexes': { 'derived_table': { 'allowed_values': '',
                                   'default_value': '',
                                   'docs_url': 'https://looker.com/docs/r/lookml/types/derived_table/indexes?version=7.14&lookml=new',
@@ -2333,28 +2344,28 @@ class props:
                                        'subtype': 'options',
                                        'type': 'options'}},
   'tags': { 'dimension': { 'allowed_values': '',
-                           'default_value': '',
+                           'default_value': [],
                            'docs_url': 'https://looker.com/docs/r/lookml/types/dimension/tags?version=7.14&lookml=new',
                            'has_allowed_values': False,
                            'indent': 2,
                            'subtype': 'list_quoted',
                            'type': 'list_quoted'},
             'dimension_group': { 'allowed_values': '',
-                                 'default_value': '',
+                                 'default_value': [],
                                  'docs_url': 'https://looker.com/docs/r/lookml/types/dimension_group/tags?version=7.14&lookml=new',
                                  'has_allowed_values': False,
                                  'indent': 2,
                                  'subtype': 'list_quoted',
                                  'type': 'list_quoted'},
             'explore': { 'allowed_values': '',
-                         'default_value': '',
+                         'default_value': [],
                          'docs_url': 'https://looker.com/docs/r/lookml/types/explore/tags?version=7.14&lookml=new',
                          'has_allowed_values': False,
                          'indent': 1,
                          'subtype': 'list_quoted',
                          'type': 'list_quoted'},
             'filter': { 'allowed_values': '',
-                        'default_value': '',
+                        'default_value': [],
                         'docs_url': 'https://looker.com/docs/r/lookml/types/filter/tags?version=7.14&lookml=new',
                         'has_allowed_values': False,
                         'indent': 2,
@@ -3854,7 +3865,7 @@ class props:
                                              'date_week',
                                              'date_week_of_year',
                                              'date_year'],
-                         'default_value': 'count',
+                         'default_value': 'number',
                          'docs_url': 'https://looker.com/docs/r/lookml/types/measure/type?version=7.14&lookml=new',
                          'has_allowed_values': True,
                          'indent': 2,
