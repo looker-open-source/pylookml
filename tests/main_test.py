@@ -6,7 +6,8 @@ import file, project
 import warnings
 import configparser
 config = configparser.ConfigParser()
-config.read('tests/settings.ini')
+# config.read('tests/settings.ini')
+config.read('settings.ini')
 #P3: query can exist under the explore or aggregate table
 #P2: subtraction hooks / warnings
 #P3: put colin's recursive sql table finder in the library
@@ -108,7 +109,7 @@ class testMain(unittest.TestCase):
                 self.myView.transaction.tags - tag
         self.assertCountEqual(self.myView.transaction.tags,['tag1','tag2','tag3','tag5'])
 
-    def test_delete_me_adhoc_model_test(self):
+    def test_adhoc_model_test(self):
         x = '''
             connection: "my_data"
             view: foo {
@@ -156,7 +157,7 @@ class testMain(unittest.TestCase):
         # print(str(m.explores['foo']))
         # print(str(m.explores.foo))
 
-    def test_deleteme_adhoc_file_model_binding(self):
+    def test_file_model_binding(self):
         x = file.File('tests/files/basic_parsing/basic.model.lkml')
         print(x.path)
         cool = ['test123','test456','test890']
@@ -258,9 +259,16 @@ class testMain(unittest.TestCase):
             i += 1
         self.assertEqual(i,3)
 
+    def test_anonymous_construct(self):
+        #P1 support addition like lookml objects / pull out common addition functions
+        # add, insert, add_hook, sub, subhook etc
+        pass
     #P0: add support for getitem[] syntax at all levels
     def test_all_subscriptability(self):
-        pass
+        proj = project.Project(**config['project1'])
+        # print(proj['order_items.view.lkml']['views']['order_items']['id'].primary_key.value)
+        print(proj['order_items.view.lkml']['views']) 
+        
         #test file from project
         #test view/explore/prop from file/model
         #test field/prop from view
@@ -452,7 +460,6 @@ class testMain(unittest.TestCase):
     # def test_messages_comments(self): pass
 
     def test_legacy_methods(self):
-    #     #P0: legacy / backward compatibility methods: 
         x = lookml.View('''
             view: x {
                 dimension: test456 {
@@ -573,6 +580,48 @@ class testMain(unittest.TestCase):
 #P3: option to omit defaults
 #P3: add looker version numbers to the lang map and throw warning if prop depreicated or error if not yet supported
 
+class testProjFile(unittest.TestCase):
+    def setUp(self):
+        pass
+#Notes
+#construct with github -> direct by default
+#construct with github download="yes" -> download all
+#construct with path = local, can attach SSH later? What would this look like
+#construct with SSH downloads remote
+#preserve legacy compatibility as much as possible
+#don't the files change type based on project type?
+# test new file of each type
+    def test_project_from_local_path(self):
+        #connect
+        #iterate over files
+        pass
+
+    def test_project_from_github(self):
+        proj = project.Project(
+            repo= "llooker/russ_sandbox",
+            access_token=config['project1']['access_token'],
+        )
+
+        # mf = proj.file('01_order_items.view.lkml')
+        for f in proj.files():
+            print(f.path)
+            for v in f.contents.views.values():
+                print(' '*2,v.name)
+        #P0: iterate over: f.views:, f.views['order_items'], f.views.order_items
+        #P0: create a new type of each file
+        #P1: context manager for project
+
+        # mf = proj.file('11_order_facts.view.lkml')
+        # print(str(mf))
+
+    def test_project_from_ssh(self):
+        #connect
+        #iterate over files
+        pass
+
+
+
+
 class testOtherFiles(unittest.TestCase):
     def setUp(self):
         pass
@@ -598,35 +647,21 @@ class testOtherFiles(unittest.TestCase):
     def test_manifest_file(self):
         #P0: accessors and namespace for manifest file is bunk
         x = file.File('tests/files/basic_parsing/manifest.lkml')
+        #works
+        self.assertEqual(x.remote_dependency['ga360'].url.value,'https://github.com/llooker/google_ga360')
+        self.assertEqual(x.remote_dependency.ga360.url.value,'https://github.com/llooker/google_ga360')
+        # print(x.remote_dependency['ga360'])
+        # print(x.remote_dependency.ga360)
+        self.assertTrue('ga360' in x.remote_dependency)
+        for remote in x.remote_dependency:
+            print(remote.override_constant)
+        
+        # print(type(x.contents))
         #anon: local_dependency, visualization, 
         #named: constant, application, 
         #other props / project name etc 
         
-        print(str(x.contents.project_name))
-
-    def test_project_connectivity(self):
-        proj = project.Project(
-            repo= "llooker/russ_sandbox",
-            access_token=config['project1']['access_token'],
-        )
-
-        # mf = proj.file('01_order_items.view.lkml')
-        for f in proj.files():
-            print(f.path)
-            for v in f.contents.views.values():
-                print(' '*2,v.name)
-        #P0: iterate over: f.views:, f.views['order_items'], f.views.order_items
-        #P0: create a new type of each file
-        #P1: context manager for project
-
-        # mf = proj.file('11_order_facts.view.lkml')
-        # print(str(mf))
-    def test_project_from_folder(self):
-        pass
-
-    def test_new_model_file(self):
-        #create a new model file
-        pass
+        # print(str(x.contents))
 
     def test_dashboard_file(self):
         pass

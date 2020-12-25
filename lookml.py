@@ -634,7 +634,7 @@ class Dimension(Field):
         """
         self.type = 'number'
         return self
-
+        
     def _add_hook_primary_key(self, candidate_prop):
         if self.parent._View__pk is not None:
             if self.parent._View__pk.primary_key:
@@ -1219,6 +1219,28 @@ class prop_named_construct(prop):
             rendered += f'''{ child }'''
         return rendered
 
+    def __sub__(self,other: str):
+        if other in self.__dict__.keys():
+            del self.__dict__[other]
+        elif other in self.children.keys():
+            del self.children[other]
+        else:
+            raise Exception(f'{other} not present in {self.key}')
+
+    def __contains__(self,other):
+        return other in self.children
+    def __iter__(self):
+        self._valueiterator = iter(list(self.children.values()))
+        return self
+
+    def __next__(self):
+        try:
+            return next(self._valueiterator)
+        except:
+            raise StopIteration
+
+
+
 class prop_anonymous_construct(prop):
     def __init__(self, key, value, parent, conf={}):
         self.key = key
@@ -1246,7 +1268,15 @@ class prop_anonymous_construct(prop):
         else:
             return None
 
-    # def 
+    def __sub__(self,other: str):
+        if other in self.__dict__.keys():
+            del self.__dict__[other]
+        elif other in self.children.keys():
+            del self.children[other]
+
+#P1: does not support addition like proper lookml objects, 
+# pull out add and add_hook, insert, sub and sub_hook systems into a  
+# common container class
 
     def print_children(self):
         rendered_children = ''
@@ -1265,7 +1295,9 @@ class prop_anonymous_construct(prop):
 class prop_anonymous_construct_plural(prop):
     class prop_anonymous_construct_child(prop_anonymous_construct):
         def remove(self):
-            #P2: docstring needed
+            """
+                Remove self from construct
+            """
             self.parent.link.children.remove(self)
 
     def __init__(self, key, value, parent, conf={}):
@@ -1284,8 +1316,14 @@ class prop_anonymous_construct_plural(prop):
             self.children.append(child)
 
     def remove(self,item):
-        #P2: docstring needed
+        """
+        remove an item from your 
+
+        Args:
+            item ([type]): [description]
+        """
         self.children.remove(item)
+    
         
     def __setattr__(self, key, value):
         if key in ('key','value','parent','conf','children'):
