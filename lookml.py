@@ -5,6 +5,7 @@ from typing import NewType, Any, Generator, Union, Tuple
 OMIT_DEFAULTS = False
 DB_FIELD_DELIMITER_START = '`' 
 DB_FIELD_DELIMITER_END = '`'
+LOOKML_DASHBOARDS = False
 def omit_defaults(f):
     def wrapper(*args,**kwargs):
         if OMIT_DEFAULTS and args[0]._is_default():
@@ -197,13 +198,14 @@ class lookml(object):
     def _json(self) -> dict: return lkml.load(str(self))
     def _insert(self,key: str, value: dict) -> None:
         #special top level namespace insertion for 'member classes', careful of filters keyword issues
+        ac = self._allowed_children()
         if key in self._member_classes and self._type() not in props.cfg['filters'].keys():
             for member in value:
                 self.__dict__.update(
                     { member['name'] : classMap[key](member,self) }
                 )
         #normal property insertion
-        elif key in self._allowed_children():
+        elif key in ac:
             #step 1) instantiate the property
             candidate = prop_router( key, value, self )
             #step 2) if the hook lookup fails do nothing
@@ -327,7 +329,10 @@ class lookml(object):
                     key = key + 's'
                 elif self._type() == 'explore_source' and key == 'bind_filter':
                     key = key + 's'
-
+                elif self._type() == 'access_grant' and key == 'allowed_value':
+                    key = key + 's'
+                elif self._type() == 'query' and key in ("dimension","measure"):
+                    key = key + 's'
                 self._insert(key,value)
 class Field(lookml):
     def __str__(self):
@@ -669,19 +674,46 @@ class Model(lookml):
             elif item in self.keys():
                 return self.__getitem__(item)
             else:
-                return object.__getattr__(item)
+                return dict.__getattr__(item)
+        def __iter__(self):
+            self._valueiterator = iter(list(self.values()))
+            return self
+
+        def __sub__(self,other):
+            if isinstance(other, str):
+                del self[other]
+            else:
+                raise OperationError(self,' - ',other)
+
+        def __next__(self):
+            try:
+                return next(self._valueiterator)
+            except:
+                raise StopIteration
+
         def __str__(self):
             tmp = ws.nl
             for i in self.values():
                 tmp += (ws.nl + str(i))
             return tmp
 
-    def __init__(self,data):
+    def __init__(self,data, parent=None):
         self.explores = self.dotdict()
         self.views = self.dotdict()
+        self.parent = parent
         self + data
     
     def __add__(self,data):
+        if isinstance(data, View):
+            data.parent = self
+            self.views.update(
+                    {data.name:data}
+                        )
+        if isinstance(data, Explore):
+            data.parent = self
+            self.explores.update(
+                    {data.name:data}
+                        )
         if isinstance(data,dict):
             if 'explores' in data.keys():
                 for explore in data['explores']:
@@ -1533,13 +1565,20 @@ def prop_router(key,value, parent):
     is_plural = True if key[:-1] in props.plural_keys else False
     key = key[:-1] if is_plural else key
     parent_type = parent._type()
-    #P2: not proud of this, but the "plural keys" needs to be corrected for certain contexts. This works for now but I can't explain it well
+    #P1: not proud of this, but the "plural keys" needs to be corrected for certain contexts. This works for now but I can't explain it well
     if parent_type in props.cfg['filters'].keys() and key == 'filter':
         key = key + 's'
     elif parent_type == 'explore_source' and key == 'bind_filter':
         key = key + 's'
     elif parent_type == 'query' and key in ('dimension','measure'):
         key = key + 's'
+    elif parent_type == 'access_grant' and key == 'allowed_value':
+        key = key + 's'
+    if key == 'query' and parent_type == 'aggregate_table':
+        #P1: make more elegant / clean up this fixes an issue where because query is a named construct in the explore
+        # and an anonymous construct in the aggregate table I need to take the 1 and only value out because lkml thinks
+        # it's a plural key after adding it to the plural keys to fix the issue with explore > query
+        value = value[0]
     conf = props.cfg[key][parent_type]
     prop_type = conf['type']
     default = conf['default_value']

@@ -6,14 +6,15 @@ import file, project
 import warnings
 import configparser
 config = configparser.ConfigParser()
+import pprint
 # config.read('tests/settings.ini')
 config.read('settings.ini')
 #P3: query can exist under the explore or aggregate table
 #P2: subtraction hooks / warnings
 #P3: put colin's recursive sql table finder in the library
 #P2: test coverage for sets
-#P2: test coverage for manifest files
-#P1: organize the tests
+#P3: test coverage for manifest files
+#P2: organize the tests
 
 # Objective / coverage
 #     Read all file types from filesystem: 
@@ -37,6 +38,12 @@ class testMain(unittest.TestCase):
     '''
     def setUp(self):
         pass
+
+    def test_model_file(self):
+        pm = lkml.load(open('.tmp/pylookml/eav_example/eav.model.lkml'))
+        p = lookml.Model(pm)
+        print(p)
+
 
     def test_parse_print(self):
         self.parsed_view = lkml.load(open('tests/files/basic_parsing/basic.view.lkml'))
@@ -580,6 +587,9 @@ class testMain(unittest.TestCase):
 #P3: option to omit defaults
 #P3: add looker version numbers to the lang map and throw warning if prop depreicated or error if not yet supported
 
+#P0: merge refinements that are present in a single file (currently only last)
+# see tests/files/pylookml_test_project/models/queries_for_order_items.view.lkml
+
 class testProjFile(unittest.TestCase):
     def setUp(self):
         pass
@@ -591,10 +601,95 @@ class testProjFile(unittest.TestCase):
 #preserve legacy compatibility as much as possible
 #don't the files change type based on project type?
 # test new file of each type
+    def pylookml_test_project_routine(self,proj):
+        proj.dir_list()
+        #loop through files
+        for vf in proj.view_files():
+            print(vf.name)
+        #access a file's deep object via [] syntax
+        val_a = proj['views/01_order_items.view.lkml']['views']['order_items']['order_id'].action[0].url.value
+        self.assertEqual(val_a,'https://hooks.zapier.com/hooks/catch/1662138/tvc3zj/')
+        #access a file's deep object via .file() syntax
+        val_b = proj.file('views/01_order_items.view.lkml').views.order_items.order_id.action[0].url.value
+        self.assertEqual(val_b,'https://hooks.zapier.com/hooks/catch/1662138/tvc3zj/')
+        #mutate a file
+        nf = proj.new_file('scratch/subfolder/pylookml_scratch.view.lkml')
+        nf + lookml.View('''
+            view: pylookml_scratch {
+                dimension: test {}
+            }
+        ''')
+        #write the file
+        nf.write()
+        #confirm write
+        abc = proj.file('scratch/subfolder/pylookml_scratch.view.lkml')
+        self.assertTrue('test' in abc.views.pylookml_scratch)
+        #test optional pyyaml
+
     def test_project_from_local_path(self):
+
         #connect
-        #iterate over files
-        pass
+        proj = project._project(
+             local=True
+            ,path='tests/files/pylookml_test_project'
+            )
+        # pprint.pprint(proj._index)
+        self.pylookml_test_project_routine(proj)
+        
+        # x = proj['models/thelook.model.lkml']
+        #P0: files in the top level folder
+        # nf = proj.new_file('test.view.lkml')
+        # nf + lookml.View('''
+        #     view: new {
+        #         dimension: id {}
+        #     }
+        # ''')
+        # nf.write()
+        # cool = proj['cool/cool.view.lkml']
+        # cool.views.cool + '''
+        #     dimension: rad {}
+        # '''
+        # cool.write()
+        # trail_snap = proj['views/25_trailing_sales_snapshot.view.lkml']
+        # print(trail_snap.views.inventory_snapshot)
+        # print(x.datagroup.ecommerce_etl)
+        # pprint.pprint(proj._index)
+        # for f in proj:
+        #     for v in f.views:
+        #         print(v.name, v.sql_table_name)
+        
+        # for m in proj.model_files():
+        #     print(m.connection.value)
+        
+        # for vf in proj.view_files():
+        #     for v in vf.views:
+        #         print(vf.path)
+        #         print(' '*4, v.name) 
+        
+        # j = proj.new_file('cool/cool.view.lkml')
+        # j + lookml.View('''
+        #     view: cool {
+        #         sql_table_name: public.cool ;;
+        #         dimension: a {}
+        #         dimension: b {}
+        #         dimension: c {}
+        #         dimension: d {}
+        #         dimension: e {}
+        #     }
+        # ''')
+        # j.views - 'cool'
+        # print(j)
+        # j.write()
+        # a = proj.new_file('cool/cool.model.lkml')
+        # a + lookml.Explore('''
+        #     explore: cool {}
+        # ''')
+        # a + f'include: "{j.path}"'
+        # print(a)
+        # pprint.pprint(proj._index)
+        # print(proj.file('views/04_products.view.lkml'))
+        # print(j.path)
+
 
     def test_project_from_github(self):
         proj = project.Project(
@@ -616,8 +711,27 @@ class testProjFile(unittest.TestCase):
 
     def test_project_from_ssh(self):
         #connect
+        proj = project._project(
+             _git_url='git@github.com:pythonruss/pylookml_test_project.git'
+            ,path='.tmp'
+            ,_looker_project_name='pylookml_test_project'
+            )
+        self.pylookml_test_project_routine(proj)
+        proj._git.add()
+        proj.commit()
+        proj._git.pushRemote()
+        # proj.deploy()
+
         #iterate over files
-        pass
+        # proj.dir_list()
+        # print(proj._looker_project_name)
+        # print(proj._path)
+        # print(proj._index)
+        # i=0
+        # for vf in proj.view_files():
+        #     i+=1 
+        # self.assertEqual(i,9)
+        # self.assertEqual(proj['bike_share.model.lkml'].connection.value,"disco-parsec")
 
 
 
@@ -664,7 +778,17 @@ class testOtherFiles(unittest.TestCase):
         # print(str(x.contents))
 
     def test_dashboard_file(self):
-        pass
+        project.LOOKML_DASHBOARDS = True
+        proj = project._project(
+             local=True
+            ,path='tests/files/the_look'
+            )
+        x = proj.file('dashboards/brand_lookup.dashboard.lookml')
+        self.assertEqual(x.content[0]['dashboard'],'brand_lookup')
+        #P1 fix writing, currently lookml dashboards should be considered read only
+        x.content[0]['dashboard'] = 'foo'
+        # x.write()
+
     def test_js_file(self):
         pass
     def test_json_file(self):

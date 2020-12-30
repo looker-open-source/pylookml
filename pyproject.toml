@@ -12,6 +12,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.7"
 PyGithub = "^1.47"
+PyYAML = "^5.3.1"
 
 
 [tool.poetry.dev-dependencies]

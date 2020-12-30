@@ -9,9 +9,9 @@
     title_color: "#3a4245"
     show_filters_bar: true
     tile_text_color: "#3a4245"
-    tile_separator_color: "#faf3f3"
-    tile_border_radius: 5
-    show_tile_shadow: false
+    # tile_separator_color: "#faf3f3"
+    # tile_border_radius: 5
+    # show_tile_shadow: false
     text_tile_text_color: "#556d7a"
   elements:
   - title: Total Orders
@@ -740,7 +740,7 @@
     default_value: Calvin Klein
     allow_multiple_values: true
     required: false
-    model: thelook
+    model: pylookml_testing
     explore: order_items
     listens_to_filters: []
     field: products.brand
@@ -756,7 +756,7 @@
     default_value: ''
     allow_multiple_values: true
     required: false
-    model: thelook
+    model: pylookml_testing
     explore: order_items
     listens_to_filters: []
     field: users.state

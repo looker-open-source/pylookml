@@ -46,6 +46,7 @@ PLURAL_KEYS: Tuple[str, ...] = (
     "constant",
     "local_dependency",
     "remote_dependency",
+    "query",
 )
 
 # These are keys in LookML that should be recognized as expression blocks (end with ;;).
