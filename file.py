@@ -4,7 +4,6 @@ import github
 import re, os, shutil, copy, base64
 
  
-
 #P0: Finish defining new granular file types
 '''
 Factory Function:
@@ -59,7 +58,6 @@ class baseFile(object):
                 with open(self.path, 'w') as opened_file:
                     opened_file.write(self.__str__())
 
-
 class lkmlFile(baseFile):
     def __init__(self,path='',name=''):
         self.name = name
@@ -100,7 +98,6 @@ class mnfstFile(lkmlFile):
         self.name = name
         self.path = path
         self.contents = lookml.Manifest(lkml.load(open(self.path,encoding="utf-8")))
-
 
 class baseFileOld(object): 
     '''
