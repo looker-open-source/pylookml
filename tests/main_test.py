@@ -6,7 +6,7 @@ import file, project
 import warnings
 import configparser
 config = configparser.ConfigParser()
-import pprint
+import pprint, base64
 # config.read('tests/settings.ini')
 config.read('settings.ini')
 #P3: query can exist under the explore or aggregate table
@@ -15,6 +15,9 @@ config.read('settings.ini')
 #P2: test coverage for sets
 #P3: test coverage for manifest files
 #P2: organize the tests
+
+# @unittest.skipIf(condition, reason)
+# @unittest.expectedFailure
 
 # Objective / coverage
 #     Read all file types from filesystem: 
@@ -270,11 +273,13 @@ class testMain(unittest.TestCase):
         #P1 support addition like lookml objects / pull out common addition functions
         # add, insert, add_hook, sub, subhook etc
         pass
-    #P0: add support for getitem[] syntax at all levels
+
     def test_all_subscriptability(self):
-        proj = project.Project(**config['project1'])
-        # print(proj['order_items.view.lkml']['views']['order_items']['id'].primary_key.value)
-        print(proj['order_items.view.lkml']['views']) 
+        proj = project.Project(
+            path='tests/files/pylookml_test_project'
+        )
+        print(proj['views/01_order_items.view.lkml']['views']['order_items']['id'].primary_key.value)
+        # print(proj['order_items.view.lkml']['views']) 
         
         #test file from project
         #test view/explore/prop from file/model
@@ -361,10 +366,10 @@ class testMain(unittest.TestCase):
         # throws an assertion error:
         # foo.foo + 'type: count'
     def test_adding_joins_to_explore(self):
-        #P0 
+        #P1 test adding joins to explores
         pass
     def test_adding_fields_to_view(self):
-        #P0
+        #P1 test adding fields to a view
         pass
 
     def test_set_property(self):
@@ -587,25 +592,51 @@ class testMain(unittest.TestCase):
 #P3: option to omit defaults
 #P3: add looker version numbers to the lang map and throw warning if prop depreicated or error if not yet supported
 
-#P0: merge refinements that are present in a single file (currently only last)
+#P1: merge refinements that are present in a single file (currently only last)
 # see tests/files/pylookml_test_project/models/queries_for_order_items.view.lkml
 
 class testProjFile(unittest.TestCase):
     def setUp(self):
         pass
-#Notes
-#construct with github -> direct by default
-#construct with github download="yes" -> download all
-#construct with path = local, can attach SSH later? What would this look like
-#construct with SSH downloads remote
-#preserve legacy compatibility as much as possible
-#don't the files change type based on project type?
-# test new file of each type
+    
+    def pylookml_test_add_file(self,proj):
+        nf = proj.new_file('hello.view.lkml')
+        nf + lookml.View('''
+        view: hello {}
+        ''')
+        nf.write()
+
+    def pylookml_test_delete_file(self,proj):
+        f = proj.file('hello.view.lkml')
+        f.delete()
+        x = proj.new_file('hello2.view.lkml')
+        x.write()
+        proj.delete_file('hello2.view.lkml')
+
+    def pylookml_test_mutate_file(self,proj):
+        #P1: should be file not new file, this method 
+        # should throw warning for nf'ing an existing
+        nf = proj.file('scratch/subfolder/pylookml_scratch.view.lkml')
+        if isinstance(proj,project.ProjectSSH):
+            commitMessage = proj._commit_message
+            t = f'SSH {proj._path}'
+        elif isinstance(proj,project.ProjectGithub):
+            commitMessage = proj._commit_message
+            t = f'pyGithub {proj._path}'
+        else:
+            commitMessage = 'local filesystem'
+            t = f'direct filesystem {proj._path}'
+        nf.views.pylookml_scratch.test.description = f'{t} {commitMessage}'
+        #write the file
+        nf.write()
+        nf.views.pylookml_scratch.test.sql = '${hello}'
+        nf.write()
+        #confirm write
+        abc = proj.file('scratch/subfolder/pylookml_scratch.view.lkml')
+        self.assertTrue('test' in abc.views.pylookml_scratch)
+
     def pylookml_test_project_routine(self,proj):
-        proj.dir_list()
-        #loop through files
-        for vf in proj.view_files():
-            print(vf.name)
+        # self.assertEqual(len(list(proj.view_files())),19)
         #access a file's deep object via [] syntax
         val_a = proj['views/01_order_items.view.lkml']['views']['order_items']['order_id'].action[0].url.value
         self.assertEqual(val_a,'https://hooks.zapier.com/hooks/catch/1662138/tvc3zj/')
@@ -613,125 +644,54 @@ class testProjFile(unittest.TestCase):
         val_b = proj.file('views/01_order_items.view.lkml').views.order_items.order_id.action[0].url.value
         self.assertEqual(val_b,'https://hooks.zapier.com/hooks/catch/1662138/tvc3zj/')
         #mutate a file
-        nf = proj.new_file('scratch/subfolder/pylookml_scratch.view.lkml')
-        nf + lookml.View('''
-            view: pylookml_scratch {
-                dimension: test {}
-            }
-        ''')
-        #write the file
-        nf.write()
-        #confirm write
-        abc = proj.file('scratch/subfolder/pylookml_scratch.view.lkml')
-        self.assertTrue('test' in abc.views.pylookml_scratch)
+        self.pylookml_test_mutate_file(proj)
+        self.pylookml_test_add_file(proj)
+        #proj.dir_list()
+        self.pylookml_test_delete_file(proj)
         #test optional pyyaml
 
     def test_project_from_local_path(self):
-
         #connect
-        proj = project._project(
-             local=True
-            ,path='tests/files/pylookml_test_project'
+        proj = project.Project(
+            path='tests/files/pylookml_test_project'
             )
         # pprint.pprint(proj._index)
         self.pylookml_test_project_routine(proj)
-        
-        # x = proj['models/thelook.model.lkml']
-        #P0: files in the top level folder
-        # nf = proj.new_file('test.view.lkml')
-        # nf + lookml.View('''
-        #     view: new {
-        #         dimension: id {}
-        #     }
-        # ''')
-        # nf.write()
-        # cool = proj['cool/cool.view.lkml']
-        # cool.views.cool + '''
-        #     dimension: rad {}
-        # '''
-        # cool.write()
-        # trail_snap = proj['views/25_trailing_sales_snapshot.view.lkml']
-        # print(trail_snap.views.inventory_snapshot)
-        # print(x.datagroup.ecommerce_etl)
-        # pprint.pprint(proj._index)
-        # for f in proj:
-        #     for v in f.views:
-        #         print(v.name, v.sql_table_name)
-        
-        # for m in proj.model_files():
-        #     print(m.connection.value)
-        
-        # for vf in proj.view_files():
-        #     for v in vf.views:
-        #         print(vf.path)
-        #         print(' '*4, v.name) 
-        
-        # j = proj.new_file('cool/cool.view.lkml')
-        # j + lookml.View('''
-        #     view: cool {
-        #         sql_table_name: public.cool ;;
-        #         dimension: a {}
-        #         dimension: b {}
-        #         dimension: c {}
-        #         dimension: d {}
-        #         dimension: e {}
-        #     }
-        # ''')
-        # j.views - 'cool'
-        # print(j)
-        # j.write()
-        # a = proj.new_file('cool/cool.model.lkml')
-        # a + lookml.Explore('''
-        #     explore: cool {}
-        # ''')
-        # a + f'include: "{j.path}"'
-        # print(a)
-        # pprint.pprint(proj._index)
-        # print(proj.file('views/04_products.view.lkml'))
-        # print(j.path)
-
 
     def test_project_from_github(self):
         proj = project.Project(
-            repo= "llooker/russ_sandbox",
+            repo= "pythonruss/pylookml_test_project",
             access_token=config['project1']['access_token'],
+            index_whole=True
         )
+        self.pylookml_test_project_routine(proj)
 
-        # mf = proj.file('01_order_items.view.lkml')
-        for f in proj.files():
-            print(f.path)
-            for v in f.contents.views.values():
-                print(' '*2,v.name)
-        #P0: iterate over: f.views:, f.views['order_items'], f.views.order_items
-        #P0: create a new type of each file
-        #P1: context manager for project
-
-        # mf = proj.file('11_order_facts.view.lkml')
-        # print(str(mf))
+    def test_project_from_github_fast(self):
+        proj = project.Project(
+            repo= "pythonruss/pylookml_test_project",
+            access_token=config['project1']['access_token'],
+            index_whole=False
+        )
+        self.pylookml_test_project_routine(proj)
+        # x = proj.file('views/01_order_items.view.lkml')
+        # a = proj.new_file('git_test_fast.view.lkml')
+        # a + lookml.View('view: a {}')
+        # a.write()
+        # a.delete()
+        # print(x.views.order_items.id)
 
     def test_project_from_ssh(self):
         #connect
-        proj = project._project(
-             _git_url='git@github.com:pythonruss/pylookml_test_project.git'
-            ,path='.tmp'
-            ,_looker_project_name='pylookml_test_project'
+        proj = project.Project(
+             git_url='git@github.com:pythonruss/pylookml_test_project.git'
+            ,looker_project_name='pylookml_test_project'
+            ,looker_host='https://dat.dev.looker.com/'
             )
         self.pylookml_test_project_routine(proj)
         proj._git.add()
         proj.commit()
         proj._git.pushRemote()
-        # proj.deploy()
-
-        #iterate over files
-        # proj.dir_list()
-        # print(proj._looker_project_name)
-        # print(proj._path)
-        # print(proj._index)
-        # i=0
-        # for vf in proj.view_files():
-        #     i+=1 
-        # self.assertEqual(i,9)
-        # self.assertEqual(proj['bike_share.model.lkml'].connection.value,"disco-parsec")
+        proj.deploy()
 
 
 
@@ -759,7 +719,6 @@ class testOtherFiles(unittest.TestCase):
         pass
 
     def test_manifest_file(self):
-        #P0: accessors and namespace for manifest file is bunk
         x = file.File('tests/files/basic_parsing/manifest.lkml')
         #works
         self.assertEqual(x.remote_dependency['ga360'].url.value,'https://github.com/llooker/google_ga360')
@@ -779,7 +738,7 @@ class testOtherFiles(unittest.TestCase):
 
     def test_dashboard_file(self):
         project.LOOKML_DASHBOARDS = True
-        proj = project._project(
+        proj = project.Project(
              local=True
             ,path='tests/files/the_look'
             )
@@ -1176,8 +1135,7 @@ class whitespaceTest(unittest.TestCase):
         Setup) Obtain Local Kitchen Sink Model File
         2) Parse the file
     '''
-    # @unittest.skipIf(condition, reason)
-    # @unittest.expectedFailure
+
 
     def setUp(self):
         self.f = lookml.File('tests/kitchenSink/kitchenSink.model.lkml')
@@ -1216,143 +1174,6 @@ class whitespaceTest(unittest.TestCase):
         # for i in self.f.views.order_items.dims():
         #     print(i)
 
-    def test_create_view_from_info_schema(self):
-        def column_to_dimension(col):
-            if col['LOOKER_TYPE'] == 'time':
-                tmpDim = lookml.DimensionGroup(
-                        lookml.lookCase(col['COLUMN_NAME'])
-                        )
-            else:
-                tmpDim = lookml.Dimension(lookml.lookCase(col['COLUMN_NAME']))
-            tmpDim.setType(col['LOOKER_TYPE'])
-            tmpDim.sql = "${TABLE}." + col['COLUMN_NAME']
-            return tmpDim
-
-        sdk = init31("api.ini")
-        sql = """
-                SELECT 
-                    t.TABLE_NAME
-                    ,t.TABLE_SCHEMA
-                    ,t.COLUMN_NAME
-                    ,t.DATA_TYPE
-                    , CASE 
-                        WHEN t.DATA_TYPE IN ('TIMESTAMP_LTZ') THEN 'time'
-                        WHEN t.DATA_TYPE IN ('FLOAT','NUMBER') THEN 'number'
-                        ELSE 'string' END as "LOOKER_TYPE"
-                FROM 
-                    information_schema.COLUMNS as t
-                WHERE
-                    1=1
-                    AND t.table_name = 'ORDER_ITEMS'
-                    AND t.table_schema = 'PUBLIC'
-                LIMIT 100
-        """
-        query_config = models.WriteSqlQueryCreate(sql=sql, connection_id="snowlooker")
-        query = sdk.create_sql_query(query_config)
-        response = sdk.run_sql_query(slug=query.slug, result_format="json")
-        response_json = json.loads(response)
-        order_items = lookml.View('order_items_3')
-        order_items.sql_table_name = 'PUBLIC.ORDER_ITEMS'
-
-        for column in response_json:
-            order_items + column_to_dimension(column)
-
-        order_items.sumAllNumDimensions()
-        order_items.addCount()
-
-        proj = lookml.Project(
-                 repo= config['github']['repo']
-                ,access_token=config['github']['access_token']
-                ,looker_host="https://profservices.dev.looker.com/"
-                ,looker_project_name="russ_sanbox"
-        )
-        myNewFile = lookml.File(order_items)
-        proj.put(myNewFile)
-        proj.deploy()
-
-    def test_cool(self):
-        v = lookml.View('cool')
-        # v.properties.addProperty('derived_table',{'sql':'select 1'})
-        v.derived_table = {'sql':'select 1'}
-        # v.derived_table = {}
-        # v.derived_table.sql = "select 2"
-        # v.derived_table.datagroup_trigger = 'etl_24_hour'
-        print(v)
-        
-    def test_refinement(self):
-        exp = lookml.Explore('exp')
-        lookml.mkdir_force('.tmp/scratch')
-        with open('.tmp/scratch/refinement_test.model.lkml', 'w') as f:
-            f.write(
-                '''explore: refine_ex {}'''
-            )
-        myFile = lookml.File('.tmp/scratch/refinement_test.model.lkml')
-        refine_ex = myFile.exps.refine_ex
-        print(type(refine_ex))
-        # refine_ex.addProperty('aggregate_table',{'materialization':{'datagroup_trigger':'orders_datagroup'}})
-        print(refine_ex)
-        # refine_ex.addProperty('aggregate_table','foo')
-        print(myFile)
-
-
-class testShellGitController(unittest.TestCase):
-    '''
-        Objective: test project instantiation and file crud, add commit
-    '''
-
-    def setUp(self):
-        self.proj = lookml.Project(
-                #  repo= config['github']['repo']
-                # ,access_token=config['github']['access_token']
-                 git_url='git@github.com:llooker/russ_sandbox.git'
-                ,looker_host="https://profservices.dev.looker.com/"
-                ,looker_project_name="russ_sanbox"
-        )
-
-    def test_step1(self):
-
-        ## Do Work ###
-        myNewView = lookml.View('great_test55').addDimension('id').addDimension('count_of_total')
-        # myNewView = lookml.View('great_test55') + 'id' + 'count_of_total'
-        myNewView.id.sql = "${TABLE}.`id`"
-        myNewView.id.setType('string')
-        myNewFile = lookml.File(myNewView)
-        myNewFile.setFolder(self.proj.gitControllerSession.absoluteOutputPath)
-        myNewFile.write()
-
-    #     myNewFile = lookml.File(order_items)
-    #     proj.put(myNewFile)
-    #     proj.deploy()
-
-        myOldFile = lookml.File('.tmp/russ_sanbox/02_users.view.lkml')
-        myOldFile.views.users.hello.setType("number")
-        myOldFile.write()
-
-        ## Deploy ###
-        self.proj.gitControllerSession.add().commit().pushRemote()
-
-    def test_step2(self):
-        for f in self.proj.files('simple'):
-            print(f.path)
-
-        # print(self.proj.file('simple/tests.view.lkml'))
-        tests = self.proj.file('simple/tests.view.lkml') 
-        tests + lookml.View('shell')
-        tests.views.test1.bar.sql = 'WHOA'
-        # tests.write()
-        self.proj.update(tests)
-        x = lookml.View('hello_world') 
-        x + 'dimension: id {}'
-        xf = lookml.File(x)
-        self.proj.put(xf)
-        self.proj.delete(xf)
-        self.proj.deploy()
-
-    def test_extends_bug(self):
-        cool = lookml.View('cool')
-        cool + 'extends: [wut]'
-        print(cool)
-        
 
 class testMicroUnits(unittest.TestCase):
 
