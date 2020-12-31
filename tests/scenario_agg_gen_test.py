@@ -1,5 +1,6 @@
 import unittest, copy
-import lookml, project
+import lookml
+import modules.project as project
 import lkml as lkml
 from pprint import pprint
 import configparser, json

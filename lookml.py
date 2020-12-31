@@ -1,5 +1,5 @@
 import lkml, copy, re
-from lang import *
+from modules.lang import *
 import warnings
 from typing import NewType, Any, Generator, Union, Tuple
 OMIT_DEFAULTS = False

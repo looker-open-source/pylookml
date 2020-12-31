@@ -1,8 +1,9 @@
-import lookml, lang
+import lookml
+import modules.lang as lang
 import unittest, copy, json
 import lkml as lkml
 from pprint import pprint
-import file, project
+import modules.project as project
 import warnings
 import configparser
 config = configparser.ConfigParser()
@@ -168,8 +169,8 @@ class testMain(unittest.TestCase):
         # print(str(m.explores.foo))
 
     def test_file_model_binding(self):
-        x = file.File('tests/files/basic_parsing/basic.model.lkml')
-        print(x.path)
+        proj = project.Project(path='tests/files/basic_parsing')
+        x = proj.file('basic.model.lkml')
         cool = ['test123','test456','test890']
         x.explores['trip'] + ''.join([f'''
          join: {item} {{}}
