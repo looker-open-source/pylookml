@@ -4,7 +4,6 @@ import github
 import re, os, shutil, copy, base64
 
  
-#P0: Finish defining new granular file types
 '''
 Factory Function:
     routes / existing instances or New()
