@@ -2,8 +2,8 @@
 
 from typing import List, Tuple
 
-import lkml.tokens as tokens
-from lkml.keys import CHARACTER_TO_TOKEN, EXPR_BLOCK_KEYS
+import lookml.lkml.tokens as tokens
+from lookml.lkml.keys import CHARACTER_TO_TOKEN, EXPR_BLOCK_KEYS
 
 
 class Lexer:

@@ -1,5 +1,11 @@
-import lkml, copy, re
-from modules.lang import *
+from lookml import lkml
+from lookml.lib.lang import \
+    ws,valid_name,possible_view_str,\
+    possible_field_str,parse_references,\
+    props,OperationError,DuplicatePrimaryKey,\
+    CoexistanceError
+import copy, re
+
 import warnings
 from typing import NewType, Any, Generator, Union, Tuple
 OMIT_DEFAULTS = False
@@ -46,7 +52,7 @@ def snakeCase(string: str) -> str:
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', str1).lower()
 
 def removeSpace(string: str) -> str:  # removing special character / [|]<>,.?}{+=~!$%^&*()-
-    return re.sub('(\s|/|\[|\]|\||\,|<|>|\.|\?|\{|\}|#|=|~|!|\+|\$|\%|\^|\&|\*|\(|\)|\-|\:)+', r'', string)
+    return re.sub(r'(\s|/|\[|\]|\||\,|<|>|\.|\?|\{|\}|#|=|~|!|\+|\$|\%|\^|\&|\*|\(|\)|\-|\:)+', r'', string)
 
 def lookCase(string: str) -> str:
     return removeSpace(snakeCase(string))
@@ -97,6 +103,10 @@ class lookml(object):
                             raise Exception("Input string contains more than one " + self._type())
                    else:
                         raise Exception(f"Input string does not contain {typ}")
+            else:
+                raise Exception(
+                                f"{data} does not match a " 
+                                f"view: name {{}} or lookml name pattern")
         self.parent = parent
         self + data
     def __setattr__(self, key, value):
@@ -235,6 +245,7 @@ class lookml(object):
     def setProperty(self,key: str, value: dict):
         self._insert(key,value)
         return self
+
     def setName(self, name: str):
         """
         Set your Field's name value
@@ -311,11 +322,16 @@ class lookml(object):
 
         # end object addition 
         if isinstance(other,str):
-            try:
-                # Handles the special case where lkml passes single object wrapped in a collection list
-                parsed = lkml.load(other)[self._type() + 's'][0]
-            except:
-                parsed = lkml.load(other)
+            tmp = lkml.load(other)
+            if self._type() + 's' in tmp.keys():
+                parsed = tmp[0][self._type() + 's']
+            else:
+                parsed = tmp
+            # try:
+            #     # Handles the special case where lkml passes single object wrapped in a collection list
+            #     parsed = lkml.load(other)[self._type() + 's'][0]
+            # except:
+            #     parsed = lkml.load(other)
 
         elif isinstance(other,dict):
             parsed = other
@@ -357,11 +373,11 @@ class Field(lookml):
         #full reference -- regex escaped
         elif key == '__refre__' and self._type() in props.field_types:
             if self.parent is not None:
-                return ('\$\{' + self.parent.name + '\.' + self.name + '\}')
+                return (r'\$\{' + self.parent.name + r'\.' + self.name + r'\}')
         #Short reference -- regex escaped
         elif key == '__refsre__' and self._type() in props.field_types:
             if self.parent is not None:
-                return ('\$\{' + self.name + '\}')
+                return (r'\$\{' + self.name + r'\}')
         #Raw Reference
         elif key == '__refr__' and self._type() in props.field_types:
             if self.parent is not None:
@@ -373,7 +389,7 @@ class Field(lookml):
         #Raw Reference regex
         elif key == '__refrre__' and self._type() in props.field_types:
             if self.parent is not None:
-                return (self.parent.name + '\.' + self.name)
+                return (self.parent.name + r'\.' + self.name)
         #return prop defaults
         elif key in self._allowed_children():
             return prop_router(key,'__default__', self)
@@ -891,24 +907,6 @@ class View(lookml):
         self - field
         return self
 
-    #Gold Standard of Sphinx method Doc
-    # def send_message(self, sender: str, 
-    #     recipient: str, message_body: str, priority: int=1) -> int:
-        # '''
-        # Send a message to a recipient
-
-        # :param str sender: The person sending the message
-        # :param str recipient: The recipient of the message
-        # :param str message_body: The body of the message
-        # :param priority: The priority of the message, can be a number 1-5
-        # :type priority: integer or None
-        # :return: the message id
-        # :rtype: int
-        # :raises ValueError: if the message_body exceeds 160 characters
-        # :raises TypeError: if the message_body is not a basestring
-        # '''
-    #     return 1
-
     def __str__(self):
         return (
             f'{self._type()}: {self.name} {{'
@@ -1247,7 +1245,8 @@ class prop_named_construct(prop):
         dense = True if self.parent._dense() else False
         __ = ws.nl + (ws.s * self.conf['indent']) if not dense else ws.s
         rendered = ''
-        for name, child in self.children.items():
+        # for name, child in self.children.items():
+        for child in self.children.values():
             rendered += f'''{ child }'''
         return rendered
 

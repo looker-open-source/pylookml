@@ -378,13 +378,30 @@ p.update({"default_locale":{"localization_settings":{"type":"options","subtype":
 p.update({"localization_level":{"localization_settings":{"type":"options","subtype":"options","indent":1,"default_value":"permissive","docs_url":"https://docs.looker.com/reference/manifest-params/localization_settings?version=7.14&lookml=new","has_allowed_values":True,"allowed_values":["permissive","strict"]}}})
 p["query"].update({"explore":{"type":"named_construct","subtype":"identifier","indent":2,"default_value":"","docs_url":"Not documented as child of explore, see https://docs.looker.com/reference/explore-params/aggregate_table?version=7.14&lookml=new#query ","has_allowed_values":False,"allowed_values":""}})
 #End Generated Code
-json.dump(p,open('cfg.json.py','w'),indent='        ')
-y = open('cfg.json.py','r').read()
+
+# generate cfg
+path = '../../lookml/lib/language_data/'
+
+json.dump(p,open(f'{path}config.py','w'),indent='        ')
+y = open(f'{path}config.py','r').read()
 x = re.sub(': false,',': False,',y)
 x = re.sub(': true,',': True,',x)
-o = open('cfg.json.py','w')
-o.write(x)
+o = open(f'{path}config.py','w')
+o.write("config = \\\n" + x)
 o.close()
-# with open('cfg.json.py', 'wt') as f:
-#     pprint(p,stream=f, indent=4, width=1,compact=False)
+# end generate cfg
+
+# generate allowed children
+_allowed_children = dict()
+for prop,parents in p.items():
+    for parent,data in parents.items():
+        if parent in _allowed_children.keys():
+            _allowed_children[parent].append(prop)
+        else:
+            _allowed_children.update({parent: [prop]})
+json.dump(_allowed_children,open(f'{path}_allowed_children.py','w'),indent='        ')
+with open(f'{path}_allowed_children.py', 'r') as original: data = original.read()
+with open(f'{path}_allowed_children.py', 'w') as modified: modified.write("_allowed_children = \\\n" + data)
+# end generate allowed children
+
 

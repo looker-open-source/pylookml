@@ -2,7 +2,7 @@
 
 from typing import Dict, Tuple, Type
 
-from lkml import tokens
+from lookml.lkml import tokens
 
 # These are repeatable keys in LookML that the parser should collapse into a single
 # Python dictionary key. For example, LookML can have multiple dimensions, so the parser

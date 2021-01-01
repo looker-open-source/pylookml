@@ -1,34 +1,22 @@
-import time
-import subprocess
-import os
-# import platform
-import lookml
+
+from lookml import core as lookml
+from lookml import lkml
+import time, subprocess, os
 import github
 import base64
 import requests
-import re
-import lkml
-# import pprint
+import re, shutil
 import warnings
+import collections
+# import platform
+# import pprint
+
 #P1 simplify code with pathlib
 # import pathlib
-import collections
+
 
 LOOKML_DASHBOARDS = False
 #import marko
-
-#import functools
-# def timer(func):
-#     """Print the runtime of the decorated function"""
-#     @functools.wraps(func)
-#     def wrapper_timer(*args, **kwargs):
-#         start_time = time.perf_counter()    # 1
-#         value = func(*args, **kwargs)
-#         end_time = time.perf_counter()      # 2
-#         run_time = end_time - start_time    # 3
-#         print(f"Finished {func.__name__!r} in {run_time:.4f} secs")
-#         return value
-#     return wrapper_timer
 
 def _optional_import_(module: str, name: str = None, package: str = None):
     import importlib
@@ -151,7 +139,7 @@ class f(object):
                 self.content = lookml.Manifest(
                     lkml.load(open(self.python_path, encoding="utf-8")), parent=self)
             elif self.type == 'lookml_dashboard':
-                self.content = yaml.load(open(self.path,encoding="utf-8"))
+                self.content = yaml_load(open(self.path,encoding="utf-8"))
                 self.content = yaml_load(
                     open(self.python_path, encoding="utf-8"))
         # blank openers for new file
@@ -283,8 +271,6 @@ class f_github(f):
         self.parent._git_connection.delete_file(
             self.path, self.parent._commit_message, tmp.sha, self.parent._branch
         )
-        # .delete_file(contents.path, "remove test", contents.sha, branch="test")
-        # os.remove(self.python_path)
 
     def exists(self):
         def checkgithub(f0):
@@ -437,25 +423,6 @@ class Project(object):
     def path_exists(self, path):
         return os.path.exists(path)
     # base
-
-    def constructDeployUrl(self):
-        '''
-            Constructs a github deploy URL according to this pattern:
-            https://prod.host.com/webhooks/projects/projectname/deploy
-        '''
-        # P1: the base url should not have had a trailing slash
-        if self._looker_project_name and self._looker_host:
-            self._deploy_url = \
-                self._looker_host + 'webhooks/projects/' + self._looker_project_name + '/deploy'
-        else:
-            self._deploy_url = ''
-    # base
-
-    def deploy(self):
-        # P3: check to see if project is on master,
-        # if not issue warning that changes won't show up
-        if self._deploy_url:
-            requests.get(self._deploy_url)
     # filesystem
 
     def delete_file(self, fl:str):
@@ -558,7 +525,24 @@ class ProjectGithub(Project):
                             f' or call proj.delete("{path}") to delete it'
                                 )
         return self._index[path.folder][path.name]
+    def constructDeployUrl(self):
+        '''
+            Constructs a github deploy URL according to this pattern:
+            https://prod.host.com/webhooks/projects/projectname/deploy
+        '''
+        # P1: the base url should not have had a trailing slash
+        if self._looker_project_name and self._looker_host:
+            self._deploy_url = \
+                self._looker_host + 'webhooks/projects/' + self._looker_project_name + '/deploy'
+        else:
+            self._deploy_url = ''
+    # base
 
+    def deploy(self):
+        # P3: check to see if project is on master,
+        # if not issue warning that changes won't show up
+        if self._deploy_url:
+            requests.get(self._deploy_url)
 
 class ProjectSSH(Project):
     class gitController:
@@ -648,7 +632,7 @@ class ProjectSSH(Project):
         git_url: str = '', 
         branch: str = 'master', 
         commitMessage: str = ''
-    ):
+        ):
         self._path = path
         self._index = dict()
         self._looker_host = looker_host
@@ -670,6 +654,23 @@ class ProjectSSH(Project):
             self._git.clone(self._git_url)
         self._build_index()
     # shell
-
     def commit(self):
         self._git.commit()
+    def constructDeployUrl(self):
+        '''
+            Constructs a github deploy URL according to this pattern:
+            https://prod.host.com/webhooks/projects/projectname/deploy
+        '''
+        # P1: the base url should not have had a trailing slash
+        if self._looker_project_name and self._looker_host:
+            self._deploy_url = \
+                self._looker_host + 'webhooks/projects/' + self._looker_project_name + '/deploy'
+        else:
+            self._deploy_url = ''
+    # base
+
+    def deploy(self):
+        # P3: check to see if project is on master,
+        # if not issue warning that changes won't show up
+        if self._deploy_url:
+            requests.get(self._deploy_url)

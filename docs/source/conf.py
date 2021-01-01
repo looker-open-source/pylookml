@@ -45,7 +45,8 @@ release = '2.0.0'
 # view + 'sql_table_name: order_items ;;'
 # view - 'sql_table_name'
 # x.foo.setName_replace_references('bar')
-# 
+# view + 'id' no longer supported
+# proj.put() no longer supported
 
 
 # -- General configuration ---------------------------------------------------

@@ -5,9 +5,9 @@ import logging
 import sys
 from typing import IO, Optional, Sequence, Union
 
-from lkml.lexer import Lexer
-from lkml.parser import Parser
-from lkml.serializer import Serializer
+from lookml.lkml.lexer import Lexer
+from lookml.lkml.parser import Parser
+from lookml.lkml.serializer import Serializer
 
 def load(stream: Union[str, IO]) -> dict:
     """Parse LookML into a Python dictionary.

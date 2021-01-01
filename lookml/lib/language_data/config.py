@@ -1,3 +1,4 @@
+config = \
 {
         "access_grant": {
                 "model": {
