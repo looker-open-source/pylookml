@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lookml"
-version = "2.2.7"
+version = "2.2.8"
 description = "A batteries included API for automating your LookML"
 authors = ["Russell Garner"]
 license = "MIT License"
@@ -9,7 +9,7 @@ packages = [
 ]
 
 [tool.poetry.scripts]
-rtd = "lookml.__main__:main"
+lookml = "lookml.__main__:cli"
 
 [tool.poetry.dependencies]
 python = "^3.7"
