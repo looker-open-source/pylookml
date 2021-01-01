@@ -3,7 +3,7 @@
 from copy import deepcopy
 from typing import Any, Dict, Iterator, Sequence, Union
 
-from lkml.keys import (
+from lookml.lkml.keys import (
     EXPR_BLOCK_KEYS,
     KEYS_WITH_NAME_FIELDS,
     PLURAL_KEYS,

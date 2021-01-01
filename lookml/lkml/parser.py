@@ -3,8 +3,8 @@
 import logging
 from typing import Optional, Sequence, Type, Union
 
-import lkml.tokens as tokens
-from lkml.keys import PLURAL_KEYS
+import lookml.lkml.tokens as tokens
+from lookml.lkml.keys import PLURAL_KEYS
 
 # Delimiter character used during logging to show the depth of nesting
 DELIMITER = ". "

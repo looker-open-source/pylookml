@@ -1,22 +1,22 @@
-import unittest, copy
-import lookml
-import modules.project as project
-import lkml as lkml
+
+import src.lookml.lookml as lookml
+import src.lookml.project as project
+import src.lookml.lkml as lkml
+
+import unittest, copy, re, sys
 from pprint import pprint
 import configparser, json
-# from looker_sdk import client, models, methods
 import looker_sdk
 from looker_sdk import models, methods, init31
 config = configparser.ConfigParser()
-config.read('settings.ini')
-import re, sys
+config.read('tests/settings.ini') 
 
 class testScenariosAggGen(unittest.TestCase):
     '''
         Objective: test end to end common use case scenarios 
     '''
     def setUp(self):
-        self.sdk = looker_sdk.init40("api.ini")
+        self.sdk = looker_sdk.init40("tests/api.ini")
 
     def test_dimension_add(self):
         x = lookml.Explore('''

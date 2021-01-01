@@ -1,6 +1,7 @@
+
+import src.lookml.lookml as lookml
+import src.lookml.lkml as lkml
 import unittest, copy
-import lookml
-import lkml as lkml
 from pprint import pprint
 import configparser, json
 # from looker_sdk import client, models, methods
@@ -27,7 +28,7 @@ class testScenariosGenerateFromSchema(unittest.TestCase):
             tmpDim.sql = "${TABLE}." + col['COLUMN_NAME']
             return tmpDim
 
-        sdk = init31("api.ini")
+        sdk = init31("tests/api.ini")
         sql = """
                 SELECT 
                     t.TABLE_NAME

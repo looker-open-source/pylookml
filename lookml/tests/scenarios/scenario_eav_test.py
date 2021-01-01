@@ -1,13 +1,13 @@
+import src.lookml.lookml as lookml
+import src.lookml.lkml as lkml
+
 import unittest, copy
-import lookml
-import lkml as lkml
 from pprint import pprint
 import configparser, json
 # from looker_sdk import client, models, methods
 from looker_sdk import models, methods, init31
 config = configparser.ConfigParser()
-config.read('settings.ini')
-
+config.read('tests/settings.ini')
 
 class testScenarioEAV(unittest.TestCase):
     '''
