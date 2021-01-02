@@ -9,6 +9,7 @@ log.log
 config/settings.ini
 settings.ini
 api.ini
+*.ini
 .DS_Store
 ~$lang_map_generator.xlsm
 ############## Generic Python Gitignore configurations ##############
