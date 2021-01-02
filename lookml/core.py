@@ -721,27 +721,45 @@ class Model(lookml):
     
     def __add__(self,data):
         if isinstance(data, View):
-            data.parent = self
-            self.views.update(
-                    {data.name:data}
-                        )
+            #handle refinements of objects in same scope by merge __dict__
+            if data._is_refinement and data.name in self.views.keys():
+                    self.views[data.name].__dict__.update(data.__dict__)
+            else:
+                data.parent = self
+                self.views.update(
+                        {data.name:data}
+                            )
         if isinstance(data, Explore):
-            data.parent = self
-            self.explores.update(
-                    {data.name:data}
-                        )
+            #handle refinements of objects in same scope by merge __dict__
+            if data._is_refinement and data.name in self.explores.keys():
+                    self.explores[data.name].__dict__.update(data.__dict__)
+            else:
+                data.parent = self
+                self.explores.update(
+                        {data.name:data}
+                            )
         if isinstance(data,dict):
             if 'explores' in data.keys():
                 for explore in data['explores']:
-                    self.explores.update(
-                            {explore['name']:Explore(explore, parent=self)}
-                                )
+                    #if refinement and pre-existing, merge object, else normal
+                    if explore['name'] in self.explores.keys() and explore['name'].startswith('+'):
+                        # self.explores[explore['name']].__dict__.update(explore)
+                        self.__add__(Explore(explore, parent=self))
+                    else:
+                        self.explores.update(
+                                {explore['name']:Explore(explore, parent=self)}
+                                    )
                 del data['explores']
             if 'views' in data.keys():
                 for view in data['views']:
-                    self.views.update(
-                            {view['name']:View(view, parent=self)}
-                                )
+                    #if refinement and pre-existing, merge object, else normal
+                    if view['name'] in self.views.keys() and view['name'].startswith('+'):
+                        # self.views[view['name']].__dict__.update(view)
+                        self.__add__(View(view, parent=self))
+                    else:
+                        self.views.update(
+                                {view['name']:View(view, parent=self)}
+                                    )
                 del data['views']
             super().__add__(data)
     
@@ -766,6 +784,9 @@ class Model(lookml):
 class Explore(lookml):
     _member_classes = [
     ]
+    def __init__(self,data, parent=None):
+        super().__init__(data,parent)
+        self._is_refinement = True if self.name.startswith('+') else False
     def _dense(self): return False
     def __str__(self): 
         return (f'{self._type()}: {self.name} {{'
@@ -818,6 +839,7 @@ class View(lookml):
     def __init__(self, data, parent=None):
         self.__pk = None
         super().__init__(data, parent)
+        self._is_refinement = True if self.name.startswith('+') else False
 
     def __sub__(self,other):
         if isinstance(other, Field):

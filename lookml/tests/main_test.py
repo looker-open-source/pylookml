@@ -619,8 +619,15 @@ class testMain(unittest.TestCase):
         x.z.setString()
         x.a.addLink('http://yahoo.com{% condition foo %}{{value | uri_encode }}{% endcondition %}','Go to Yahoo')
 
-    def test_new_file(self):
-        pass
+    def test_refinements(self):
+        #parse a file with multiple refinements on the same object
+        #confirm they collapse to a single view file
+        proj = lookml.Project(path='lookml/tests/files/basic_parsing')
+        test_file = proj.file('refine.view.lkml')
+        print(test_file)
+        self.assertTrue('first' in test_file.views['+test1'])
+        self.assertTrue('second' in test_file.views['+test1'])
+
     def test_filtered_measure(self):
         meas = lookml.Measure('total_money')
         meas.setProperty('group_label','foo')
@@ -790,6 +797,15 @@ class testProjFile(unittest.TestCase):
             index_whole=False
         )
         self.pylookml_test_project_routine(proj)
+        #P0: found during autotune with file already existing. Think im not getting the sha before fetching / overwriting the file in github fast
+        # if pylookml_project._exists('pylookml/aggs.view.lkml'):
+        #     f = pylookml_project.file(f'pylookml/{model_name}_aggs.view.lkml')
+        # else:
+        #     f = pylookml_project.new_file(f'pylookml/{model_name}_aggs.view.lkml')
+        # github.GithubException.GithubException: 422 {"message": "Invalid request.\n\n\"sha\" wasn't supplied.", "documentation_url": "https://docs.github.com/rest/reference/repos#create-or-update-file-contents"}
+
+
+
         # x = proj.file('views/01_order_items.view.lkml')
         # a = proj.new_file('git_test_fast.view.lkml')
         # a + lookml.View('view: a {}')
