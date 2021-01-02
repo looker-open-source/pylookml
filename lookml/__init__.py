@@ -5,3 +5,5 @@ from lookml.core import \
     Explore,Model,Manifest
 from lookml.lib.project import *
 from lookml import lkml
+
+VERSION = '2.'
