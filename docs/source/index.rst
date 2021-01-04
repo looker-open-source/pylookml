@@ -9,7 +9,9 @@
    introduction
    examples
    eav
+   autotune
    reference
+
 
 
 

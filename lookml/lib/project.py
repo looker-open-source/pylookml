@@ -13,7 +13,7 @@ import collections
 
 #P1 simplify code with pathlib
 # import pathlib
-
+#P0 github class writing files into CWD despite not being a write proj.
 
 LOOKML_DASHBOARDS = False
 #import marko

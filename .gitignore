@@ -9,6 +9,8 @@ log.log
 config/settings.ini
 settings.ini
 api.ini
+autotune.ini
+lookml/tests/.conf/*
 *.ini
 .DS_Store
 ~$lang_map_generator.xlsm
