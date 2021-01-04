@@ -13,9 +13,7 @@
 import os
 import sys
 # sys.path.insert(0, os.path.abspath('../../..'))
-sys.path.insert(0, os.path.abspath('..'))
-# sys.path.append('/Users/russgarner/OneDrive/Python/lookml_project/lookml')
-
+sys.path.insert(0, os.path.abspath('../..'))
 
 # -- Project information -----------------------------------------------------
 
@@ -25,29 +23,6 @@ author = 'Russell Garner'
 
 # The full version, including alpha/beta/rc tags
 release = '2.0.0'
-
-#P0: Things to doc:
-# Iteration
-# subscriptability
-# subclassing
-# primary key accessor _View__pk
-# removing properties (del obj.prop)
-# _json() method
-# which properties del and which .remove() i.e. anonymous plural constructs
-# How to use the lang map generator
-# Updated EAV
-# How to create a new model file
-# How to load a project from the filestystem
-# Omitting defaults
-# logging issues to a csv
-# dim.filters + {'view.field':'>1'}
-# adding and subtracting properties
-# view + 'sql_table_name: order_items ;;'
-# view - 'sql_table_name'
-# x.foo.setName_replace_references('bar')
-# view + 'id' no longer supported
-# proj.put() no longer supported
-
 
 # -- General configuration ---------------------------------------------------
 
