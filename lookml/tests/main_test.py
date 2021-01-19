@@ -12,8 +12,7 @@ import warnings
 import configparser
 config = configparser.ConfigParser()
 import pprint, base64
-# config.read('lookml/tests/settings.ini') 
-config.read('lookml/tests/settings.ini')
+config.read('lookml/tests/.conf/settings.ini')
 #P2: subtraction hooks / warnings
 #P3: put colin's recursive sql table finder in the library
 #P2: test coverage for sets
@@ -797,21 +796,33 @@ class testProjFile(unittest.TestCase):
             index_whole=False
         )
         self.pylookml_test_project_routine(proj)
-        #P0: found during autotune with file already existing. Think im not getting the sha before fetching / overwriting the file in github fast
-        # if pylookml_project._exists('pylookml/aggs.view.lkml'):
-        #     f = pylookml_project.file(f'pylookml/{model_name}_aggs.view.lkml')
-        # else:
-        #     f = pylookml_project.new_file(f'pylookml/{model_name}_aggs.view.lkml')
-        # github.GithubException.GithubException: 422 {"message": "Invalid request.\n\n\"sha\" wasn't supplied.", "documentation_url": "https://docs.github.com/rest/reference/repos#create-or-update-file-contents"}
 
 
+    def test_github_fast_file_exists_on_write(self):
+        proj = lookml.ProjectGithub(
+            repo= "pythonruss/pylookml_test_project",
+            access_token=config['project1']['access_token'],
+            index_whole=False
+        )
+        x = proj.file('views/01_order_items.view.lkml')
+        x.views.order_items + 'dimension: test_github_fast_file_exists_on_write {}'
+        x.write()
 
-        # x = proj.file('views/01_order_items.view.lkml')
-        # a = proj.new_file('git_test_fast.view.lkml')
-        # a + lookml.View('view: a {}')
-        # a.write()
-        # a.delete()
-        # print(x.views.order_items.id)
+    def test_sha_not_supplied(self):
+        #P2 reconstruct this test, was adhoc and stopped when it passed
+        proj = lookml.ProjectGithub(
+            repo= "llooker/aes_demo_final",
+            access_token=config['autotune']['access_token'],
+            branch=config['autotune']['branch'],
+            index_whole=False
+        )
+        if proj._exists(f'pylookml/bike_share_aggs.view.lkml'):
+            # click.echo('passed exists check')
+            f = proj.file(f'pylookml/bike_share_aggs.view.lkml')
+            # click.echo(f.sha)
+        else:
+            f = proj.new_file(f'pylookml/bike_share_aggs.view.lkml')
+        f.write()
 
     def test_project_from_ssh(self):
         #connect

@@ -1,8 +1,9 @@
 
 Introduction 
 =========================================
-pyLookML is a metaprogramming interface for the LookML language. It leverages the `lkml <https://pypi.org/project/lkml/>`_ parser to interpret raw lookml files then adds an object oriented API allowing
-easy programitic manipulaiton of the file. Visit the repo `here <https://github.com/llooker/lookml/>`_.
+PyLookML allows scripting of LookML in python. It leverages the `lkml <https://pypi.org/project/lkml/>`_ parser to interpret raw lookml files then adds an object oriented syntax 
+and helpful integrations to boost your productivity.
+Visit the repo `here <https://github.com/llooker/lookml/>`_.
 
 Quickstart
 -------------------

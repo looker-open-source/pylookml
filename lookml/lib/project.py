@@ -13,7 +13,6 @@ import collections
 
 #P1 simplify code with pathlib
 # import pathlib
-#P0 github class writing files into CWD despite not being a write proj.
 
 LOOKML_DASHBOARDS = False
 #import marko
@@ -87,7 +86,7 @@ class f(object):
             typ = self.name.split('.')[-2]
             self.type = 'lookml_dashboard'
 
-    def _paths_build(self):
+    def _paths_build(self, creates_folder: bool=True):
         # get parent folder
         path_parts = self.path.split('/')
         if len(path_parts) > 1:
@@ -107,7 +106,8 @@ class f(object):
 
         # update index
         if self.lookml_folder not in self.parent._index.keys():
-            self.parent.check_folder_create(folder)
+            if creates_folder:
+                self.parent.check_folder_create(folder)
             self.parent._index[self.lookml_folder] = dict()
 
     def __getattr__(self, item):
@@ -122,6 +122,8 @@ class f(object):
         if item in self.content.__dict__.keys():
             return self.content.__dict__[item]
 
+    def __contains__(self, item):
+        return item in self.content
     # base
     def __add__(self, other):
         self.content + other
@@ -200,7 +202,7 @@ class f_github(f):
         # update the name to the last element of the split
         self.name = self.path.split('/')[-1]
 
-        self._paths_build()
+        self._paths_build(creates_folder=False)
         if new:
             if self.lookml_folder not in self.parent._index.keys():
                 self.parent._index[self.lookml_folder] = dict()
@@ -243,7 +245,7 @@ class f_github(f):
                 )
                 self._github_file = self._github_file['content']
             else:
-                tmp = self.parent._git_connection.get_contents(self.path)
+                tmp = self.parent._git_connection.get_contents(self.path,ref=self.parent._branch)
                 self._github_file = self.parent._git_connection.update_file(
                     self.path,
                     self.parent._commit_message,
@@ -267,7 +269,7 @@ class f_github(f):
         # de-ref from index
         del self.parent._index[self.lookml_folder][self.name]
         # perform deletion on filesystem / github
-        tmp = self.parent._git_connection.get_contents(self.path)
+        tmp = self.parent._git_connection.get_contents(self.path,ref=self.parent._branch)
         self.parent._git_connection.delete_file(
             self.path, self.parent._commit_message, tmp.sha, self.parent._branch
         )
@@ -275,7 +277,7 @@ class f_github(f):
     def exists(self):
         def checkgithub(f0):
             try:
-                self.parent._git_connection.get_contents(f0)
+                self.parent._git_connection.get_contents(f0,ref=self.parent._branch)
                 return True
             except github.GithubException as e:
                 if e._GithubException__status == 404:
@@ -368,6 +370,12 @@ class Project(object):
                 yield v
     # base
 
+    def put(self, file: f):
+        file.write()
+
+    def delete(self, file: f):
+        file.delete()
+
     def file(self, path: str):
         return self[path]
     # base
@@ -459,7 +467,7 @@ class ProjectGithub(Project):
             self._build_index()
 
     def _build_index(self):
-        contents = self._git_connection.get_contents('')
+        contents = self._git_connection.get_contents('',ref=self._branch)
         while contents:
             file_content = contents.pop(0)
             folder = '/'.join(file_content.path.split('/')[:-1])
@@ -467,7 +475,7 @@ class ProjectGithub(Project):
                 folder = '.'
             if file_content.type == "dir":
                 contents.extend(
-                    self._git_connection.get_contents(file_content.path))
+                    self._git_connection.get_contents(file_content.path,ref=self._branch))
             else:
                 if file_content.name.endswith('.lkml') or \
                         (file_content.name.endswith('.lookml') and LOOKML_DASHBOARDS):
@@ -487,7 +495,7 @@ class ProjectGithub(Project):
             else:
                 if not self._built:
                     return f_github(
-                        self._git_connection.get_contents(f.path), 
+                        self._git_connection.get_contents(f.path,ref=self._branch), 
                         parent=self, 
                         new=True
                         )
@@ -496,7 +504,7 @@ class ProjectGithub(Project):
         else:
             if not self._built:
                 return f_github(
-                    self._git_connection.get_contents(f.path), 
+                    self._git_connection.get_contents(f.path,ref=self._branch), 
                     parent=self, 
                     new=True
                     )
@@ -505,7 +513,7 @@ class ProjectGithub(Project):
 
     def _exists(self,p:str):
         try:
-            self._git_connection.get_contents(p)
+            self._git_connection.get_contents(p, ref=self._branch)
             return True
         except github.GithubException as e:
             if e._GithubException__status == 404:

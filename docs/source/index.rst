@@ -11,6 +11,7 @@
    eav
    autotune
    reference
+   changelog
 
 
 

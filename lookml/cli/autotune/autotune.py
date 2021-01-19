@@ -6,6 +6,11 @@ import configparser
 import time
 from lookml.lib.utils import url
 
+#P0: materialization hueristic: if there is a datagroup associated to an explore / model
+# otherwise default to persist_for: "24 hours"
+
+
+
 def init_looker_sdk(
         url:str, 
         client_id:str, 
@@ -54,30 +59,29 @@ def routine(
                     "limit": "100"
             })
     frequent_queries = json.loads(frequent_queries)
-    click.echo(branch)
+    click.echo("working on branch: " + branch)
     #look up the model attributes
     model = sdk.lookml_model(model_name)
     #look up the project attributes
     looker_project = sdk.project(model.project_name)
-    if looker_project.git_service_name == 'github': #and looker_project.name == 'dbs':
+    if looker_project.git_service_name == 'github': 
         git_search = re.search(
             r'git@github.com:([a-zA-Z0-9_]{1,100}\/[a-zA-Z_0-9]{1,100})\.git', 
             looker_project.git_remote_url)
         if git_search:
             repo = git_search.group(1)
-            #click.echo(f'repo: {repo}')
 
     pylookml_project = lookml.Project(
         repo= repo
-        # ,access_token=config['project1']['access_token']
         ,access_token=access_token
-        # ,looker_host='https://dat.dev.looker.com/'
         ,looker_host=looker_host.with_no_port()+'/'
         ,looker_project_name=looker_project.name
         ,branch=branch
     )
     if pylookml_project._exists(f'pylookml/{model_name}_aggs.view.lkml'):
+        # click.echo('passed exists check')
         f = pylookml_project.file(f'pylookml/{model_name}_aggs.view.lkml')
+        # click.echo(f.sha)
     else:
         f = pylookml_project.new_file(f'pylookml/{model_name}_aggs.view.lkml')
     field_type_index = dict()
@@ -88,7 +92,6 @@ def routine(
     # lookml_model_explore has the filesystem location {
     # "source_file": "dbs.model.lkml"
     # }
-    click.echo(len(frequent_queries))
     with click.progressbar(frequent_queries) as fq:
         for query in fq:
                 do = 0
@@ -116,8 +119,26 @@ def routine(
                 # pylookml_explore = pylookml_model.explores[query["query.view"]]
                 # {query["query.slug"]} 
                 # pylookml_explore + f'''
-                #P0: explore with same name writing over itself?
                 # click.echo(f'{query["query.view"]}')
+                explore_source_file_path = sdk.lookml_model_explore(
+                        lookml_model_name=query["query.model"],
+                        explore_name=query["query.view"],
+                        fields='source_file'
+                        )
+                explore_source_file = pylookml_project.file(explore_source_file_path.source_file)
+                pylookml_source_explore = explore_source_file.explores[query["query.view"]]
+                if 'persist_for' in pylookml_source_explore:
+                    materialization = pylookml_source_explore.persist_for
+                elif 'persist_with' in pylookml_source_explore:
+                    materialization = 'datagroup_trigger: ' + pylookml_source_explore.persist_with.value
+                elif 'persist_for' in explore_source_file:
+                    materialization = explore_source_file.persist_for
+                elif 'persist_with' in explore_source_file:
+                    materialization = 'datagroup_trigger: ' + explore_source_file.persist_with.value
+                else:
+                    materialization = 'persist_for: "24 hours"'
+
+                f + 'include: "/**/*.model"'
                 if f'+{query["query.view"]}' not in f.explores:
                     f + f'''explore: +{query["query.view"]} {{ }}'''
                 f.explores['+' + query["query.view"]] + f'''
@@ -127,10 +148,9 @@ def routine(
                             measures: []
                             description: "{looker_host.with_no_port()}/x/{query["query.slug"]}"
                             filters: []
-                            limit: 5000
                             }}
                         materialization: {{
-                            sql_trigger_value: select 1 ;;
+                            {materialization}
                             }}
                         }}
                     '''
@@ -205,9 +225,15 @@ def useconf(config_path):
     config.read(config_path)
     routine(**config['autotune'])
 
-@click.group()
+@click.group(invoke_without_command=True)
 def autotune():
-    pass
+    if os.path.exists('lookml/tests/.conf/autotune.ini'):
+        config = configparser.ConfigParser()
+        config.read('lookml/tests/.conf/autotune.ini')
+        routine(**config['autotune'])
+    else:
+        pass
+
 
 autotune.add_command(useconf)
 autotune.add_command(guided)

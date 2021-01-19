@@ -1,6 +1,9 @@
 AutoGen for EAV
 ------------------------------
 
+.. warning:: Setting up EAV automation can generate high code volume. Pair with a Looker architect to plan for scale. Multiple instances may be necessary at large volumes. 
+
+
 ************
 What is EAV?
 ************
