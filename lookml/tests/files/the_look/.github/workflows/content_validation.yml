@@ -1,0 +1,117 @@
+name: content_validate
+env:
+  DEMO_NAME: Ecommerce
+  PROJECT_NAME: thelook_event
+  HOST: demo
+on:
+#   schedule:
+#     - cron: '0 4 * * 1-5' 
+  workflow_dispatch:
+
+jobs:
+  content_validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+      
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v1
+
+      with:
+        python-version: 3.7
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+        if [ -f .github/workflows/requirements.txt ]; then pip install -r .github/workflows/requirements.txt; fi
+    - name: Content Validation
+      run: |
+        echo "Checking for Broken content" 
+        python .github/workflows/demo-dashboard-validation/content_validation.py \
+          --dev-base-url https://${{ env.HOST }}.looker.com \
+          --dev-client-id ${{ secrets.CLIENT_ID }} \
+          --dev-client-secret ${{ secrets.CLIENT_SECRET }} \
+          --googledemo-client-id ${{ secrets.GOOGLEDEMO_CLIENT_ID }} \
+          --googledemo-client-secret ${{ secrets.GOOGLEDEMO_CLIENT_SECRET }} \
+          --project-name ${{ env.PROJECT_NAME }} \
+          --repo-path $GITHUB_WORKSPACE
+    - name: Check if there are changes
+      id: changes
+      uses: UnicornGlobal/has-changes-action@v1.0.11
+    - name: Commit files
+      if: steps.changes.outputs.changed == 1
+      run: |
+        git config --local user.email "leigha.jarett@gmail.com"
+        git config --local user.name "Leigha Jarett"
+        git add --all
+        git commit -m "Automated Dashboard LookML" -a
+    - name: Push changes
+      if: success()
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+    - name: Hit Deploy on Dev
+      if: success()
+      uses: fjogeleit/http-request-action@master
+      with:
+        url: 'https://${{ env.HOST }}.looker.com/webhooks/projects/${{ env.PROJECT_NAME }}/deploy'
+        method: 'POST'
+    - name: Set Variables
+      if: success() || failure()
+      run: |
+        ERRORS=$(cat .github/dashboard_errors.txt) 
+        NEW_DASHS=$(cat .github/new_dashboards.txt) 
+        echo "::set-env name=ERRORS::$ERRORS" 
+        echo "::set-env name=NEW_DASHS::$NEW_DASHS" 
+    - name: Check Variables
+      if: success() || failure()
+      run: 
+        cat .github/new_dashboards.txt
+    - name: Slack Notify Errors
+      if:  contains(env.ERRORS, 'dashboard')
+      uses: 8398a7/action-slack@v2
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }} 
+      with:
+        status: custom
+        custom_payload: |
+          {   username: 'Demo Bot',
+              icon_url: 'https://slack-imgs.com/?c=1&o1=gu&url=https%3A%2F%2Femoji.slack-edge.com%2FT024F428S%2Fleia_love%2F1c385544a81a1b3c.png',
+              blocks: [
+              {
+                    type: "section",
+                    text: {
+                      type: "mrkdwn",
+                      text: "Oh no, looks like there are some errors in the ${{ env.DEMO_NAME }} demo: ${{ env.ERRORS }}"
+              }
+              }
+                  ]
+            }
+    - name: Slack Notify New Dashboards
+      if:  contains(env.NEW_DASHS, 'dashboard')
+      uses: 8398a7/action-slack@v3
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }} 
+      with:
+        status: custom
+        custom_payload: |
+          {   username: 'Demo Bot',
+              icon_url: 'https://slack-imgs.com/?c=1&o1=gu&url=https%3A%2F%2Femoji.slack-edge.com%2FT024F428S%2Fleia_love%2F1c385544a81a1b3c.png',
+              blocks: [
+              {
+                    type: "section",
+                    text: {
+                      type: "mrkdwn",
+                      text: "Some new dashboards have been added to the ${{ env.DEMO_NAME }} demo, check them out! \n ${{ env.NEW_DASHS }}"
+              }
+              }
+                  ]
+            }
+    - name: Update Dashboards on Demo Instances
+      uses: satak/webrequest-action@master
+      with:
+        url: https://us-central1-sandbox-trials.cloudfunctions.net/demo-content-transfer
+        method: POST
+        payload: '{"project_name":"${{ env.PROJECT_NAME }}"}'
+        headers: '{"Content-Type": "application/json"}'

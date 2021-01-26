@@ -36,4 +36,3 @@ order_items.addSum('id')
 order_items.write()
 
 ```
-

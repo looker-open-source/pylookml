@@ -2,18 +2,18 @@
 .app_data/
 .tmp
 .tmp/*
+.ignore/
+.venv/
 log.log
 .vscode/
 config/settings.ini
 settings.ini
-old_code_fragments
-settings/templates/*
-lookml/.output/*
-run.py
-msi_run.py
-# *.lkml
-testclient.py
+api.ini
+autotune.ini
+lookml/tests/.conf/*
+*.ini
 .DS_Store
+~$lang_map_generator.xlsm
 ############## Generic Python Gitignore configurations ##############
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -72,7 +72,7 @@ coverage.xml
 Pipfile
 Pipfile.lock
 # Sphinx documentation
-# docs/_build/
+docs/_build/
 
 # PyBuilder
 target/

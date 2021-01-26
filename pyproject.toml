@@ -1,0 +1,64 @@
+[tool.poetry]
+name = "lookml"
+version = "3.0.0"
+description = "A batteries included API for automating your LookML"
+authors = ["Russell Garner"]
+license = "MIT License"
+packages = [
+    { include = "lookml" }
+]
+
+[tool.poetry.scripts]
+lookml = "lookml.__main__:cli"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+PyGithub = "^1.47"
+PyYAML = "^5.3.1"
+click = "^7.1.2"
+looker-sdk = "^0.1.3-beta.20"
+
+
+[tool.poetry.dev-dependencies]
+alabaster = "^0.7.12"
+astroid = "2.3.3"
+attrs = "20.1.0"
+Babel = "^2.8.0"
+cattrs = "^1.0.0"
+certifi = "^2019.11.28"
+chardet = "^3.0.4"
+Deprecated = "^1.2.7"
+docutils = "^0.16"
+idna = "^2.9"
+imagesize = "^1.2.0"
+isort = "^4.3.21"
+Jinja2 = "^2.11.1"
+lazy-object-proxy = "^1.4.3"
+looker-sdk = "^0.1.3b20"
+MarkupSafe = "^1.1.1"
+mccabe = "^0.6.1"
+packaging = "^20.3"
+PyGithub = "^1.47"
+Pygments = "^2.6.1"
+PyJWT = "^1.7.1"
+pylint = "^2.4.4"
+pyparsing = "^2.4.6"
+pytz = "^2019.3"
+requests = "^2.23.0"
+rstcheck = "^3.3.1"
+six = "^1.14.0"
+snowballstemmer = "^2.0.0"
+Sphinx = "^2.4.4"
+sphinx-rtd-theme = "^0.4.3"
+sphinxcontrib-applehelp = "^1.0.2"
+sphinxcontrib-devhelp = "^1.0.2"
+sphinxcontrib-htmlhelp = "^1.0.3"
+sphinxcontrib-jsmath = "^1.0.1"
+sphinxcontrib-qthelp = "^1.0.3"
+sphinxcontrib-serializinghtml = "^1.1.4"
+urllib3 = "^1.25.8"
+wrapt = "^1.11.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
