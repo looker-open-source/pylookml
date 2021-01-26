@@ -18,7 +18,7 @@ class ws:
     parameterPattern = r'\{\%\s{1,3}parameter\s([a-z\._0-9]*)\s\%\}'
     filtersPattern = r' \_filters\[\s{0,10}\'([a-z\._0-9]*)\'\]'
     fullPattern = r'(' + mustachePattern + r'|' + conditionPattern + r'|' + parameterPattern + r'|' + doubleBracesPattern + r'|' + filtersPattern + r')'
-    lookml_name = r'^[a-z_]{1,150}$'
+    lookml_name = r'^(\+|)[a-z_]{1,150}$'
     view_pattern = r'^\s*view\:\s[a-z_]{1,150}\s\{(\s|.)*\}\s*$' #P3 pattern will match multiple views in a row
     explore_pattern = r'^\s*explore\:\s[a-z_]{1,150}\s\{(\s|.)*\}\s*$' #P3 pattern will match multiple views in a row
     join_pattern = r'^\s*join\:\s[a-z_]{1,150}\s\{(\s|.)*\}\s*$' #P3 pattern will match multiple views in a row

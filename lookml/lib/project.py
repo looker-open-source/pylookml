@@ -8,6 +8,7 @@ import requests
 import re, shutil
 import warnings
 import collections
+from typing import NewType, Any, Generator, Union, Tuple, Type
 # import platform
 # import pprint
 
@@ -37,9 +38,140 @@ def _optional_import_(module: str, name: str = None, package: str = None):
 yaml_load = _optional_import_('yaml', 'safe_load', package='pyyaml')
 yaml_dump = _optional_import_('yaml', 'dump', package='pyyaml')
 
+class File(object):
+    def __init__(self, path: str,):
+        self.path = path
 
-class f(object):
+        self.lookml_path = self.path
 
+        self.name = self.path.split('/')[-1]
+
+        self._paths_build()
+
+        self._type_determination()
+
+        self.read()
+
+    def _type_determination(self):
+        # P1 finish json, md and JS handlers
+        self.extension = self.name.split('.')[-1]
+        self.named_extension =\
+            self.name.split('.')[-2] + '.' + self.name.split('.')[-1]
+        if self.extension == 'lkml':
+            typ = self.name.split('.')[-2]
+            if typ in ('model', 'manifest'):
+                self.type = typ
+            # views or naked are "partial models"
+            else:
+                self.type = 'partial_model'
+        elif self.extension == 'json':
+            self.type = 'json'
+        elif self.extension == 'md':
+            self.type = 'markdown'
+        elif self.extension == 'lookml':
+            typ = self.name.split('.')[-2]
+            self.type = 'lookml_dashboard'
+
+    def _paths_build(self, creates_folder: bool=True):
+        self.python_path = self.path
+
+
+    def __getattr__(self, item):
+        if item in self.__dict__.keys():
+            return self.__dict__[item]
+        elif item in self.content.__dict__.keys():
+            return self.content.__dict__[item]
+        else:
+            raise Exception(f'{item} not in file type {self.type}')
+
+    def __getitem__(self, item):
+        if item in self.content.__dict__.keys():
+            return self.content.__dict__[item]
+
+    def __contains__(self, item):
+        return item in self.content
+
+    def __add__(self, other):
+        self.content + other
+
+    def __sub__(self, other):
+        self.content - other
+
+    def read(self):
+        if os.path.exists(self.python_path):
+            if self.type in ('model', 'partial_model'):
+                self.content = lookml.Model(
+                    lkml.load(open(self.python_path, encoding="utf-8")), parent=self)
+            elif self.type == 'manifest':
+                self.content = lookml.Manifest(
+                    lkml.load(open(self.python_path, encoding="utf-8")), parent=self)
+            elif self.type == 'lookml_dashboard':
+                self.content = yaml_load(open(self.python_path,encoding="utf-8"))
+                self.content = yaml_load(
+                    open(self.python_path, encoding="utf-8"))
+        # blank openers for new file
+        elif self.type in ('model', 'partial_model'):
+            self.content = lookml.Model('', parent=self)
+        elif self.type in ('manifest'):
+            self.content = lookml.Manifest('', parent=self)
+        elif self.type == 'lookml_dashboard':
+            self.content = yaml_load(open(self.python_path, encoding="utf-8"))
+        else:
+            # P1 create other type initialization
+            raise Exception('not implemented yet')
+
+    def write(self, overWriteExisting=True):
+        """
+        Write the file (will write to filesystem or github). It does not write to the remote until 
+        .commit() in SSH mode
+
+        Args:
+            overWriteExisting (bool, optional): [description]. Defaults to True.
+        """
+        # print("Writing to: %s" % (self.path) )
+        if overWriteExisting:
+            with open(self.python_path, 'w') as opened_file:
+                try:
+                    if self.type == 'lookml_dashboard':
+                        warnings.warn('''LookML dashboards are currently read only, 
+                        to be fixed in a future release''')
+                        # P1 fix writing, currently lookml dashboards should be considered read only
+                        # opened_file.write(yaml_dump(self.content))
+                    else:
+                        opened_file.write(self.__str__())
+                except:
+                    pass
+        else:
+            try:
+                fh = open(self.python_path, 'r')
+                fh.close()
+            except FileNotFoundError:
+                with open(self.python_path, 'w') as opened_file:
+                    opened_file.write(self.__str__())
+
+    def change_name(self):
+        """
+        Not implemented yet
+        """
+        #P1: not implemented
+        pass
+
+    def move(self):
+        """
+        Not implemented yet
+        """
+        #P1: not implemented
+        pass
+
+    def delete(self):
+        """
+        deletes the file from the filesystem
+        """
+        os.remove(self.python_path)
+
+    def __str__(self): return str(self.content)
+
+class f(File):
     def __init__(
          self 
         ,path: str 
@@ -66,26 +198,6 @@ class f(object):
 
         self.read()
 
-    def _type_determination(self):
-        # P1 finish json, md and JS handlers
-        self.extension = self.name.split('.')[-1]
-        self.named_extension =\
-            self.name.split('.')[-2] + '.' + self.name.split('.')[-1]
-        if self.extension == 'lkml':
-            typ = self.name.split('.')[-2]
-            if typ in ('model', 'manifest'):
-                self.type = typ
-            # views or naked are "partial models"
-            else:
-                self.type = 'partial_model'
-        elif self.extension == 'json':
-            self.type = 'json'
-        elif self.extension == 'md':
-            self.type = 'markdown'
-        elif self.extension == 'lookml':
-            typ = self.name.split('.')[-2]
-            self.type = 'lookml_dashboard'
-
     def _paths_build(self, creates_folder: bool=True):
         # get parent folder
         path_parts = self.path.split('/')
@@ -110,87 +222,11 @@ class f(object):
                 self.parent.check_folder_create(folder)
             self.parent._index[self.lookml_folder] = dict()
 
-    def __getattr__(self, item):
-        if item in self.__dict__.keys():
-            return self.__dict__[item]
-        elif item in self.content.__dict__.keys():
-            return self.content.__dict__[item]
-        else:
-            raise Exception(f'{item} not in file type {self.type}')
-
-    def __getitem__(self, item):
-        if item in self.content.__dict__.keys():
-            return self.content.__dict__[item]
-
-    def __contains__(self, item):
-        return item in self.content
-    # base
-    def __add__(self, other):
-        self.content + other
-    # base
-
-    def __sub__(self, other):
-        self.content - other
-
-    def read(self):
-        if os.path.exists(self.python_path):
-            if self.type in ('model', 'partial_model'):
-                self.content = lookml.Model(
-                    lkml.load(open(self.python_path, encoding="utf-8")), parent=self)
-            elif self.type == 'manifest':
-                self.content = lookml.Manifest(
-                    lkml.load(open(self.python_path, encoding="utf-8")), parent=self)
-            elif self.type == 'lookml_dashboard':
-                self.content = yaml_load(open(self.path,encoding="utf-8"))
-                self.content = yaml_load(
-                    open(self.python_path, encoding="utf-8"))
-        # blank openers for new file
-        elif self.type in ('model', 'partial_model'):
-            self.content = lookml.Model('', parent=self)
-        elif self.type in ('manifest'):
-            self.content = lookml.Manifest('', parent=self)
-        elif self.type == 'lookml_dashboard':
-            self.content = yaml_load(open(self.python_path, encoding="utf-8"))
-        else:
-            # P1 create other type initialization
-            raise Exception('not implemented yet')
-
-    def write(self, overWriteExisting=True):
-        ''' Checks to see if the file exists before writing'''
-        # print("Writing to: %s" % (self.path) )
-        if overWriteExisting:
-            with open(self.python_path, 'w') as opened_file:
-                try:
-                    if self.type == 'lookml_dashboard':
-                        warnings.warn('''LookML dashboards are currently read only, 
-                        to be fixed in a future release''')
-                        # P1 fix writing, currently lookml dashboards should be considered read only
-                        # opened_file.write(yaml_dump(self.content))
-                    else:
-                        opened_file.write(self.__str__())
-                except:
-                    pass
-        else:
-            try:
-                fh = open(self.python_path, 'r')
-                fh.close()
-            except FileNotFoundError:
-                with open(self.python_path, 'w') as opened_file:
-                    opened_file.write(self.__str__())
-
-    def change_name(self):
-        pass
-
-    def move(self):
-        pass
-
     def delete(self):
         # de-ref from index
         del self.parent._index[self.lookml_folder][self.name]
         # perform deletion on filesystem / github
         os.remove(self.python_path)
-
-    def __str__(self): return str(self.content)
 
 class f_github(f):
     def __init__(self, githubFile, parent=None, new=False):
@@ -235,6 +271,12 @@ class f_github(f):
                 self.content = yaml_load('')
 
     def write(self):
+        """
+        write the file to github
+
+        Raises:
+            Exception: if file not in github
+        """
         if isinstance(self._github_file.path, str):
             if not self.exists():
                 self._github_file = self.parent._git_connection.create_file(
@@ -266,6 +308,9 @@ class f_github(f):
             raise Exception('file was not bound to github or sting path')
 
     def delete(self):
+        """
+        Deletes the file from github
+        """
         # de-ref from index
         del self.parent._index[self.lookml_folder][self.name]
         # perform deletion on filesystem / github
@@ -370,46 +415,111 @@ class Project(object):
                 yield v
     # base
 
-    def put(self, file: f):
+    def put(self, file: File):
+        """
+        writes a file to your project. synonym of myFile.write()
+
+        Args:
+            file (File): the file object to be written
+
+.. code-block:: python
+
+        myFile = lookml.File('foo.view.lkml')
+        proj.put(myFile)
+
+        """
         file.write()
 
-    def delete(self, file: f):
+    def delete(self, file: File):
+        """
+        Delete a file from the project
+
+        Args:
+            file (File): pass the file object to delete
+
+.. code-block:: python
+
+        myFile = proj.new_file('foo.view.lkml')
+        proj.delete(myFile)
+        """
         file.delete()
 
-    def file(self, path: str):
-        return self[path]
-    # base
+    def file(self, path: str) -> f:
+        """
+        Return a file for the lookml project file path
 
-    def files(self):
+        Args:
+            path (str): string to the path of the file i.e 'views/order_items.view.lkml'
+
+        Returns:
+            file: the pylookml file type
+        """
+        return self[path]
+
+    def files(self) -> Generator:
+        """
+        Iterate over the project files
+
+        Yields:
+            Generator: file objects
+        """
         for f in self:
             yield f
-    # base
 
     def view_files(self):
+        """
+        Iterate over the project view files
+
+        Yields:
+            Generator: file objects
+        """
         for f in self:
             if f.named_extension == 'view.lkml':
                 yield f
-    # base
 
     def model_files(self):
+        """
+        Iterate over the project model files
+
+        Yields:
+            Generator: file objects
+        """
         for f in self:
             if f.named_extension == 'model.lkml':
                 yield f
-    # base
 
     def manifest_files(self):
+        """
+        Iterate over the project manifest files
+        (there should only be one per project)
+
+        Yields:
+            Generator: file objects
+        """
         for f in self:
             if f.named_extension == 'manifest.lkml':
                 yield f
-    # filesystem
 
     def check_folder_create(self, dir: str = ''):
         os.makedirs(dir, exist_ok=True)
-    # base?
 
     def new_file(self, path: str = '') -> f:
+        """
+        Create a new file of any type: view, model etc
+
+        Args:
+            path (str, optional): lookml project path you'd like the file created at
+
+        Returns:
+            f: returns the new file object
+
+.. code-block:: python
+
+        myFile = proj.new_file('foo.view.lkml')
+        myFile + 'view: foo {}'
+
+        """
         return f(path, parent=self)
-    # base
 
     def dir_list(self):
         def traverse(tree, i=0):
@@ -433,7 +543,19 @@ class Project(object):
     # base
     # filesystem
 
-    def delete_file(self, fl:str):
+    def delete_file(self, path:str):
+        """
+        Delete a file by providing the path (vs delete() which takes a file obj)
+
+        Args:
+            fl (str): the path within the project of the file to be deleted
+
+.. code-block:: python
+
+        myFile = proj.new_file('foo.view.lkml')
+        proj.delete_file(path='foo.view.lkml')
+
+        """
         self[fl].delete()
 
 #P1: build the ability to delete folders from filesystem & github
@@ -545,8 +667,22 @@ class ProjectGithub(Project):
         else:
             self._deploy_url = ''
     # base
+    def put(self, f):
+        if type(f) == File:
+            new = self.new_file(f.path)
+            new.write()
+        if isinstance(f,f_github):
+            f.write()
 
     def deploy(self):
+        """
+        Issues a webhook to have looker sync with your project remote
+
+.. note:: this will only result in changes being displayed if you are deploying to master
+
+.. note:: this will only work if you provided the looker_project_name and looker_host arguments when you initialized the project
+
+        """
         # P3: check to see if project is on master,
         # if not issue warning that changes won't show up
         if self._deploy_url:
@@ -633,11 +769,11 @@ class ProjectSSH(Project):
             return self.call(' push origin ' + self.branch + ' ', gitDir=False)
 
     def __init__(
-        self, 
+        self,
+        git_url: str,
+        looker_project_name: str, 
         path: str = '.tmp', 
-        looker_host: str = None, 
-        looker_project_name: str = None, 
-        git_url: str = '', 
+        looker_host: str = None,  
         branch: str = 'master', 
         commitMessage: str = ''
         ):
@@ -663,7 +799,12 @@ class ProjectSSH(Project):
         self._build_index()
     # shell
     def commit(self):
+        """
+        git commit and git push changes to remote in SSH mode
+        """
         self._git.commit()
+        self._git.pushRemote()
+
     def constructDeployUrl(self):
         '''
             Constructs a github deploy URL according to this pattern:
@@ -678,7 +819,13 @@ class ProjectSSH(Project):
     # base
 
     def deploy(self):
-        # P3: check to see if project is on master,
-        # if not issue warning that changes won't show up
+        """
+        Issues a webhook to have looker sync with your project remote
+
+.. note:: this will only result in changes being displayed if you are deploying to master
+
+.. note:: this will only work if you provided the looker_project_name and looker_host arguments when you initialized the project
+
+        """
         if self._deploy_url:
             requests.get(self._deploy_url)

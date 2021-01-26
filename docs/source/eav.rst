@@ -122,22 +122,23 @@ The automation python file follows these high level steps.
    :linenos:
 
     import lookml
-    from looker_sdk import models, methods, init31
+    from looker_sdk import models, methods, init40
+    import json
 
     # step 1 -- connect to the Looker API to pull a list of EAV fields
-    sdk = init31("api.ini")
+    sdk = init40("api.ini")
     sql_for_fields = f"""
-            SELECT 
-                 cpf.org_id
+            SELECT
+                cpf.org_id
                 ,cpf.value
                 ,cpf.datatype
-                ,cpf.field_name as "FIELD_NAME"
-                , CASE 
+                ,cpf.field_name as FIELD_NAME
+                , CASE
                     WHEN cpf.datatype IN ('TIMESTAMP_LTZ') THEN 'time'
                     WHEN cpf.datatype IN ('FLOAT','NUMBER', 'int') THEN 'number'
-                    ELSE 'string' END as "LOOKER_TYPE"
-            FROM 
-                -- public.custom_profile_fields as cpf 
+                    ELSE 'string' END as LOOKER_TYPE
+            FROM
+                -- public.custom_profile_fields as cpf
                 (
                     SELECT 1 as user_id, 8 as org_id, 'c_donation_amount' as field_name, '40' as value, 'int' as datatype UNION ALL
                     SELECT 1, 8, 'c_highest_achievement', 'gold badge', 'varchar' UNION ALL
@@ -153,26 +154,26 @@ The automation python file follows these high level steps.
                 1=1
             GROUP BY 1,2,3,4,5
     """
-    query_config = models.WriteSqlQueryCreate(sql=sql_for_fields, connection_id="snowlooker")
+    query_config = models.SqlQueryCreate(sql=sql_for_fields, connection_id="snowlooker")
     query = sdk.create_sql_query(query_config)
     response = json.loads(sdk.run_sql_query(slug=query.slug, result_format="json"))
 
     # step 2 -- create a pyLookML project connection to your github
     proj = lookml.Project(
             #the github location of the repo
-                repo= 'llooker/russ_sanbox'
+            repo= 'llooker/your_repo'
             #instructions on creating an access token: https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line
-            ,access_token=put_your_access_token_here
+            ,access_token='your_access_token'
             #your Looker host
-            ,looker_host="https://mylooker.looker.com/"
+            ,looker_host="https://example.looker.com/"
             #The name of the project on your looker host
-            ,looker_project_name="russ_sanbox"
-            #You can deploy to branches other than master, a shared or personal branch if you would like to hop into looker, pull 
+            ,looker_project_name="pylookml_testing_2"
+            #You can deploy to branches other than master, a shared or personal branch if you would like to hop into looker, pull
             #remote changes and review before the code is committed to production
             ,branch='master'
     )
     #For simplicity of this example, all of the objects we're tracking will be contained in the model file, but for your needs can be split across the project.
-    modelFile = proj['eav_example/eav.model.lkml']
+    modelFile = proj['eav_model.model.lkml']
 
     # step 3 -- Set up the objects we'll be manipulating (some are just strings which will be added back to the LookML at the end)
     #the EAV source view points to our custom_profile_fields database table
@@ -202,8 +203,8 @@ The automation python file follows these high level steps.
 
     # step 4 -- loop over the list of EAV k,v pairs and do work
     for column in response:
-        dimName = lookml.lookCase(column['FIELD_NAME'])
-        orgIds.append(column['ORG_ID'])
+        dimName = lookml.core.lookCase(column['FIELD_NAME'])
+        orgIds.append(column['org_id'])
         columns.append(dimName)
         #Step 1) Add flattening measure to the EAV source table
         eavSource + f'''
@@ -215,23 +216,23 @@ The automation python file follows these high level steps.
 
         # Add to the NDT fields
         flatteningNDT + f'''
-                dimension: {dimName}_org_{column['ORG_ID']} {{
+                dimension: {dimName}_org_{column['org_id']} {{
                     label: "{dimName}"
                     type: {column['LOOKER_TYPE']}
                     sql: ${{TABLE}}.{dimName} ;;
-                    required_access_grants: [org_{column['ORG_ID']}]
+                    required_access_grants: [org_{column['org_id']}]
                 }}
         '''
         if column['LOOKER_TYPE'] == "number":
             flatteningNDT + f'''
-                measure: {dimName}_total_org_{column['ORG_ID']} {{
+                measure: {dimName}_total_org_{column['org_id']} {{
                     label: "{dimName}_total"
                     type: sum
-                    sql: ${{{dimName}_org_{column['ORG_ID']}}} ;;
-                    required_access_grants: [org_{column['ORG_ID']}]
+                    sql: ${{{dimName}_org_{column['org_id']}}} ;;
+                    required_access_grants: [org_{column['org_id']}]
                 }}
             '''
-    # step 5 -- loop over the distinct raw columns (obtained in the full k,v loop) for adding columns to the NDT 
+    # step 5 -- loop over the distinct raw columns (obtained in the full k,v loop) for adding columns to the NDT
     for col in set(columns):
         drivedtableString += f' column: {col} {{ field: _eav_flattener.{col} }}'
     drivedtableString += '}}'
@@ -253,7 +254,7 @@ The automation python file follows these high level steps.
     #Add access grants to the model
     modelFile + accessGrants
 
-    # step 8 -- save the file back to the project in github 
+    # step 8 -- save the file back to the project in github
     proj.put(modelFile)
     #s step 9 -- hit the looker deploy URL to sync Looker production mode with the github master branch
     proj.deploy()
@@ -418,7 +419,7 @@ The Completed LookML output to the eav.model.lkml file
 
 
 More information and resources
-***************
+*******************************
     1. `2019 Looker JOIN presentation on EAV and LookML Generation <https://www.youtube.com/watch?v=cdyn-KLwyfc>`_
     2. `More about modeling EAV data in Looker <https://discourse.looker.com/t/three-ways-to-model-eav-schemas-and-many-to-many-relationships/1780>`_ 
 

@@ -7,11 +7,11 @@ from lookml.lib.lang import \
 import copy, re
 
 import warnings
-from typing import NewType, Any, Generator, Union, Tuple
+from typing import NewType, Any, Generator, Union, Tuple, Type
 OMIT_DEFAULTS = False
 DB_FIELD_DELIMITER_START = '`' 
 DB_FIELD_DELIMITER_END = '`'
-LOOKML_DASHBOARDS = False
+# LOOKML_DASHBOARDS = False
 def omit_defaults(f):
     def wrapper(*args,**kwargs):
         if OMIT_DEFAULTS and args[0]._is_default():
@@ -569,7 +569,7 @@ class Field(lookml):
             sql (str): string of your sql
 
         Returns:
-            [type]: [description]
+            self
         """
         self.sql = sql
         return self
@@ -577,13 +577,14 @@ class Field(lookml):
     def addLink(self,url: str,label: str,icon_url: str ='https://looker.com/favicon.ico'):
         """
         Add a link
+
         Args:
             url (str): string for your url (can contain liquid)
             label (str): string for your label (can contain liquid)
             icon_url (str): default is "https://looker.com/favicon.ico"
 
         Returns:
-            [type]: [description]
+            self
         """
         self + f"""
         link: {{
@@ -805,6 +806,7 @@ class View(lookml):
     """
     LookML View Object
     construct with name, short string or lkml json
+    
 .. code-block:: python
     :linenos:
 
@@ -827,6 +829,7 @@ class View(lookml):
     >>> view: foo {
            view_label: "made by json"
          }
+
     """
     _member_classes = [
          'dimension'

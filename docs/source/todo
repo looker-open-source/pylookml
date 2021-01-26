@@ -1,5 +1,3 @@
-P0 -> Orphan File class 
-
 Docs Structure:
 
 Introduction -> What / Why
@@ -15,10 +13,6 @@ Mini-examples
     CRUD
     Advanced
 
-CLI
-Usecases
-EAV
-Autotune
 Subscribe to BQ tables
 Apply a Block
 Full API Reference

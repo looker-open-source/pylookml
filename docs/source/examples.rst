@@ -16,17 +16,30 @@ Basic Recipes
          access_token="your_github_access_token",
    )
 
+.. note:: Project() will dispatch the correct project subclass ProjectGithub or ProjectSSH depending on the args provided
+
 Or do the same thing from any other git service (as long as you have SSH git access on the machine pyLookML is running on):
 
 .. code-block:: python
    :linenos:
 
-        proj = lookml.Project(
+        proj = lookml.ProjectSSH(
                  git_url='git@bitbucket.org:myorg/russ_sandbox.git'
                  #Optional args for the deploy URL (for deploying directly to prodcution mode)
                 ,looker_host="https://mylooker.looker.com/"
                 ,looker_project_name="my_project"
         )
+
+Or just connect to the local filesystem without git:
+
+.. code-block:: python
+   :linenos:
+
+        proj = lookml.Project(
+                 path='path/to/myproject'
+        )
+
+
 
 * Loop over the views in a file
 
@@ -38,6 +51,23 @@ Or do the same thing from any other git service (as long as you have SSH git acc
    for view in myFile.views:
        print(view)
 
+* create a new file in your project
+
+.. code-block:: python
+   :linenos:
+
+   newFile = proj.new_file('views/my_new_file.view.lkml')
+   newFile + 'view: new_view {}'
+   newFile.views.new_view + lookml.Dimension('dimension: id {}')
+
+* create a new model file
+
+.. code-block:: python
+   :linenos:
+
+   modelFile = proj.new_file('my_new_model.model.lkml')
+   modelFile + 'explore: foo {}'
+
 
 * Write your files back to github
 
@@ -46,14 +76,14 @@ Or do the same thing from any other git service (as long as you have SSH git acc
 
    viewFile = proj.file('01_order_items.view.lkml')
    viewFile.views.order_items.id.addTag("hello, World!")
-   proj.updateFile(viewFile)
+   proj.put(viewFile)
 
 * Loop over fields of a certain type
 
 .. code-block:: python
    :linenos:
 
-   >>> for dim in myFile.views.order_items.dims():
+   >>> for dim in myFile.views.order_items.dimensions():
    ...     print(dim.__ref__)
    ... 
    ${order_items.new_dimension}
@@ -128,28 +158,6 @@ Or do the same thing from any other git service (as long as you have SSH git acc
    for field in orderItems.getFieldsByTag('x'):
       #do work
       field.removeTag('x')
-
-* Add a comment to the tag
-
-.. code-block:: python
-   :linenos:
-
-   #results in a comment above the dimension
-   orderItems.id.setMessage("Hello I'm Automated")
-   
-
-* Create an extended view
-
-.. code-block:: python
-   :linenos:
-
-   viewFile = proj.getFile('01_order_items.view.lkml')
-   order_items = viewFile.views.order_items
-   order_items.extend()
-   #this will print both order_items and order_items_extended 
-   #(pylookml captures the parent child relationship here)
-   print(order_items)
-   
 
 
 Field References

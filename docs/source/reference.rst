@@ -1,7 +1,15 @@
 Full API Reference
 ------------------------------
 
-.. autoclass:: lookml.project
+.. autoclass:: lookml.Project
+    :inherited-members:
+    :members:
+
+.. autoclass:: lookml.ProjectSSH
+    :inherited-members:
+    :members:
+
+.. autoclass:: lookml.ProjectGithub
     :inherited-members:
     :members:
 
@@ -14,10 +22,6 @@ Full API Reference
     :members:
 
 .. autoclass:: lookml.Explore
-    :inherited-members:
-    :members:
-
-.. autoclass:: lookml.Join
     :inherited-members:
     :members:
 

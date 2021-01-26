@@ -836,6 +836,10 @@ class testProjFile(unittest.TestCase):
         proj.commit()
         proj._git.pushRemote()
         proj.deploy()
+    
+    def test_orphan_file(self):
+        x = lookml.File('lookml/tests/files/basic_parsing/basic.view.lkml')
+        self.assertTrue(isinstance(x,lookml.File))
 
 
 
@@ -860,24 +864,24 @@ class testOtherFiles(unittest.TestCase):
         pass
 
     def test_parsing_aggregate_tables(self):
-        x = file.File('lookml/tests/files/basic_parsing/agg.model.lkml')
-        x = lkml.load(open('lookml/tests/files/basic_parsing/agg.model.lkml','r', encoding="utf-8"))
-        print(str(x))
+        x = lookml.File('lookml/tests/files/basic_parsing/agg.model.lkml')
+        # x = lkml.load(open('lookml/tests/files/basic_parsing/agg.model.lkml','r', encoding="utf-8"))
+        # print(str(x))
         print(x.explores.foo.aggregate_table.bar)
 
     def test_model_file(self):
-        self.model_file = file.File('lookml/tests/files/basic_parsing/basic.model.lkml')
+        self.model_file = lookml.File('lookml/tests/files/basic_parsing/basic.model.lkml')
         print(str(self.model_file))
 
     def test_view_refinement(self):
-        x = file.File('lookml/tests/files/basic_parsing/refine.view.lkml')
+        x = lookml.File('lookml/tests/files/basic_parsing/refine.view.lkml')
         print(str(x))
 
     def test_other_lkml_file(self):
         pass
 
     def test_manifest_file(self):
-        x = file.File('lookml/tests/files/basic_parsing/manifest.lkml')
+        x = lookml.File('lookml/tests/files/basic_parsing/manifest.lkml')
         #works
         self.assertEqual(x.remote_dependency['ga360'].url.value,'https://github.com/llooker/google_ga360')
         self.assertEqual(x.remote_dependency.ga360.url.value,'https://github.com/llooker/google_ga360')
@@ -895,11 +899,8 @@ class testOtherFiles(unittest.TestCase):
         # print(str(x.contents))
 
     def test_dashboard_file(self):
-        project.LOOKML_DASHBOARDS = True
-        proj = lookml.Project(
-             local=True
-            ,path='lookml/tests/files/the_look'
-            )
+        lookml.lib.project.LOOKML_DASHBOARDS = True
+        proj = lookml.Project(path='lookml/tests/files/the_look')
         x = proj.file('dashboards/brand_lookup.dashboard.lookml')
         self.assertEqual(x.content[0]['dashboard'],'brand_lookup')
         #P1 fix writing, currently lookml dashboards should be considered read only
@@ -921,8 +922,7 @@ class testExceptions(unittest.TestCase):
     def setup(self): pass
     def test_invalid_lookml_attribute(self):
         with self.assertWarns(UserWarning) as wrn:
-            testView = lookml.View({})
-            testView.name = 'test'
+            testView = lookml.View('test')
             testView + '''
                 dimension: foo {
                     xxx: "yyy"
@@ -944,7 +944,7 @@ class testExceptions(unittest.TestCase):
                     dimension: y {}
                 }
             ''')
-        with self.assertRaises(lang.DuplicatePrimaryKey) as context:
+        with self.assertRaises(lookml.lib.lang.DuplicatePrimaryKey) as context:
             x.y.primary_key = 'yes'
         x.x.primary_key = 'no'
         # print(x)
@@ -957,11 +957,11 @@ class testExceptions(unittest.TestCase):
         #checks to ensure the add_hook / exception process is working
         x = lookml.View('foo')
         x.sql_table_name = 'public.foo'
-        with self.assertRaises(lang.CoexistanceError):
+        with self.assertRaises(lookml.lib.lang.CoexistanceError):
             x + 'derived_table: { sql: select * from foo ;; }'
         del x.sql_table_name
         x + 'derived_table: { sql: select * from foo ;; }'
-        with self.assertRaises(lang.CoexistanceError):
+        with self.assertRaises(lookml.lib.lang.CoexistanceError):
             x.sql_table_name = 'public.foo'
 
 
@@ -1036,22 +1036,22 @@ class testWalks(unittest.TestCase):
     assert type(measure) == lookml.Measure
     assert measure.name == 'sum_foo'
     
-    assert type(measure.type) == lookml.prop_options
+    assert type(measure.type) == lookml.core.prop_options
     assert measure.type.value == 'sum'
 
-    assert type(measure.sql) == lookml.prop_sql
+    assert type(measure.sql) == lookml.core.prop_sql
     assert measure.sql.value == '${foo}'
 
-    assert type(measure.filters) == lookml.prop_filters
+    assert type(measure.filters) == lookml.core.prop_filters
 
   def test_walk_filters(self):
     filter = self.view.views.basic.sum_foo.filters.foo
     filter2 = self.view.views.basic.sum_bar.filters.foo
 
-    assert type(filter) == lookml.flt
+    assert type(filter) == lookml.core.flt
     assert filter.value == '%cool%'
 
-    assert type(filter2) == lookml.flt
+    assert type(filter2) == lookml.core.flt
     assert filter2.value == '%cool%'
 
   def test_walk_dimension_group(self):
@@ -1060,382 +1060,196 @@ class testWalks(unittest.TestCase):
     assert type(dg) == lookml.Dimension_Group
     assert dg.name == 'transaction'
 
-    assert type(dg.type) == lookml.prop_options
+    assert type(dg.type) == lookml.core.prop_options
     assert dg.type.value == 'time'
 
-    assert type(dg.tags) == lookml.prop_list_quoted
+    assert type(dg.tags) == lookml.core.prop_list_quoted
     assert dg.tags.value == ['tag1', 'tag2', 'tag3', 'tag4']
 
-    assert type(dg.timeframes) == lookml.prop_list_unquoted
+    assert type(dg.timeframes) == lookml.core.prop_list_unquoted
     assert dg.timeframes.value == ['raw', 'time', 'date', 'week', 'month',
                                   'quarter', 'year', 'week_of_year', 'month_num']
 
-    assert type(dg.sql) == lookml.prop_sql
+    assert type(dg.sql) == lookml.core.prop_sql
     assert dg.sql.value == '${TABLE}.transaction_timestamp'
 
   def test_walk_dimension(self):
     dimension = self.view.views.basic.foo
-    assert type(dimension) == lookml.Dimension
+    assert type(dimension) == lookml.core.Dimension
 
-    assert type(dimension.type) == lookml.prop_options
+    assert type(dimension.type) == lookml.core.prop_options
     assert dimension.type.value == 'string'
 
-    assert type(dimension.style) == lookml.prop_options
+    assert type(dimension.style) == lookml.core.prop_options
     assert dimension.style.value == 'classic'
 
-    assert type(dimension.sql) == lookml.prop_sql
+    assert type(dimension.sql) == lookml.core.prop_sql
     assert dimension.sql.value == '${TABLE}.foo'
 
-    assert type(dimension.link) == lookml.prop_anonymous_construct_plural
+    assert type(dimension.link) == lookml.core.prop_anonymous_construct_plural
 
-class testKitchenSinkLocal(unittest.TestCase):
-    '''
-        Test Procedure:
-        Setup) Obtain Local Kitchen Sink Model File
-        2) Parse the file
-        3) Run a few assertions that are facts of the file
-            A) loop over loopable constructs. You know for example there are 3 tags in foo
-            B) Assert Dimension length, measure length, etc
-        4) Assert exceptions when trying to do disallowed operations? (anoying interaction with the debugger)
-        5) Make [A,B,C] modifications to the fileObject and save it as a newfile / overwrite KitchenSink2
-            A) Add each type of field
-            B) Add a tag, suggestions, drill_fields, set, action, multiple links etc
-            C) Add an additional view
-            D) Add an NDT
-        6) Fetch and parse KitchenSink2
-        7) Run assertions that confirm [A,B,C,D] were successfully applied
-        TearDown)  remove KitchenSink2 if it exists (comment out if having parse difficulties)
-    '''
-    # @unittest.skipIf(condition, reason)
-    # @unittest.expectedFailure
+class testMicroUnits(unittest.TestCase):
 
-    def setUp(self):
-        # self.f = lookml.File('kitchenSink/kitchenSink.model.lkml')
-        self.f = lookml.File('lookml/tests/files/kitchenSink/kitchenSink.model.lkml')
-        self.f2 = None
-        self.order_items = self.f.views.order_items
-        self.order_items_explore = self.f.explores.order_items
-
-    def test_step2(self):
-        '''
-            2) Parse the file
-        '''
-        pass
-
-    def test_step3a(self):
-        '''
-            3) Run a few assertions that are facts of the file
-            A) loop over loopable constructs. You know for example there are 3 tags in foo
-        '''
-        #46 total
-        self.totalFields = len(self.order_items)
-        # 17 Dimensions
-        self.totalDims = len(list(self.order_items.dims()))
-        # 5  DimensionGroups
-        self.totalDgs = len(list(self.order_items.dimensionGroups()))
-        # 22 Measures
-        self.totalMeas = len(list(self.order_items.measures()))
-        # 2  Filters
-        self.totalFilters = len(list(self.order_items.filters()))
-        # 0  Paramters
-        self.totalParams = len(list(self.order_items.parameters()))
-        # print(self.order_items.foo)
-        
-        #Asserts all the subtypes of fields should add up to the total
-        self.assertEqual(self.totalFields,
-              self.totalDims
-            + self.totalDgs
-            + self.totalMeas
-            + self.totalFilters 
-            + self.totalParams
-            )
-        self.assertEqual(len(self.order_items),len(list(self.order_items.fieldNames()))) 
-        self.assertEqual(len(self.order_items),47) #Counts the total fields
-
-        self.assertTrue(isinstance(self.order_items.id,lookml.Dimension))
-        self.assertTrue(isinstance(self.order_items.total_gross_margin,lookml.Measure))
-        self.assertTrue(isinstance(self.order_items.cohort_by,lookml.Filter))
-        self.assertTrue(isinstance(self.order_items.foo,lookml.Parameter))
-
-        #Check field level list constructs
-        self.assertTrue("abc" in self.order_items.id.required_access_grants)
-        self.assertTrue(1 == len(self.order_items.id.required_access_grants))
-
-        self.assertTrue("a" in self.order_items.id.tags)
-        self.assertTrue(3 == len(self.order_items.id.tags))
-
-        self.assertTrue("suggestion1" in self.order_items.id.suggestions)
-        self.assertTrue(2 == len(self.order_items.id.suggestions))
-        
-        #Primary Key Checks
-        self.assertEqual(self.order_items.primaryKey, 'id')
-        self.assertEqual(self.order_items.primaryKey, self.order_items.pk.name)
-        
-        #Check Children
-        self.assertEqual(1, len(list(self.order_items.shipping_time.children())))
-
-        # Check Looping construct
-        for tag in self.order_items.id.tags:
-            pass
-
-        for tag in self.order_items.id.suggestions:
-            pass
-
-    def test_step3b(self):
-        '''
-            3) Run a few assertions that are facts of the file
-            B) ssert Dimension length, measure length, etc
-        '''
-        pass
-
-    def test_step4(self):
-        '''
-            4) Assert exceptions when trying to do disallowed operations? (anoying interaction with the debugger)
-        '''
-        #TODO: add more exception handling / raise more errors in the code (V2?)
-        with self.assertRaises(KeyError):
-            #the field fake does not exist
-            self.order_items.getField('fake')
-
-    def test_step5(self):
-        '''
-            5) Make [A,B,C] modifications to the fileObject and save it as a newfile / overwrite KitchenSink2
-                A) Add each type of field
-                B) Add a tag, suggestions, drill_fields, set, action, multiple links etc
-                C) Add an additional view
-                D) Add an NDT
-        '''
-        self.f_copy = copy.copy(self.f)
-        #### Modifications ###
-        self.f_copy.views.order_items.id.sql = "${TABLE}.test_sql_change"
-        # self.f_copy.views.order_items + 'test_add_dimension'
-        self.f_copy.views.order_items.addDimension('test_add_dimension') #+ 'test_add_dimension'
-        self.f_copy.views.order_items.shipping_time.setName_safe('time_in_transit')
-        #Check tag addition and subtraction
-        self.f_copy.views.order_items.id.addTag('x')
-        self.assertEqual(len(self.f_copy.views.order_items.id.tags),4)
-        self.f_copy.views.order_items.id.tags - 'x'
-        self.assertEqual(len(self.f_copy.views.order_items.id.tags),3)
-        #TODO: Check sql addition functions
-        # test1.foo.sql_nvl("0")
-        #TODO: implement a join and check in validation step
-        #look up an explore
-        # mf.explores.test1.test2.on(
-        #         vf.views.test1.foo,'=',vf.views.test2.id
-        #         )
-        # mf.explores.test1.test2.setRelationship('many_to_one')
-        # mf.explores.test1.test2.setType('left_outer')
-        #TODO: check assigning a whole list to a type
-        # test1.foo.suggestions = ['suggestion1']
-        #### End Modifications ###
-        with open('lookml/tests/kitchenSink/kitchenSink2.model.lkml', 'w') as f:
-            f.write(self.f_copy.__str__())
-
-    # @unittest.expectedFailure
-    def test_step6(self):
-        '''
-            6) Fetch and parse KitchenSink2 and test the successful addition of attributes in step 5
-        '''
-        self.f2 = lookml.File('lookml/tests/kitchenSink/kitchenSink2.model.lkml')
-        order_items2 = self.f2.views.order_items
-        #Check Sql Change
-        self.assertEqual(order_items2.id.sql.value,"${TABLE}.test_sql_change")
-        #Check dimension Addition:
-        self.assertIsInstance(order_items2.test_add_dimension, lookml.Dimension)
-
-        #Check view is still the same length + 1 (added one field in the prior test case)
-        self.assertEqual(len(order_items2),48)
-
-        #Check searching dimensions by sql:
-        self.assertEqual(1,len(list(order_items2.search('sql',r'\$\{shipped_raw\}'))))
-
-        #Check renamed field has the correct number of direct children
-        self.assertEqual(1, len(list(order_items2.time_in_transit.children())))
-
-        # print(*[str(f) for f in order_items2.dims()])
-        # print(order_items2.stringify(order_items2.dims_sorted()))
-        
-        # print(
-        #     lookml.stringify(
-        #         lookml.sortMe(order_items2.dims())
-        #     )
-        # )
-
-        # for dim in order_items2.dims_sorted():
-        #     print(dim)
-
-    # def tearDown(self):
-    #     '''
-    #         remove KitchenSink2 if it exists (comment teardown out if having step6 difficulties and need to inspect kitchensink2)
-    #     '''
-    #     pass
-        
-    def test_github_loop(self):
+    def test_add_orphan_to_github(self):
         proj = lookml.Project(
                  repo= config['github']['repo']
                 ,access_token=config['github']['access_token']
                 ,looker_host="https://profservices.dev.looker.com/"
                 ,looker_project_name="russ_sanbox"
         )
-        vf = proj.file('simple/tests.view.lkml')
-        mf = proj.file('simple/test1.model.lkml')
-        proj.update(vf)
-        proj.update(mf)
-        myNewView = lookml.View('great_test2').addDimension('id').addDimension('count_of_total')
-        myNewView.id.sql = "${TABLE}.`id`"
-        myNewView.id.setType('string')
-        myNewFile = lookml.File(myNewView)
-        proj.put(myNewFile)
-        proj.deploy()
+        if proj._exists('lookml/tests/files/basic_parsing/refine.view.lkml'):
+            x = proj.file('lookml/tests/files/basic_parsing/refine.view.lkml')
+            proj.delete(x)
+        f = lookml.File('lookml/tests/files/basic_parsing/refine.view.lkml')
+        proj.put(f)
+        f.delete()
 
-class testMicroUnits(unittest.TestCase):
+    # def test_join_back_an_ndt(self):
+    #     v = lookml.View('order_items')
+    #     v + f'''
+    #         sql_table_name: public.order_items ;;
+    #         dimension: id {
+    #             primary_key: yes
+    #         }
+    #         dimension: state {}
+    #         dimension: sale_price {}
+    #         parameter: {dynamic_dim_selector} {
+    #             type: unquoted
+    #         #     suggestions: ["Brand","Category","Department"]
+    #             allowed_value: {
+    #             label: "Category"
+    #             value: "Category"
+    #             }
+    #             allowed_value: {
+    #             label: "Brand"
+    #             value: "Brand"
+    #             }
+    #             allowed_value: {
+    #             label: "Department"
+    #             value: "Department"
+    #             }
+    #             allowed_value: {
+    #             label: "State"
+    #             value: "State"
+    #             }
+    #         }
+    #         dimension: user_id {}
+    #         dimension: inventory_item_id { 
+    #             sql: ${TABLE}.inventory_item_id ;; 
+    #         }
+    #         dimension: new_dimension {
+    #             type: string
+    #             sql:
+    #                 {% if order_items.dynamic_dim_selector._parameter_value == 'Brand' %} ${products.brand}
+    #                 {% elsif order_items.dynamic_dim_selector._parameter_value == 'Category' %}  ${products.category}
+    #                 {% elsif order_items.dynamic_dim_selector._parameter_value == 'Department' %} ${products.department}
+    #                 {% elsif order_items.dynamic_dim_selector._parameter_value == 'State' %} ${users.state}
+    #                 {% else %} 'N/A'
+    #                 {% endif %}
+    #             ;;
+    #         }
+    #         measure: total_sale_price {
+    #             type: sum
+    #             sql: ${sale_price} ;;
+    #         }
+    #     '''
+    #     ex = lookml.Explore(v.name)
+    #     agg = lookml.View('agg')
+    #     agg + '''
+    #             derived_table: {
+    #                 explore_source: order_items {
+    #                 column: new_dimension {field: order_items.new_dimension}
+    #                 column: total_sale_price {field: order_items.total_sale_price}
+    #                 derived_column: rank {
+    #                     sql: ROW_NUMBER() OVER (ORDER BY total_sale_price DESC) ;;
+    #                 }
+    #                 # bind_all_filters: yes
+    #                 bind_filters: {
+    #                     from_field: order_items.{dynamic_dim_selector}
+    #                     to_field: order_items.{dynamic_dim_selector}
+    #                 }
+    #                 # bind_filters: {
+    #                 #     from_field: order_items.created_date
+    #                 #     to_field: order_items.created_date
+    #                 # }
+    #                 }
+    #             }
+    #             dimension: new_dimension {
+    #                 sql: ${TABLE}.new_dimension ;;
+    #             }
+    #             dimension: rank {
+    #                 type: number
+    #                 hidden: yes
+    #             }
 
-    def test_join_back_an_ndt(self):
-        v = lookml.View('order_items')
-        v + '''
-            sql_table_name: public.order_items ;;
-            dimension: id {
-                primary_key: yes
-            }
-            dimension: state {}
-            dimension: sale_price {}
-            parameter: {dynamic_dim_selector} {
-                type: unquoted
-            #     suggestions: ["Brand","Category","Department"]
-                allowed_value: {
-                label: "Category"
-                value: "Category"
-                }
-                allowed_value: {
-                label: "Brand"
-                value: "Brand"
-                }
-                allowed_value: {
-                label: "Department"
-                value: "Department"
-                }
-                allowed_value: {
-                label: "State"
-                value: "State"
-                }
-            }
-            dimension: user_id {}
-            dimension: inventory_item_id { 
-                sql: ${TABLE}.inventory_item_id ;; 
-            }
-            dimension: new_dimension {
-                type: string
-                sql:
-                    {% if order_items.dynamic_dim_selector._parameter_value == 'Brand' %} ${products.brand}
-                    {% elsif order_items.dynamic_dim_selector._parameter_value == 'Category' %}  ${products.category}
-                    {% elsif order_items.dynamic_dim_selector._parameter_value == 'Department' %} ${products.department}
-                    {% elsif order_items.dynamic_dim_selector._parameter_value == 'State' %} ${users.state}
-                    {% else %} 'N/A'
-                    {% endif %}
-                ;;
-            }
-            measure: total_sale_price {
-                type: sum
-                sql: ${sale_price} ;;
-            }
-        '''
-        ex = lookml.Explore(v.name)
-        agg = lookml.View('agg')
-        agg + '''
-                derived_table: {
-                    explore_source: order_items {
-                    column: new_dimension {field: order_items.new_dimension}
-                    column: total_sale_price {field: order_items.total_sale_price}
-                    derived_column: rank {
-                        sql: ROW_NUMBER() OVER (ORDER BY total_sale_price DESC) ;;
-                    }
-                    # bind_all_filters: yes
-                    bind_filters: {
-                        from_field: order_items.{dynamic_dim_selector}
-                        to_field: order_items.{dynamic_dim_selector}
-                    }
-                    # bind_filters: {
-                    #     from_field: order_items.created_date
-                    #     to_field: order_items.created_date
-                    # }
-                    }
-                }
-                dimension: new_dimension {
-                    sql: ${TABLE}.new_dimension ;;
-                }
-                dimension: rank {
-                    type: number
-                    hidden: yes
-                }
+    #             filter: tail_threshold {
+    #                 type: number
+    #                 hidden: yes
+    #             }
 
-                filter: tail_threshold {
-                    type: number
-                    hidden: yes
-                }
+    #             dimension: stacked_rank {
+    #                 type: string
+    #                 sql:
+    #                         CASE
+    #                         WHEN ${rank} < 10 then '0' || ${rank} || ') '|| ${new_dimension}
+    #                         ELSE ${rank} || ') ' || ${new_dimension}
+    #                         END
+    #                 ;;
+    #             }
 
-                dimension: stacked_rank {
-                    type: string
-                    sql:
-                            CASE
-                            WHEN ${rank} < 10 then '0' || ${rank} || ') '|| ${new_dimension}
-                            ELSE ${rank} || ') ' || ${new_dimension}
-                            END
-                    ;;
-                }
+    #             dimension: ranked_brand_with_tail {
+    #                 type: string
+    #                 sql:
+    #                     CASE WHEN {% condition tail_threshold %} ${rank} {% endcondition %} THEN ${stacked_rank}
+    #                     ELSE 'x) Other'
+    #                     END
 
-                dimension: ranked_brand_with_tail {
-                    type: string
-                    sql:
-                        CASE WHEN {% condition tail_threshold %} ${rank} {% endcondition %} THEN ${stacked_rank}
-                        ELSE 'x) Other'
-                        END
+    #                 ;;
+    #             }
 
-                    ;;
-                }
+    #             dimension: total_sale_price {
+    #                 value_format: "$#,##0.00"
+    #                 type: number
+    #             }
+    #     '''
 
-                dimension: total_sale_price {
-                    value_format: "$#,##0.00"
-                    type: number
-                }
-        '''
-
-        ex + '''
-            join: inventory_items {
-                type: left_outer
-                relationship: one_to_many
-                sql_on: ${order_items.inventory_item_id} = ${inventory_items.id} ;;
-            }
-            join: products {
-                type: left_outer
-                sql_on: ${inventory_items.product_id} = ${products.id} ;;
-                relationship: many_to_one
-            }
-              join: users {
-                type: left_outer
-                sql_on: ${order_items.user_id} = ${users.id} ;;
-                relationship: many_to_one
-                      }
-              join: agg {
-                type: left_outer
-                relationship: many_to_one
-                sql_on: ${order_items.new_dimension}  = ${agg.new_dimension};;
-            }
-        '''
-        myModel = lookml.File(ex)
-        myModel + v
-        myModel + agg
-        myModel.properties.addProperty('connection', 'snowlooker')
-        myModel.properties.addProperty('include', 'views/*.lkml')
-        myModel.name = 'core2.model.lkml'
-        proj = lookml.Project(
-                 repo= 'russlooker/oi'
-                ,access_token=config['github']['access_token']
-                ,looker_host="https://profservices.dev.looker.com/"
-                ,looker_project_name="test_pylookml"
-        )
-
-        proj.put(myModel)
-        proj.deploy()
+    #     ex + '''
+    #         join: inventory_items {
+    #             type: left_outer
+    #             relationship: one_to_many
+    #             sql_on: ${order_items.inventory_item_id} = ${inventory_items.id} ;;
+    #         }
+    #         join: products {
+    #             type: left_outer
+    #             sql_on: ${inventory_items.product_id} = ${products.id} ;;
+    #             relationship: many_to_one
+    #         }
+    #           join: users {
+    #             type: left_outer
+    #             sql_on: ${order_items.user_id} = ${users.id} ;;
+    #             relationship: many_to_one
+    #                   }
+    #           join: agg {
+    #             type: left_outer
+    #             relationship: many_to_one
+    #             sql_on: ${order_items.new_dimension}  = ${agg.new_dimension};;
+    #         }
+    #     '''
+    #     myModel = lookml.File(ex)
+    #     myModel + v
+    #     myModel + agg
+    #     myModel.properties.addProperty('connection', 'snowlooker')
+    #     myModel.properties.addProperty('include', 'views/*.lkml')
+    #     myModel.name = 'core2.model.lkml'
+    #     proj = lookml.Project(
+    #              repo= 'russlooker/oi'
+    #             ,access_token=config['github']['access_token']
+    #             ,looker_host="https://profservices.dev.looker.com/"
+    #             ,looker_project_name="test_pylookml"
+    #     )
+    #     myModel
+    #     proj.put(myModel)
+    #     proj.deploy()
 
     def test_one_line_access_github(self):
         print(   
@@ -1444,13 +1258,13 @@ class testMicroUnits(unittest.TestCase):
         )
 
     def test_local_file(self):
-        x = lookml.File('lookml/tests/kitchenSink/kitchenSink.model.lkml')
+        x = lookml.File('lookml/tests/files/kitchenSink/kitchenSink.model.lkml')
         for v in x.views:
             for f in v.measures():
                 if f.type.value == 'sum' and not f.name.endswith('_total'):
                     f.name = f.name + '_total'
         #Optionally Change the location
-        x.setFolder('.tmp')
+        # x.setFolder('.tmp')
         #Write the file
         x.write()
 
@@ -1461,7 +1275,7 @@ class testMicroUnits(unittest.TestCase):
         pass
 
     def test_parse_references(self):
-        results = list(lookml.parseReferences('''
+        results = list(lookml.lib.lang.parse_references('''
             ${test.one_1} - ${test.two}
             {% condition test.three %} ${four} {% endcondition %}
             {% parameter test.five %}
@@ -1503,29 +1317,6 @@ class testMicroUnits(unittest.TestCase):
         
         # viewFile.removeField(field)
 
-    def test_project_level_functions(self):
-        self.proj = lookml.Project(
-                #  repo= config['github']['repo']
-                # ,access_token=config['github']['access_token']
-                 git_url='git@github.com:llooker/russ_sandbox.git'
-                ,looker_host="https://dat.dev.looker.com/"
-                ,looker_project_name="pylookml"
-        )
-        self.proj.buildIndex()
-
-    def test_new_filters(self):
-        test = lookml.View('test')
-        test2 = lookml.View('+test')
-        test + "dimension: foo {}"
-        test2 + "dimension: bar {}"
-        x = lookml.File(test)
-        x.setFolder('.')
-        x + test2
-        x.write()
-        print(x.path)
-        # print(x)
-        # print(lookml.l('measure: { filters:[a:"b",c:"d"] }'))
-        print(lookml.l(str(x)))
 
 class testWriting(unittest.TestCase):
     '''
@@ -1580,33 +1371,33 @@ class testWriting(unittest.TestCase):
 
 class testModel(unittest.TestCase):
   def setUp(self):
-      self.model = file.File('lookml/tests/files/basic_parsing/basic.model.lkml')
+      self.model = lookml.File('lookml/tests/files/basic_parsing/basic.model.lkml')
       self.explore_names = ['trip', 'station_weather_forecast', 'station_forecasting']
 
   def test_walking(self):
-    for explore in self.model:
+    for explore in self.model.explores:
       assert explore.name in self.model.explores
-      assert isinstance(explore.join, lookml.prop_named_construct)
+      assert isinstance(explore.join, lookml.core.prop_named_construct)
 
   def test_walk_explore(self):
     explore = self.model.explores.trip
-    assert type(explore.join.start_station) == lookml.prop_named_construct_single
+    assert type(explore.join.start_station) == lookml.core.prop_named_construct_single
 
     explore2 = self.model.explores.station_weather_forecast
-    assert type(explore2.hidden) == lookml.prop_yesno
+    assert type(explore2.hidden) == lookml.core.prop_yesno
     assert explore2.hidden.value == 'yes'
-    assert type(explore.view_name) == lookml.prop_string_unquoted
+    assert type(explore.view_name) == lookml.core.prop_string_unquoted
     assert explore2.view_name.value == 'weather_forecast'
     
     # assert explore2.from == lookml.prop.string_unquoted
 
   def test_walk_join(self):
     join = self.model.explores.trip.join.start_station
-    assert type(join) == lookml.prop_named_construct_single
-    assert type(join.relationship) == lookml.prop_options
+    assert type(join) == lookml.core.prop_named_construct_single
+    assert type(join.relationship) == lookml.core.prop_options
     assert join.relationship.value == 'many_to_one'
-    assert type(join.type) == lookml.prop_options
+    assert type(join.type) == lookml.core.prop_options
     assert join.type.value == 'left_outer'
-    assert type(join.sql_on) == lookml.prop_sql
+    assert type(join.sql_on) == lookml.core.prop_sql
     assert join.sql_on.value == '${trip.from_station_id} = ${start_station.station_id}'
     # assert join.from == lookml.prop.string_unquoted

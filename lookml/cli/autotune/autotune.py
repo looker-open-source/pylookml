@@ -6,11 +6,6 @@ import configparser
 import time
 from lookml.lib.utils import url
 
-#P0: materialization hueristic: if there is a datagroup associated to an explore / model
-# otherwise default to persist_for: "24 hours"
-
-
-
 def init_looker_sdk(
         url:str, 
         client_id:str, 
@@ -92,6 +87,7 @@ def routine(
     # lookml_model_explore has the filesystem location {
     # "source_file": "dbs.model.lkml"
     # }
+    #P1: doesn't handle being run twice well
     with click.progressbar(frequent_queries) as fq:
         for query in fq:
                 do = 0
@@ -113,69 +109,69 @@ def routine(
                         field_type_index[looker_project.name][query["query.model"]][query["query.view"]]['dimensions'].append(dimension.name)
                     for measure in metadata.fields.measures:
                         field_type_index[looker_project.name][query["query.model"]][query["query.view"]]['measures'].append(measure.name)
-                # try:
-                
-                #P1 we don't need the explore technically since we're writing elsewhere
-                # pylookml_explore = pylookml_model.explores[query["query.view"]]
-                # {query["query.slug"]} 
-                # pylookml_explore + f'''
-                # click.echo(f'{query["query.view"]}')
-                explore_source_file_path = sdk.lookml_model_explore(
-                        lookml_model_name=query["query.model"],
-                        explore_name=query["query.view"],
-                        fields='source_file'
-                        )
-                explore_source_file = pylookml_project.file(explore_source_file_path.source_file)
-                pylookml_source_explore = explore_source_file.explores[query["query.view"]]
-                if 'persist_for' in pylookml_source_explore:
-                    materialization = pylookml_source_explore.persist_for
-                elif 'persist_with' in pylookml_source_explore:
-                    materialization = 'datagroup_trigger: ' + pylookml_source_explore.persist_with.value
-                elif 'persist_for' in explore_source_file:
-                    materialization = explore_source_file.persist_for
-                elif 'persist_with' in explore_source_file:
-                    materialization = 'datagroup_trigger: ' + explore_source_file.persist_with.value
-                else:
-                    materialization = 'persist_for: "24 hours"'
-
-                f + 'include: "/**/*.model"'
-                if f'+{query["query.view"]}' not in f.explores:
-                    f + f'''explore: +{query["query.view"]} {{ }}'''
-                f.explores['+' + query["query.view"]] + f'''
-                    aggregate_table: auto_pylookml_{query["query.slug"]} {{
-                        query: {{
-                            dimensions: []
-                            measures: []
-                            description: "{looker_host.with_no_port()}/x/{query["query.slug"]}"
-                            filters: []
-                            }}
-                        materialization: {{
-                            {materialization}
-                            }}
-                        }}
-                    '''
-                fields = json.loads(query["query.formatted_fields"])
-                for field in fields:
-                    if field in field_type_index[looker_project.name][query["query.model"]][query["query.view"]]["dimensions"]:
-                        f.explores['+'+query["query.view"]].aggregate_table["auto_pylookml_"+query["query.slug"]].query.dimensions + field
-                    if field in field_type_index[looker_project.name][query["query.model"]][query["query.view"]]["measures"]:
-                        f.explores['+'+query["query.view"]].aggregate_table["auto_pylookml_"+query["query.slug"]].query.measures + field
                 try:
-                    if query["query.filters"]:
-                        filters = json.loads(query["query.filters"])
-                        click.echo(query["query.filters"] + ' | ' + filters)
+                    
+                    #P1 we don't need the explore technically since we're writing elsewhere
+                    # pylookml_explore = pylookml_model.explores[query["query.view"]]
+                    # {query["query.slug"]} 
+                    # pylookml_explore + f'''
+                    # click.echo(f'{query["query.view"]}')
+                    explore_source_file_path = sdk.lookml_model_explore(
+                            lookml_model_name=query["query.model"],
+                            explore_name=query["query.view"],
+                            fields='source_file'
+                            )
+                    explore_source_file = pylookml_project.file(explore_source_file_path.source_file)
+                    pylookml_source_explore = explore_source_file.explores[query["query.view"]]
+                    if 'persist_for' in pylookml_source_explore:
+                        materialization = pylookml_source_explore.persist_for
+                    elif 'persist_with' in pylookml_source_explore:
+                        materialization = 'datagroup_trigger: ' + pylookml_source_explore.persist_with.value
+                    elif 'persist_for' in explore_source_file:
+                        materialization = explore_source_file.persist_for
+                    elif 'persist_with' in explore_source_file:
+                        materialization = 'datagroup_trigger: ' + explore_source_file.persist_with.value
+                    else:
+                        materialization = 'persist_for: "24 hours"'
+
+                    f + 'include: "/**/*.model"'
+                    if f'+{query["query.view"]}' not in f.explores:
+                        f + f'''explore: +{query["query.view"]} {{ }}'''
+                    f.explores['+' + query["query.view"]] + f'''
+                        aggregate_table: auto_pylookml_{query["query.slug"]} {{
+                            query: {{
+                                dimensions: []
+                                measures: []
+                                description: "{looker_host.with_no_port()}/x/{query["query.slug"]}"
+                                filters: []
+                                }}
+                            materialization: {{
+                                {materialization}
+                                }}
+                            }}
+                        '''
+                    fields = json.loads(query["query.formatted_fields"])
+                    for field in fields:
+                        if field in field_type_index[looker_project.name][query["query.model"]][query["query.view"]]["dimensions"]:
+                            f.explores['+'+query["query.view"]].aggregate_table["auto_pylookml_"+query["query.slug"]].query.dimensions + field
+                        if field in field_type_index[looker_project.name][query["query.model"]][query["query.view"]]["measures"]:
+                            f.explores['+'+query["query.view"]].aggregate_table["auto_pylookml_"+query["query.slug"]].query.measures + field
+                    try:
+                        if query["query.filters"]:
+                            filters = json.loads(query["query.filters"])
+                            click.echo(query["query.filters"] + ' | ' + filters)
+                    except:
+                        pass
+                        # click.echo(f'failure with {query["query.filters"]}')
+                    #P1: aggregate tables can't take paramter fields. Need to ensure each filter is not a param
+                    if filters:
+                        # f.explores['+'+query["query.view"]].aggregate_table["auto_pylookml_"+query["query.slug"]].query.filters + {k:v[1:][:-1] for k,v in filters.items()}
+                        f.explores['+'+query["query.view"]].aggregate_table["auto_pylookml_"+query["query.slug"]].query.filters + {k:v for k,v in filters.items()}
+                    # pylookml_model.write()
+                    # pylookml_project.put(pylookml_model)
                 except:
-                    pass
-                    # click.echo(f'failure with {query["query.filters"]}')
-                #P1: aggregate tables can't take paramter fields. Need to ensure each filter is not a param
-                if filters:
-                    # f.explores['+'+query["query.view"]].aggregate_table["auto_pylookml_"+query["query.slug"]].query.filters + {k:v[1:][:-1] for k,v in filters.items()}
-                    f.explores['+'+query["query.view"]].aggregate_table["auto_pylookml_"+query["query.slug"]].query.filters + {k:v for k,v in filters.items()}
-                # pylookml_model.write()
-                # pylookml_project.put(pylookml_model)
-                # except:
-                #     e = sys.exc_info()[0]
-                #     click.echo(f'Unexpected error: {e}')
+                    e = sys.exc_info()[0]
+                    click.echo(f'Unexpected error: {e}')
     f.write()
 
         # except:
@@ -227,9 +223,9 @@ def useconf(config_path):
 
 @click.group(invoke_without_command=True)
 def autotune():
-    if os.path.exists('lookml/tests/.conf/autotune.ini'):
+    if os.path.exists('autotune.ini'):
         config = configparser.ConfigParser()
-        config.read('lookml/tests/.conf/autotune.ini')
+        config.read('autotune.ini')
         routine(**config['autotune'])
     else:
         pass
