@@ -376,6 +376,8 @@ class testMain(unittest.TestCase):
         # mnfst1 = lookml.Manifest('project_name: "example"')
         # print(exp1,jn1,mdl1,mnfst1)
         # print(exp1,jn1)
+        x = lookml.Dimension('dimension: +mydim1234567590 {}')
+        #P1 current validation allows + to be on the dimension and other non-extenable objects
 
     def test_sql_enahancement_methods(self):
         tmp = lookml.View(
@@ -709,6 +711,7 @@ class testMain(unittest.TestCase):
         # F = lookml.File(ex)
         # F + v
         print(v)
+    
 
 #P2: obtain the real list of timezones from Looker itself
 #P3: add CLI support

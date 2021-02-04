@@ -3,9 +3,9 @@ Docs Structure:
 Introduction -> What / Why
 Quickstart -> pip install lookml
 Mini-examples
-    new Project
-    new file
-    new model file
+    done new Project
+    done new file
+    done new model file
     iteration 
     primary key operations
     + Operator
@@ -46,4 +46,3 @@ Coming Soon
 # view - 'sql_table_name'
 # x.foo.setName_replace_references('bar')
 # view + 'id' no longer supported
-# proj.put() no longer supported

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lookml"
-version = "3.0.0"
+version = "3.0.3"
 description = "A batteries included API for automating your LookML"
 authors = ["Russell Garner"]
 license = "MIT License"
