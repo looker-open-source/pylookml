@@ -192,6 +192,7 @@ Build from a developer version
 .. toctree::
    :maxdepth: 1
 
+   introduction
    examples
    eav
    autotune

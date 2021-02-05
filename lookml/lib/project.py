@@ -14,6 +14,8 @@ from typing import NewType, Any, Generator, Union, Tuple, Type
 
 #P1 simplify code with pathlib
 # import pathlib
+# P1 create a project in github and Looker
+
 
 LOOKML_DASHBOARDS = False
 #import marko

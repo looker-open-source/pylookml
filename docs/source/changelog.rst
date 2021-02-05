@@ -5,6 +5,7 @@ Starting with PyLookML version 3.0.0
 3.0.3
 
 * fixed an issue with the constructor not accepting lookML names with numbers `Issue Link <https://github.com/llooker/pylookml/issues/43>`_.
+
 The following code now works:
 
 .. code-block:: python
