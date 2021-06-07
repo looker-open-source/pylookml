@@ -550,7 +550,7 @@ class Project(object):
         Delete a file by providing the path (vs delete() which takes a file obj)
 
         Args:
-            fl (str): the path within the project of the file to be deleted
+            f (str): the path within the project of the file to be deleted
 
 .. code-block:: python
 
@@ -558,7 +558,7 @@ class Project(object):
         proj.delete_file(path='foo.view.lkml')
 
         """
-        self[fl].delete()
+        self[f].delete()
 
 #P1: build the ability to delete folders from filesystem & github
 class ProjectGithub(Project):
