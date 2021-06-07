@@ -799,7 +799,14 @@ class ProjectSSH(Project):
             )
             self._git.clone(self._git_url)
         self._build_index()
+        
     # shell
+    def add(self):
+        '''
+        git add to stage all changes in SSH mode
+        '''
+        self._git.add()
+        
     def commit(self):
         """
         git commit and git push changes to remote in SSH mode
