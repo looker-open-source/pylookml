@@ -1125,7 +1125,7 @@ class View(lookml):
         """
         self + f'''
             measure: {field.name}_sum {{
-                type: tum
+                type: sum
                 sql: {field.__ref__} ;;
             }} 
         '''
