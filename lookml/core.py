@@ -1139,7 +1139,9 @@ class View(lookml):
             View: returns your View for method chaining view.sumAllNumDimensions().addCount()...
         """
         for numDim in self.getFieldsByType('number'):
-            self.sum(numDim)
+            # Avoid summing id fields that were mistakenly cast as numbers
+            if '_id' not in numDim.name and numDim.name != 'id':
+                self.sum(numDim)
         return self
 
     def setViewLabel(self,label: str):
