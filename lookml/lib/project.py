@@ -760,6 +760,12 @@ class ProjectSSH(Project):
 
         def add(self, path='.'):
             return self.call(' add ' + path, gitDir=False)
+        
+        def addAll(self, path='.'):
+            return self.call(' add --all', gitDir=False)
+
+        def push_origin_head(self, path='.'):
+            return self.call(' push origin HEAD', gitDir=False)
 
         def commit(self, message=''):
             if message:

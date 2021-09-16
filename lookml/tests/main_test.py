@@ -844,6 +844,18 @@ class testProjFile(unittest.TestCase):
         x = lookml.File('lookml/tests/files/basic_parsing/basic.view.lkml')
         self.assertTrue(isinstance(x,lookml.File))
 
+    def test_adhoc_bryan(self):
+        project = lookml.Project(
+        repo= "bryan-at-looker/lots_of_access_grants",
+        # access_token="",
+        looker_host="https://sandbox.dev.looker.com/",
+        looker_project_name="lots_of_access_grants",
+        branch="dev-bryan-weber-ymjr"
+        )
+        for pf in project.files():
+            print(pf.path)
+
+
 
 
 

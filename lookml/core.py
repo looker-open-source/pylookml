@@ -11,6 +11,7 @@ from typing import NewType, Any, Generator, Union, Tuple, Type
 OMIT_DEFAULTS = False
 DB_FIELD_DELIMITER_START = '`' 
 DB_FIELD_DELIMITER_END = '`'
+DENSE_LOOKML_THRESHOLD = ws.dense_children_threshold
 # LOOKML_DASHBOARDS = False
 def omit_defaults(f):
     def wrapper(*args,**kwargs):
