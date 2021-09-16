@@ -733,6 +733,7 @@ class testProjFile(unittest.TestCase):
         nf.write()
 
     def pylookml_test_delete_file(self,proj):
+        x = proj.new_file('hello.view.lkml')
         f = proj.file('hello.view.lkml')
         f.delete()
         x = proj.new_file('hello2.view.lkml')
@@ -764,6 +765,10 @@ class testProjFile(unittest.TestCase):
     def pylookml_test_project_routine(self,proj):
         # self.assertEqual(len(list(proj.view_files())),19)
         #access a file's deep object via [] syntax
+        # try:
+        self.pylookml_test_delete_file(proj)
+        # except:
+        #     pass
         val_a = proj['views/01_order_items.view.lkml']['views']['order_items']['order_id'].action[0].url.value
         self.assertEqual(val_a,'https://hooks.zapier.com/hooks/catch/1662138/tvc3zj/')
         #access a file's deep object via .file() syntax
@@ -1106,6 +1111,15 @@ class testMicroUnits(unittest.TestCase):
         f = lookml.File('lookml/tests/files/basic_parsing/refine.view.lkml')
         proj.put(f)
         f.delete()
+
+    def test_cool(self):
+        # x = lkml.load('lookml/tests/files/basic_parsing/wow.view.lkml')
+        # print(x)
+        # with open('lookml/tests/files/basic_parsing/wow.view.lkml','r') as z:
+        #     wow = lkml.load(z)
+        #     print(wow)
+        x = lookml.File('lookml/tests/files/basic_parsing/wow.view.lkml')
+        print(x)
 
     # def test_join_back_an_ndt(self):
     #     v = lookml.View('order_items')

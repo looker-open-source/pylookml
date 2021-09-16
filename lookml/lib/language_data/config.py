@@ -5459,5 +5459,16 @@ config = \
                                 "strict"
                         ]
                 }
+        },
+        "sql_preamble": {
+                "explore": {
+                        "type": "sql",
+                        "subtype": "sql-block ",
+                        "indent": 2,
+                        "default_value": "",
+                        "docs_url": "Not documented",
+                        "has_allowed_values": False,
+                        "allowed_values": ""
+                }
         }
 }

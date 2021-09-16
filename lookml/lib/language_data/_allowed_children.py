@@ -44,7 +44,8 @@ _allowed_children = \
                 "sql_always_having",
                 "tags",
                 "view_name",
-                "query"
+                "query",
+                "sql_preamble"
         ],
         "dimension": [
                 "case_sensitive",

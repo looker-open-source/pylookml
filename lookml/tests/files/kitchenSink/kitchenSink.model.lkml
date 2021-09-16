@@ -11,12 +11,24 @@ datagroup: mydatagroup2 {
   label: "Daily"
   description: "Should fire daily just afte midnight pacific" 
 }
-named_value_format: euro_in_thousands {  value_format: "\"€\"0.000,\" K\"" strict_value_format: yes }
-named_value_format: euro_in_millions {  value_format: "\"€\"0.0000,\" M\"" strict_value_format: yes }
+named_value_format: euro_in_thousands {
+  value_format: "\"€\"0.000,\" K\""
+  strict_value_format: yes 
+}
+named_value_format: euro_in_millions {
+  value_format: "\"€\"0.0000,\" M\""
+  strict_value_format: yes 
+}
 map_layer: neighborhoods {  file: "my_neighborhoods.json" }
 map_layer: cities {  file: "cities.json" }
-access_grant: abc {  allowed_values: ["a","b","c"] user_attribute: abc }
-access_grant: xyz {  allowed_values: ["x","y","z"] user_attribute: abc } 
+access_grant: abc {
+  allowed_values: ["a","b","c"]
+  user_attribute: abc 
+}
+access_grant: xyz {
+  allowed_values: ["x","y","z"]
+  user_attribute: abc 
+} 
 
 view: order_items {
   sql_table_name: ecomm.order_items ;; 
@@ -120,7 +132,9 @@ view: order_items {
     hidden: yes
     sql: ${TABLE}.user_id ;; 
   }
-  dimension: reporting_period {  group_label: "Order Date"  sql: CASE
+  dimension: reporting_period {
+    group_label: "Order Date"
+    sql: CASE
         WHEN date_part('year',${created_raw}) = date_part('year',current_date)
         AND ${created_raw} < CURRENT_DATE
         THEN 'This Year to Date'
@@ -129,20 +143,30 @@ view: order_items {
         AND date_part('dayofyear',${created_raw}) <= date_part('dayofyear',current_date)
         THEN 'Last Year to Date'
 
-      END ;; }
-  dimension: days_since_sold { hidden: yes  sql: datediff('day',${created_raw},CURRENT_DATE) ;; }
+      END ;; 
+  }
+  dimension: days_since_sold {
+    hidden: yes
+    sql: datediff('day',${created_raw},CURRENT_DATE) ;; 
+  }
   dimension: months_since_signup {
     view_label: "Orders"
     type: number
     sql: DATEDIFF('month',${users.created_raw},${created_raw}) ;; 
   }
   dimension: status {  sql: ${TABLE}.status ;; }
-  dimension: days_to_process { type: number  sql: CASE
+  dimension: days_to_process {
+    type: number
+    sql: CASE
         WHEN ${status} = 'Processing' THEN DATEDIFF('day',${created_raw},current_date)*1.0
         WHEN ${status} IN ('Shipped', 'Complete', 'Returned') THEN DATEDIFF('day',${created_raw},${shipped_raw})*1.0
         WHEN ${status} = 'Cancelled' THEN NULL
-      END ;; }
-  dimension: shipping_time { type: number  sql: datediff('day',${shipped_raw},${delivered_raw})*1.0 ;; }
+      END ;; 
+  }
+  dimension: shipping_time {
+    type: number
+    sql: datediff('day',${shipped_raw},${delivered_raw})*1.0 ;; 
+  }
   dimension: sale_price {
     type: number
     value_format_name: usd
@@ -176,7 +200,10 @@ view: order_items {
       ]
     style: interval 
   }
-  dimension: is_returned { type: yesno  sql: ${returned_raw} IS NOT NULL ;; }
+  dimension: is_returned {
+    type: yesno
+    sql: ${returned_raw} IS NOT NULL ;; 
+  }
   dimension: days_until_next_order {
     type: number
     view_label: "Repeat Purchase Facts"
