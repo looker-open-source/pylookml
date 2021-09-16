@@ -8,7 +8,7 @@ class ws:
 
     #size of a list type object before it breaks onto multiple lines. Int for number of items, not string length
     list_multiline_threshold = 4
-    dense_children_threshold = 2
+    dense_children_threshold = 1
     dense_str_len = 25
 
     #Regex Patterns

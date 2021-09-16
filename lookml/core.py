@@ -549,15 +549,22 @@ class Field(lookml):
             self for method chaining
         """
         #P2: complete checking all places for dependencies, html, links etc
-        old = copy.deepcopy(self.name)
         oldrefsre = copy.deepcopy(self.__refsre__)
         oldrefre = copy.deepcopy(self.__refre__)
+        
+        # Add current name as an alias to avoid any content validation issues
+        if type(self.alias) == list:
+            self.alias.append(self.name)
+        else:
+            self.alias = [self.name]
+
+        # Change existing name to new name
         self.setName(newName)
         for f in self.parent.search('sql',[oldrefsre,oldrefre]):
-            f.sql = re.sub(oldrefsre, self.__refs__, str(f.sql.value))
-            f.sql = re.sub(oldrefre, self.__ref__, str(f.sql.value))
-        self.parent.removeField(old)
-        self.parent + self
+            f.sql = re.sub(oldrefsre, self.__refs__, f.sql.value)
+            f.sql = re.sub(oldrefre, self.__ref__, f.sql.value)
+        # self.parent.removeField(old)
+        # self.parent + self
         return self
 
     def setSql(self,sql: str):
@@ -1054,7 +1061,7 @@ class View(lookml):
         return sorted(self._fields(), key=lambda field: ''.join([str(isinstance(field, Measure)), field.name]))
     # end generators
         
-    def addDimension(self,d: (str,Dimension),type: str = 'string'): 
+    def addDimension(self,d: Tuple[str,Dimension],type: str = 'string'): 
         """
         Add a dimension object, or add a string DB column you would like added 
 
@@ -1126,7 +1133,7 @@ class View(lookml):
         """
         self + f'''
             measure: {field.name}_sum {{
-                type: tum
+                type: sum
                 sql: {field.__ref__} ;;
             }} 
         '''
@@ -1140,7 +1147,9 @@ class View(lookml):
             View: returns your View for method chaining view.sumAllNumDimensions().addCount()...
         """
         for numDim in self.getFieldsByType('number'):
-            self.sum(numDim)
+            # Avoid summing id fields that were mistakenly cast as numbers
+            if '_id' not in numDim.name and numDim.name != 'id':
+                self.sum(numDim)
         return self
 
     def setViewLabel(self,label: str):
