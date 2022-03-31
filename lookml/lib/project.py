@@ -758,6 +758,9 @@ class ProjectSSH(Project):
                       self.absoluteOutputPath, gitDir=False)
             return self.pull()
 
+        def checkout(self, branch='master'):
+            return self.call(' checkout ' + branch, gitDir=False)
+
         def add(self, path='.'):
             return self.call(' add ' + path, gitDir=False)
         
@@ -804,6 +807,7 @@ class ProjectSSH(Project):
                 deployMessage=self._commit_message
             )
             self._git.clone(self._git_url)
+            self._git.checkout(self._branch)
         self._build_index()
         
     # shell
