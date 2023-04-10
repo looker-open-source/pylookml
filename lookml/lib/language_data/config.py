@@ -5061,6 +5061,17 @@ config = \
                         "allowed_values": ""
                 }
         },
+        "expression": {
+                "assert": {
+                        "type": "sql",
+                        "subtype": "sql-block ",
+                        "indent": 1,
+                        "default_value": "",
+                        "docs_url": "https://cloud.google.com/looker/docs/reference/param-model-test#assert",
+                        "has_allowed_values": False,
+                        "allowed_values": ""
+                }
+        },
         "max_cache_age": {
                 "datagroup": {
                         "type": "string",
