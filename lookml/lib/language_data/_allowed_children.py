@@ -455,5 +455,8 @@ _allowed_children = \
         "localization_settings": [
                 "default_locale",
                 "localization_level"
+        ],
+        "assert": [
+                "expression"
         ]
 }
