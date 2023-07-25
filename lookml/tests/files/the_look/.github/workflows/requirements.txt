@@ -1,6 +1,6 @@
 attrs==19.3.0
 cattrs==1.0.0
-certifi==2020.6.20
+certifi==2023.7.22
 chardet==3.0.4
 idna==2.10
 looker-sdk==0.1.3b15
